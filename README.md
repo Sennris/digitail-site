@@ -204,17 +204,35 @@ saving replaces the whole collection in one transaction rather than
 updating single rows. Simple and safe at this scale. If the devlog count
 ever reaches the thousands, `src/writers.js` is the file to revisit.
 
-### Changing your password
+### Setting up or resetting your password
 
-```
-node tools/make-password.js you@email.com "your new password"
-```
-
-Run the command it prints, after first deleting the old row:
+Visit `/admin/setup.html`. It only works when no admin account exists,
+so to reset a forgotten password, clear the account first:
 
 ```
 npx wrangler d1 execute digitail --remote --command="DELETE FROM admin_users"
 ```
+
+Then go to `/admin/setup.html` and create it again.
+
+### Why the iteration count looks low
+
+PBKDF2 runs at 8,000 iterations rather than the 200,000+ you would use
+on a normal server. Two hard constraints:
+
+* Cloudflare Workers rejects PBKDF2 above 100,000 iterations outright
+* The Workers free plan allows 10ms of CPU per request, which caps this
+  at roughly 10,000 iterations in practice
+
+To compensate, every password is peppered with `SESSION_SECRET` before
+hashing. That secret lives in Cloudflare, never in the database, so a
+stolen copy of the database cannot be brute forced offline. Combined
+with the 5-attempts-per-15-minutes lockout, this is sound for a
+single-admin site.
+
+**Because the pepper is `SESSION_SECRET`, changing that secret
+invalidates your password.** If you ever rotate it, reset the account
+via `/admin/setup.html` afterwards.
 
 ### Tests
 

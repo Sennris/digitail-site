@@ -8,7 +8,7 @@
  */
 
 import {
-    verifyPassword, createSession, requireAuth,
+    hashPassword, verifyPassword, createSession, requireAuth,
     sessionCookie, clearCookie, isRateLimited, logAttempt,
 } from './auth.js';
 import { WRITERS } from './writers.js';
@@ -123,6 +123,40 @@ async function handleAuth(request, env, parts) {
             : json({ loggedIn: false }, 200, NO_CACHE);
     }
 
+    // One-time account creation. Refuses once an admin exists, so it
+    // cannot be used to add a second account later.
+    if (action === 'setup') {
+        const existing = await env.DB
+            .prepare('SELECT COUNT(*) AS n FROM admin_users').first();
+
+        if (request.method === 'GET') {
+            return json({ needsSetup: (existing?.n || 0) === 0 }, 200, NO_CACHE);
+        }
+        if (request.method !== 'POST') return fail('POST required', 405);
+
+        if ((existing?.n || 0) > 0) {
+            return fail('An admin account already exists.', 403);
+        }
+        if (!env.SESSION_SECRET) {
+            return fail('SESSION_SECRET is not configured on this Worker', 500);
+        }
+
+        let body;
+        try { body = await request.json(); } catch { return fail('Invalid request body'); }
+        const email = String(body.email || '').trim().toLowerCase();
+        const password = String(body.password || '');
+
+        if (!email.includes('@')) return fail('That does not look like an email address');
+        if (password.length < 10) return fail('Use at least 10 characters');
+
+        const { hash, salt } = await hashPassword(password, undefined, env.SESSION_SECRET);
+        await env.DB
+            .prepare('INSERT INTO admin_users (email, password_hash, salt) VALUES (?,?,?)')
+            .bind(email, hash, salt).run();
+
+        return json({ ok: true, email }, 200, NO_CACHE);
+    }
+
     if (action === 'logout') {
         return new Response(JSON.stringify({ ok: true }), {
             status: 200,
@@ -155,11 +189,11 @@ async function handleAuth(request, env, parts) {
 
         let ok = false;
         if (user) {
-            ok = await verifyPassword(password, user.password_hash, user.salt);
+            ok = await verifyPassword(password, user.password_hash, user.salt, env.SESSION_SECRET);
         } else {
             // Burn the same time hashing even when there's no such user, so
             // response timing doesn't reveal which emails are registered.
-            await verifyPassword(password, '0'.repeat(64), '0'.repeat(32));
+            await verifyPassword(password, '0'.repeat(64), '0'.repeat(32), env.SESSION_SECRET);
         }
 
         await logAttempt(env.DB, ip, email, ok);
@@ -185,7 +219,14 @@ async function handleApi(request, env, url) {
         return json({ ok: true, time: new Date().toISOString() }, 200, NO_CACHE);
     }
 
-    if (parts[1] === 'auth') return handleAuth(request, env, parts);
+    if (parts[1] === 'auth') {
+        try {
+            return await handleAuth(request, env, parts);
+        } catch (e) {
+            // Surface the reason instead of an opaque 500.
+            return fail(`Auth error: ${e.message}`, 500);
+        }
+    }
 
     if (parts[1] === 'media') {
         const session = await requireAuth(request, env);
@@ -260,7 +301,8 @@ export default {
 
         // Gate the admin panel. The login page itself stays public.
         if (url.pathname.startsWith('/admin')
-            && !url.pathname.startsWith('/admin/login')) {
+            && !url.pathname.startsWith('/admin/login')
+            && !url.pathname.startsWith('/admin/setup')) {
             const session = await requireAuth(request, env);
             if (!session) {
                 return Response.redirect(new URL('/admin/login.html', url).toString(), 302);

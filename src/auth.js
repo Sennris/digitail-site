@@ -8,7 +8,12 @@
  * secret lives in a Cloudflare secret, never in the repo.
  */
 
-const ITERATIONS = 210000;
+// Cloudflare Workers rejects PBKDF2 above 100,000 iterations, and the
+// free plan allows only 10ms of CPU per request, which in practice caps
+// this at around 10,000. That is low on its own, so every password is
+// also peppered with a secret that lives in Cloudflare rather than in
+// the database. A stolen database is useless without it.
+const ITERATIONS = 8000;
 const SESSION_HOURS = 12;
 const COOKIE_NAME = 'dt_session';
 
@@ -38,9 +43,19 @@ function safeEqual(a, b) {
 
 /* ---------- passwords ---------- */
 
-export async function hashPassword(password, saltHex) {
+/** Mix the pepper into the password before it ever reaches PBKDF2. */
+async function pepper(password, secret) {
+    if (!secret) return password;
+    const key = await crypto.subtle.importKey(
+        'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const mac = await crypto.subtle.sign('HMAC', key, enc.encode(password));
+    return toHex(mac);
+}
+
+export async function hashPassword(password, saltHex, secret) {
+    const peppered = await pepper(password, secret);
     const salt = saltHex ? fromHex(saltHex) : crypto.getRandomValues(new Uint8Array(16));
-    const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+    const key = await crypto.subtle.importKey('raw', enc.encode(peppered), 'PBKDF2', false, ['deriveBits']);
     const bits = await crypto.subtle.deriveBits(
         { name: 'PBKDF2', salt, iterations: ITERATIONS, hash: 'SHA-256' },
         key,
@@ -49,8 +64,8 @@ export async function hashPassword(password, saltHex) {
     return { hash: toHex(bits), salt: toHex(salt) };
 }
 
-export async function verifyPassword(password, storedHash, storedSalt) {
-    const { hash } = await hashPassword(password, storedSalt);
+export async function verifyPassword(password, storedHash, storedSalt, secret) {
+    const { hash } = await hashPassword(password, storedSalt, secret);
     return safeEqual(hash, storedHash);
 }
 
