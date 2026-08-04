@@ -838,3 +838,182 @@ textarea:focus-visible {
     .stack-drift > * { margin-left: 0 !important; max-width: 100%; }
     .statement { max-width: none; transform: none; }
 }
+
+
+/* ==========================================================================
+   21. DISPLAY PREFERENCES
+   ==========================================================================
+   Applied as classes on <html> by assets/js/a11y.js.
+
+   These exist because the design makes choices no OS setting knows about:
+   film grain, rotated cards, an infinite ticker. This is not a separate
+   "accessible version" of the site; the site itself has to work for
+   everyone. This just lets people turn down things we invented.
+   ========================================================================== */
+
+.pref-reduce-motion *,
+.pref-reduce-motion *::before,
+.pref-reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+.pref-reduce-motion .ticker__track { animation: none !important; }
+.pref-reduce-motion .fade-in-section {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+.pref-reduce-motion .player-card::after { display: none; }
+
+.pref-reduce-noise body::after { display: none; }        /* grain */
+.pref-reduce-noise body { background-image: none; }      /* dot grid */
+.pref-reduce-noise .card,
+.pref-reduce-noise .card:nth-child(3n+2),
+.pref-reduce-noise .card:nth-child(3n+3),
+.pref-reduce-noise .player-card,
+.pref-reduce-noise .player-card:nth-child(5n+1),
+.pref-reduce-noise .player-card:nth-child(5n+2),
+.pref-reduce-noise .player-card:nth-child(5n+3),
+.pref-reduce-noise .player-card:nth-child(5n+4),
+.pref-reduce-noise .player-card:nth-child(5n+5),
+.pref-reduce-noise .hero-section,
+.pref-reduce-noise .statement,
+.pref-reduce-noise .statement em,
+.pref-reduce-noise .year-badge,
+.pref-reduce-noise .badge,
+.pref-reduce-noise .charity-section,
+.pref-reduce-noise .player-number {
+    transform: rotate(0deg) !important;
+}
+.pref-reduce-noise .charity-section::before { display: none; }
+.pref-reduce-noise .stack-drift > * { margin-left: 0 !important; max-width: 100%; }
+.pref-reduce-noise .image-placeholder { background-image: none; }
+.pref-reduce-noise .hero-section h1 {
+    text-shadow:
+        -1px -1px 0 var(--long-black),  1px -1px 0 var(--long-black),
+        -1px  1px 0 var(--long-black),  1px  1px 0 var(--long-black);
+}
+
+.pref-large-text { font-size: 118%; }
+.pref-large-text .display-prefs__panel { font-size: 0.9rem; }
+
+
+/* --------------------------------------------------------------------------
+   22. DISPLAY OPTIONS PANEL
+   -------------------------------------------------------------------------- */
+
+.display-prefs { position: relative; }
+
+.display-prefs__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.75rem);
+    z-index: 1200;
+    width: min(21rem, calc(100vw - 2rem));
+    background: var(--arctic-willow);
+    color: var(--long-black);
+    border: var(--border-width) solid var(--long-black);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 1.1rem;
+}
+
+.display-prefs__title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    margin: 0 0 0.85rem;
+    color: var(--long-black);
+}
+
+.display-prefs__row {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.55rem 0;
+    cursor: pointer;
+    border-top: 2px dashed rgba(29, 13, 18, 0.2);
+}
+.display-prefs__row:first-of-type { border-top: none; }
+
+.display-prefs__row input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0.15rem 0 0;
+    accent-color: var(--long-black);
+    flex: none;
+}
+
+.display-prefs__label {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.display-prefs__hint {
+    display: block;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #3a3033;      /* 8.9:1 on Arctic Willow */
+}
+
+
+/* --------------------------------------------------------------------------
+   23. SYSTEM PREFERENCES WE HONOUR AUTOMATICALLY
+   -------------------------------------------------------------------------- */
+
+/* Someone asking their OS for more contrast gets the noise turned down
+   and the borders firmed up, without having to find our panel. */
+@media (prefers-contrast: more) {
+    body::after { display: none; }
+    body { background-image: none; }
+    .card, .player-card, .hero-section { transform: rotate(0deg) !important; }
+    .card, .player-card, .btn-rugged, .read-more { border-width: 4px; }
+    .display-prefs__hint { color: var(--long-black); }
+}
+
+/* Windows High Contrast Mode replaces our colours with the user's own.
+   Anything drawn with backgrounds or shadows has to keep a real border
+   or it vanishes entirely. */
+@media (forced-colors: active) {
+    .card, .player-card, .btn-rugged, .read-more, .badge,
+    .year-badge, .display-prefs__panel, .image-placeholder {
+        border: 2px solid ButtonBorder;
+        box-shadow: none;
+    }
+    .ticker { border: 2px solid ButtonBorder; }
+    .site-nav a.nav-link[aria-current="page"] { border: 2px solid Highlight; }
+    .statement em { border: 2px solid ButtonBorder; }
+    body::after { display: none; }
+}
+
+
+/* --------------------------------------------------------------------------
+   24. TOUCH TARGETS AND SMALL TEXT
+   WCAG 2.2 asks for at least 24x24 CSS pixels on anything interactive.
+   -------------------------------------------------------------------------- */
+
+.site-nav a.nav-link {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.7rem;
+}
+
+.secret-paw {
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+}
+
+.btn-rugged { min-height: 32px; }

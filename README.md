@@ -542,3 +542,67 @@ wired up yet because it needs a token from your dashboard:
 4. Paste it just before `</body>` in each page in `public/`
 
 Or send me the token and I'll wire it in.
+
+---
+
+## Phase 6.1: accessibility
+
+### On the "accessibility mode" question
+
+There isn't one, deliberately. A separate accessible version means the
+main site stays broken and disabled visitors get a second-class
+experience that drifts out of sync. Overlay widgets (AccessiBe, UserWay
+and similar) are worse again and are actively campaigned against by the
+people they claim to help.
+
+Instead: the site itself works for everyone, and there is a small
+**Display options** panel in the nav for the things the design invented
+that no OS setting knows about.
+
+### Display options
+
+| Option | Effect | Defaults from |
+|---|---|---|
+| Reduce motion | Stops the ticker, kills reveals and the foil sweep | `prefers-reduced-motion` |
+| Reduce visual noise | Removes grain and dot grid, straightens tilted cards | `prefers-contrast` |
+| Larger text | Scales the whole site to 118% | off |
+
+Saved to localStorage. If the visitor's OS already asks for reduced
+motion, they get it without opening the panel.
+
+Also honoured automatically:
+
+* `prefers-contrast: more` — noise off, borders thickened
+* `forced-colors: active` (Windows High Contrast) — everything drawn with
+  backgrounds and shadows keeps a real border, so nothing vanishes
+
+### Things that were unusable without a mouse
+
+* **Team bios.** The flip was a click handler on a `<div>`. Keyboard and
+  screen reader users could not open a single bio. The hint is now a real
+  `<button>` with `aria-expanded` and `aria-controls`. Clicking the card
+  still works.
+* **Hidden paws.** `<span>` elements with click handlers. Now buttons
+  with accessible names, so the easter egg is findable by keyboard.
+* **Modals.** No Escape key, no focus trap, no focus return. All three
+  now handled, plus `role="dialog"` and `aria-labelledby`.
+
+### Contrast
+
+Measured every colour pair in the palette. Nine of ten pass AAA:
+
+| | ratio |
+|---|---|
+| Body text on Long Black | 12.56:1 |
+| Teal on Long Black | 9.79:1 |
+| Black on Arctic Willow | 11.24:1 |
+| Button labels | 9.79:1 |
+
+One failure, now fixed: the bio hint was 0.66rem at 55% opacity, giving
+3.58:1 against the card. It is now a bordered button at 11.24:1.
+
+### Touch targets
+
+WCAG 2.2 requires 24x24 CSS pixels minimum on interactive elements. Nav
+links, buttons and the paws were all under. Now enforced in `core.css`
+section 24.

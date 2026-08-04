@@ -456,19 +456,43 @@ footer {
     margin-top: 0.4rem;
 }
 
-/* Flip hint, so it's obvious there's more */
+/* Now a real button. It was 0.66rem at 55% opacity, which came out at
+   3.58:1 against the card, below the 4.5:1 minimum. */
 .flip-hint {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
     margin-top: 0.8rem;
+    padding: 0.3rem 0.8rem;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.78rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    opacity: 0.55;
+    letter-spacing: 0.1em;
     color: var(--long-black);
+    background: rgba(29, 13, 18, 0.10);
+    border: 2px solid rgba(29, 13, 18, 0.55);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.player-card:hover .flip-hint { opacity: 0.9; }
+.player-card:hover .flip-hint,
+.flip-hint:hover,
+.flip-hint:focus-visible {
+    background: var(--long-black);
+    color: var(--frozen-juniper);
+    border-color: var(--long-black);
+}
+
+.flip-hint[aria-expanded="true"]::after { content: ' \25B2'; }
+.flip-hint[aria-expanded="false"]::after { content: ' \25BC'; }
+
+/* The bio panel needs to be genuinely hidden when closed, or screen
+   readers announce it even though nobody can see it. */
+.card-back[id] { pointer-events: none; }
+.player-card:hover .card-back,
+.player-card.flipped .card-back { pointer-events: auto; }
 
 @media (max-width: 768px) {
     .player-card,

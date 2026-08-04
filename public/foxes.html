@@ -49,7 +49,7 @@
     </nav>
  
 
-    <div id="fox-modal" class="modal-overlay">
+    <div id="fox-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content">
             <button class="modal-close-btn">&times;</button>
             <div class="modal-header">
@@ -92,7 +92,7 @@
             <h2 class="statement">
                 <span class="en">Want to help<br>the <em>pack</em>?</span>
                 <span class="mi">Hiahia āwhina<br>i te <em>rōpū</em>?</span>
-                <span class="secret-paw" id="paw-3" style="font-size: 1.5rem;">🐾</span>
+                <button type="button" class="secret-paw" id="paw-3" style="font-size: 1.5rem;" aria-label="Hidden paw. Find all three."><span aria-hidden="true">🐾</span></button>
             </h2>
             </div>
             <div>
@@ -124,5 +124,6 @@
 
     <script src="/assets/js/pages/foxes.js"></script>
     <script src="/assets/js/lang-attr.js"></script>
+    <script src="/assets/js/a11y.js"></script>
 </body>
 </html>

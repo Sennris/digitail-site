@@ -49,12 +49,14 @@
                                 <span class="en">${member.roleEn}</span>
                                 <span class="mi">${member.roleMi || member.roleEn}</span>
                             </p>
-                            <span class="flip-hint">
-                                <span class="en">click for bio</span>
-                                <span class="mi">pāwhiri mō te kōrero</span>
-                            </span>
+                            <button type="button" class="flip-hint"
+                                    aria-expanded="false"
+                                    aria-controls="bio-${cardNo}">
+                                <span class="en">read bio</span>
+                                <span class="mi">pānui kōrero</span>
+                            </button>
                         </div>
-                        <div class="card-back">
+                        <div class="card-back" id="bio-${cardNo}">
                             <div class="stat-row">
                                 <span class="stat-label">
                                     <span class="en">Bio</span>
@@ -67,8 +69,20 @@
                             </div>
                         </div>
                     `;
+                    const flipBtn = card.querySelector('.flip-hint');
+                    function setFlipped(on) {
+                        card.classList.toggle('flipped', on);
+                        if (flipBtn) flipBtn.setAttribute('aria-expanded', String(on));
+                    }
+                    if (flipBtn) {
+                        flipBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            setFlipped(!card.classList.contains('flipped'));
+                        });
+                    }
+                    // Clicking anywhere on the card still works for mouse users
                     card.addEventListener('click', () => {
-                        card.classList.toggle('flipped');
+                        setFlipped(!card.classList.contains('flipped'));
                     });
 
                     teamGrid.appendChild(card);
