@@ -284,3 +284,58 @@ and answer conditional requests with a 304.
 
 10MB per file, JPG / PNG / WebP / GIF / AVIF. R2's free tier gives you
 10GB, which at ~200KB per image is somewhere north of 40,000 pictures.
+
+---
+
+## Phase 5: the design pass
+
+### Typography
+
+| Role | Font | Why |
+|---|---|---|
+| Display | Bricolage Grotesque 800 | quirky and characterful without being childish |
+| Body | Nunito | rounded terminals, cosy, very readable |
+| Mono | JetBrains Mono | the techy edge, used for labels and taglines |
+
+Loaded from Google Fonts with `subset=latin,latin-ext` so macrons
+(ā ē ī ō ū) are covered. **Check a te reo page after deploying.** If any
+macron renders in a different face to the letters around it, tell me and
+I'll swap the display font.
+
+### What changed
+
+* **Grain and dot grid on the background.** Flat `#1D0D12` was most of why
+  it read as unfinished. There's now a film grain overlay and a faint dot
+  grid underneath.
+* **Cards cycle through the palette.** Every card used to be Arctic
+  Willow. They now alternate Arctic Willow, Flat White and Extra Foam,
+  each with its own rotation angle.
+* **Fluid type.** Headings use `clamp()`, so the homepage title is
+  genuinely huge on desktop and still fits a phone.
+* **Two-colour text shadows** on headings, teal then black, rather than
+  a flat black offset.
+* **A real navigation bar,** sticky, on every page. The homepage had none.
+* **A scrolling ticker** under the homepage nav. Pauses on hover.
+* **Placeholders that look deliberate:** diagonal stripes in the palette
+  with a paw in the corner, rather than an empty dashed box.
+* **Staggered reveals.** Add `.stagger` to a grid and its children arrive
+  in sequence instead of all at once.
+* **Springier hover states.** Cards lift, straighten and scale slightly.
+* **Skip-to-content link** and visible focus rings throughout.
+
+### Finishing the Phase 0 consolidation
+
+51 drifted rules were removed from the page stylesheets so `core.css`
+could actually take effect. Those pages had their own conflicting copies
+of `.card`, `.image-placeholder`, `footer`, `.btn-rugged` and others.
+`content-manager.css` was left alone, since the admin panel's `.card` is
+a genuinely different component.
+
+### Where to tune it
+
+All in `core.css`:
+
+* Loudness of the grain: `body::after { opacity }`
+* Card rotation angles: the `.card:nth-child()` rules
+* Ticker speed: the `ticker-scroll` animation duration
+* Heading size: `--size-mega`

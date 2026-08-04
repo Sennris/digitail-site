@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Foxes | Digi Tail Studios</title>
     
-        <link rel="stylesheet" href="/assets/css/core.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/core.css">
     <link rel="stylesheet" href="/assets/css/pages/foxes.css">
 </head>
-<body class="lang-en"> 
+<body class="lang-en">
+
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav">
+        <a class="site-nav__brand" href="index.html"><span aria-hidden="true">🦊</span> Digi Tail</a>
+        <a class="nav-link" href="index.html">home</a>
+        <a class="nav-link" href="game.html">game</a>
+        <a class="nav-link" href="devlogs.html">devlogs</a>
+        <a class="nav-link" href="foxes.html" aria-current="page">foxes</a>
+        <a class="nav-link" href="social.html">social</a>
+        <a class="nav-link" href="about.html">about</a>
+    </nav>
+ 
 
     <div class="top-bar">
         <a href="index.html" class="btn-rugged">
@@ -42,7 +57,7 @@
         </div>
     </div>
 
-    <main class="container">
+    <main id="main" class="container">
 
         <header class="hero-section fade-in-section is-visible">
             <h1>
@@ -55,7 +70,7 @@
             </p>
         </header>
 
-        <section class="fox-grid" id="fox-grid">
+        <section class="fox-grid stagger" id="fox-grid">
         </section>
 
         <section class="charity-section fade-in-section">

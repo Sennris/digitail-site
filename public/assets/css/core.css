@@ -1,59 +1,67 @@
 /* ==========================================================================
    DIGI TAIL STUDIOS - CORE STYLESHEET
    ==========================================================================
-   This is the single source of truth for the site's design system.
-   Every page loads this file first, then its own page CSS on top.
+   Single source of truth for the site's design.
 
-   If you want to change a colour, a font, or the look of a button
-   ANYWHERE on the site, change it here once and it changes everywhere.
+   Direction: friendly, quirky, cosy, a little techy, and loud about it.
+   Bricolage Grotesque does the shouting, Nunito keeps it warm,
+   JetBrains Mono adds the machine-room edge.
 
-   Page-specific styles live in assets/css/pages/<pagename>.css
+   Change a colour or a font here and it changes on all 8 pages.
+   Page-specific styles: assets/css/pages/<page>.css
    ========================================================================== */
 
 
 /* --------------------------------------------------------------------------
-   1. DESIGN TOKENS
-   The studio palette. Named the way we talk about them.
+   1. TOKENS
    -------------------------------------------------------------------------- */
 
 :root {
-    /* Palette */
-    --long-black:      #1D0D12;   /* deep background */
-    --extra-foam:      #DAD2CA;   /* default body text */
-    --frozen-juniper:  #5DCCCA;   /* primary accent, teal */
-    --arctic-willow:   #B9CCCC;   /* card surfaces, muted */
-    --flat-white:      #E5DABF;   /* headings, warm cream */
-    --alert-red:       #E74C3C;   /* errors and warnings only */
+    /* Palette (named the way the studio talks about them) */
+    --long-black:      #1D0D12;
+    --extra-foam:      #DAD2CA;
+    --frozen-juniper:  #5DCCCA;
+    --arctic-willow:   #B9CCCC;
+    --flat-white:      #E5DABF;
+    --alert-red:       #E74C3C;
 
-    /* Derived surfaces */
-    --card-surface:    rgba(185, 204, 204, 0.95);
-    --card-surface-dim:rgba(185, 204, 204, 0.10);
+    /* Derived */
+    --ink:             var(--long-black);
+    --card-surface:    #B9CCCC;
     --hairline:        rgba(185, 204, 204, 0.40);
-    --hairline-soft:   rgba(185, 204, 204, 0.30);
+    --hairline-soft:   rgba(185, 204, 204, 0.22);
+    --deep:            #140609;   /* a shade under Long Black, for depth */
 
-    /* Shadows: the hard offset shadow is the studio's signature */
-    --shadow-sm:       3px 3px 0px rgba(0,0,0,0.5);
-    --shadow-md:       6px 6px 0px rgba(0,0,0,0.8);
-    --shadow-lg:       8px 8px 0px rgba(0,0,0,0.8);
-    --shadow-xl:      12px 12px 0px rgba(0,0,0,0.8);
+    /* Signature hard shadows */
+    --shadow-sm:   3px 3px 0 rgba(0,0,0,0.55);
+    --shadow-md:   6px 6px 0 var(--long-black);
+    --shadow-lg:  10px 10px 0 var(--long-black);
+    --shadow-xl:  14px 14px 0 var(--long-black);
+    --glow:        0 0 24px rgba(93, 204, 202, 0.45);
 
     /* Type */
-    --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-    --font-mono:    'Courier New', Courier, monospace;
-    --font-body:    system-ui, -apple-system, sans-serif;
+    --font-display: 'Bricolage Grotesque', 'Trebuchet MS', Verdana, sans-serif;
+    --font-body:    'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono:    'JetBrains Mono', 'Courier New', Courier, monospace;
 
-    /* Structure */
+    /* Fluid display sizes. Loud on desktop, still readable on a phone. */
+    --size-mega: clamp(3rem, 11vw, 7.5rem);
+    --size-xl:   clamp(2.2rem, 6vw, 4rem);
+    --size-lg:   clamp(1.6rem, 3.5vw, 2.4rem);
+
     --border-width: 3px;
-    --radius:       4px;
+    --radius:       6px;
     --page-max:     1200px;
 }
 
 
 /* --------------------------------------------------------------------------
-   2. RESET AND BASE
+   2. BASE
    -------------------------------------------------------------------------- */
 
 * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
     font-family: var(--font-body);
@@ -61,15 +69,36 @@ body {
     padding: 0;
     background-color: var(--long-black);
     color: var(--extra-foam);
-    line-height: 1.6;
+    line-height: 1.65;
     overflow-x: hidden;
+    position: relative;
+    font-size: 1.02rem;
+
+    /* Faint dot grid. Stops the background reading as an empty void. */
+    background-image: radial-gradient(rgba(185, 204, 204, 0.07) 1px, transparent 1px);
+    background-size: 26px 26px;
+}
+
+/* Film grain over the whole page. This is most of why it stops looking flat. */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.32;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+::selection {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
 }
 
 
 /* --------------------------------------------------------------------------
    3. BILINGUAL TOGGLE
-   Wrap English in <span class="en"> and te reo in <span class="mi">.
-   The body class decides which one is visible.
    -------------------------------------------------------------------------- */
 
 body.lang-en .mi { display: none; }
@@ -78,47 +107,225 @@ body.lang-mi .en { display: none; }
 
 /* --------------------------------------------------------------------------
    4. LAYOUT
-   .container is the standard page wrapper.
-   Add .container--flush on pages where a hero sits above it (the homepage).
    -------------------------------------------------------------------------- */
 
 .container {
     max-width: var(--page-max);
     margin: 0 auto;
-    padding: 6rem 1rem 2rem 1rem;
+    padding: 6rem 1.25rem 2rem;
+    position: relative;
+    z-index: 1;
 }
 
-.container--flush { padding: 2rem 1rem; }
+.container--flush { padding: 2rem 1.25rem; }
 .container--wide  { max-width: 1600px; padding: 2rem; }
 
 
 /* --------------------------------------------------------------------------
-   5. BUTTONS
-   .btn-rugged is the studio's standard button: solid fill, hard border,
-   offset shadow that collapses on press.
+   5. NAVIGATION
+   The homepage previously had none. Now every page gets one.
+   -------------------------------------------------------------------------- */
+
+.site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0.7rem 1.25rem;
+    background: rgba(20, 6, 9, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: var(--border-width) solid var(--frozen-juniper);
+}
+
+.site-nav__brand {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--flat-white);
+    text-decoration: none;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.site-nav__brand:hover { color: var(--frozen-juniper); }
+
+.site-nav__brand span[aria-hidden] {
+    display: inline-block;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.site-nav__brand:hover span[aria-hidden] { transform: rotate(-18deg) scale(1.25); }
+
+.site-nav a.nav-link {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: lowercase;
+    color: var(--extra-foam);
+    text-decoration: none;
+    padding: 0.35rem 0.65rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: all 0.12s ease;
+}
+
+.site-nav a.nav-link:hover {
+    color: var(--long-black);
+    background: var(--frozen-juniper);
+    border-color: var(--long-black);
+    box-shadow: 3px 3px 0 var(--long-black);
+    transform: translate(-1px, -1px);
+}
+
+.site-nav a.nav-link[aria-current="page"] {
+    color: var(--frozen-juniper);
+    border-color: var(--frozen-juniper);
+}
+
+
+/* --------------------------------------------------------------------------
+   6. TICKER
+   A scrolling band. Cheap, loud, and very indie-studio.
+   -------------------------------------------------------------------------- */
+
+.ticker {
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border-top: var(--border-width) solid var(--long-black);
+    border-bottom: var(--border-width) solid var(--long-black);
+    padding: 0.45rem 0;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.ticker__track {
+    display: inline-block;
+    animation: ticker-scroll 32s linear infinite;
+}
+
+.ticker:hover .ticker__track { animation-play-state: paused; }
+
+.ticker__track span { padding: 0 1.6rem; }
+
+@keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+
+/* --------------------------------------------------------------------------
+   7. TYPE
+   -------------------------------------------------------------------------- */
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+}
+
+.hero-section {
+    text-align: center;
+    padding: 9vh 1.5rem;
+    border: var(--border-width) dashed var(--hairline);
+    border-radius: var(--radius);
+    margin-bottom: 4rem;
+    transform: rotate(0.4deg);
+    position: relative;
+}
+
+.hero-section--tall  { padding: 14vh 1.5rem 10vh; }
+.hero-section--left  { transform: rotate(-0.4deg); }
+.hero-section--tight { margin-bottom: 3rem; }
+
+.hero-section h1 {
+    font-size: var(--size-mega);
+    text-transform: uppercase;
+    margin: 0 0 0.4rem;
+    color: var(--flat-white);
+    /* Layered shadow in two palette colours, rather than flat black */
+    text-shadow:
+        3px 3px 0 var(--frozen-juniper),
+        7px 7px 0 var(--long-black);
+}
+
+.hero-section p {
+    font-family: var(--font-mono);
+    color: var(--frozen-juniper);
+    font-size: clamp(0.9rem, 1.6vw, 1.15rem);
+    margin-top: 0;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.section-title {
+    font-family: var(--font-display);
+    font-size: var(--size-xl);
+    text-transform: uppercase;
+    color: var(--flat-white);
+    margin: 3.5rem 0 1.5rem;
+    display: inline-block;
+    position: relative;
+}
+
+/* Highlighter swipe behind section titles */
+.section-title::after {
+    content: '';
+    position: absolute;
+    left: -0.3rem;
+    right: -0.3rem;
+    bottom: 0.08em;
+    height: 0.28em;
+    background: var(--frozen-juniper);
+    opacity: 0.85;
+    z-index: -1;
+    transform: rotate(-0.8deg);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. BUTTONS
    -------------------------------------------------------------------------- */
 
 .btn-rugged {
     background-color: var(--frozen-juniper);
     border: var(--border-width) solid var(--long-black);
     color: var(--long-black);
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.15rem;
     font-family: var(--font-mono);
-    font-weight: 700;
+    font-weight: 800;
+    font-size: 0.9rem;
     border-radius: var(--radius);
     cursor: pointer;
-    box-shadow: 4px 4px 0px var(--long-black);
-    transition: all 0.1s ease;
+    box-shadow: 5px 5px 0 var(--long-black);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .btn-rugged:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px var(--long-black);
-    background-color: var(--extra-foam);
+    transform: translate(-2px, -2px) rotate(-1deg);
+    box-shadow: 8px 8px 0 var(--long-black);
+    background-color: var(--flat-white);
+}
+
+.btn-rugged:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--long-black);
 }
 
 .btn-rugged:focus-visible {
@@ -126,183 +333,237 @@ body.lang-mi .en { display: none; }
     outline-offset: 3px;
 }
 
-/* Alias kept so existing markup using .lang-toggle-btn still works */
-.lang-toggle-btn { }
-
 
 /* --------------------------------------------------------------------------
-   6. CARDS
-   The light, rotated, hard-shadowed panel used across the public site.
+   9. CARDS
+   Cards cycle through the palette instead of all being the same colour.
+   That alone does most of the "louder" work.
    -------------------------------------------------------------------------- */
 
 .card {
     background: var(--card-surface);
-    backdrop-filter: blur(5px);
-    padding: 2rem;
+    padding: 1.75rem;
     border-radius: var(--radius);
     border: var(--border-width) solid var(--long-black);
     box-shadow: var(--shadow-md);
-    transition: all 0.15s ease;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.16s ease;
     color: var(--long-black);
-    transform: rotate(-1deg);
+    transform: rotate(-0.8deg);
+    position: relative;
+}
+
+.card:nth-child(3n+2) {
+    background: var(--flat-white);
+    transform: rotate(0.9deg);
+}
+.card:nth-child(3n+3) {
+    background: var(--extra-foam);
+    transform: rotate(-1.4deg);
 }
 
 .card:hover {
-    box-shadow: 9px 9px 0px rgba(0,0,0,0.8);
-    transform: translate(-2px, -2px) rotate(-1deg);
-}
-
-.card .pre-title {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--long-black);
-    font-weight: 700;
-    opacity: 0.7;
+    transform: translate(-4px, -5px) rotate(0deg) scale(1.015);
+    box-shadow: var(--shadow-lg);
 }
 
 .card h3 {
     font-family: var(--font-display);
-    margin: 0.5rem 0;
+    margin: 0.4rem 0 0.6rem;
     color: var(--long-black);
-    font-size: 1.8rem;
-    line-height: 1.1;
+    font-size: var(--size-lg);
 }
 
 .card p {
-    font-size: 0.95rem;
+    font-size: 0.97rem;
     color: var(--long-black);
     font-weight: 600;
 }
 
+.card .pre-title {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--long-black);
+    font-weight: 800;
+    background: rgba(29, 13, 18, 0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    display: inline-block;
+}
+
 
 /* --------------------------------------------------------------------------
-   7. READ MORE LINK
+   10. LINKS AND BADGES
    -------------------------------------------------------------------------- */
 
 .read-more {
     display: inline-block;
-    margin-top: 1.5rem;
+    margin-top: 1.4rem;
     font-family: var(--font-mono);
     background: var(--long-black);
-    color: var(--extra-foam);
-    padding: 5px 10px;
+    color: var(--frozen-juniper);
+    padding: 0.45rem 0.85rem;
     font-weight: 800;
+    font-size: 0.82rem;
     text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
     transition: all 0.1s ease;
     box-shadow: var(--shadow-sm);
 }
 
 .read-more:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
-    background-color: var(--frozen-juniper);
+    transform: translate(-2px, -2px) rotate(-1.5deg);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.55);
+    background: var(--frozen-juniper);
     color: var(--long-black);
 }
 
+.read-more::after {
+    content: ' →';
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+.read-more:hover::after { transform: translateX(3px); }
+
+/* Sticker style, for tags and small labels */
+.badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    border: 2px solid var(--long-black);
+    border-radius: 999px;
+    background: var(--flat-white);
+    color: var(--long-black);
+    box-shadow: 2px 2px 0 var(--long-black);
+    transform: rotate(-2deg);
+}
+.badge:nth-child(even) { transform: rotate(2deg); }
+
 
 /* --------------------------------------------------------------------------
-   8. IMAGE PLACEHOLDERS
-   Shown until real art is dropped in via the admin panel.
+   11. IMAGE PLACEHOLDERS
+   These are what made the site feel unfinished. Now they read as a
+   deliberate pattern rather than a missing file.
    -------------------------------------------------------------------------- */
 
 .image-placeholder {
     width: 100%;
-    height: 250px;
-    background-color: rgba(29, 13, 18, 0.1);
-    border-radius: 2px;
+    height: 240px;
+    border-radius: 4px;
     border: var(--border-width) dashed var(--long-black);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--long-black);
     font-family: var(--font-mono);
-    font-style: italic;
-    margin-bottom: 1.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.4rem;
     overflow: hidden;
+    position: relative;
+
+    /* Diagonal stripes in the studio palette */
+    background-color: rgba(29, 13, 18, 0.06);
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(29, 13, 18, 0.07) 0,
+        rgba(29, 13, 18, 0.07) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+}
+
+/* A paw sitting in the corner, so an empty box still has personality */
+.image-placeholder::before {
+    content: '🐾';
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.7rem;
+    font-size: 1.5rem;
+    opacity: 0.35;
+    transform: rotate(-15deg);
 }
 
 .image-placeholder img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
 }
 
 
 /* --------------------------------------------------------------------------
-   9. HERO
-   Base hero. Pages vary the rotation and padding via modifiers.
-   -------------------------------------------------------------------------- */
-
-.hero-section {
-    text-align: center;
-    padding: 8vh 2rem;
-    border: var(--border-width) dashed var(--hairline);
-    border-radius: var(--radius);
-    margin-bottom: 4rem;
-    transform: rotate(0.5deg);
-}
-
-.hero-section--tall  { padding: 15vh 2rem 10vh; }
-.hero-section--left  { transform: rotate(-0.5deg); }
-.hero-section--tight { margin-bottom: 3rem; }
-
-.hero-section h1 {
-    font-family: var(--font-display);
-    font-size: 5rem;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-    margin-bottom: 0;
-    color: var(--flat-white);
-    text-shadow: 4px 4px 0px rgba(0,0,0,0.8);
-}
-
-.hero-section p {
-    font-family: var(--font-mono);
-    color: var(--frozen-juniper);
-    font-size: 1.1rem;
-    margin-top: 0;
-}
-
-
-/* --------------------------------------------------------------------------
-   10. FOOTER
+   12. FOOTER
    -------------------------------------------------------------------------- */
 
 footer {
     text-align: center;
-    padding: 3rem;
+    padding: 3.5rem 1.5rem;
     font-family: var(--font-mono);
+    font-size: 0.85rem;
     border-top: var(--border-width) dashed var(--hairline-soft);
     margin-top: 5rem;
-    color: rgba(185, 204, 204, 0.7);
-    background: rgba(0,0,0,0.2);
+    color: rgba(185, 204, 204, 0.75);
+    background: var(--deep);
+    position: relative;
+    z-index: 1;
 }
 
 
 /* --------------------------------------------------------------------------
-   11. SCROLL REVEAL
-   Elements with .fade-in-section are revealed by assets/js/reveal.js
+   13. MOTION
+   Reveals are staggered so a grid arrives in sequence rather than all at
+   once. Add .stagger to a grid container.
    -------------------------------------------------------------------------- */
 
 .fade-in-section {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(34px) rotate(-1deg);
     visibility: hidden;
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-    will-change: opacity, visibility;
+    transition: opacity 0.5s ease-out,
+                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
 }
 
 .fade-in-section.is-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
     visibility: visible;
 }
 
+.stagger > *              { transition-delay: 0ms; }
+.stagger > *:nth-child(2) { transition-delay: 80ms; }
+.stagger > *:nth-child(3) { transition-delay: 160ms; }
+.stagger > *:nth-child(4) { transition-delay: 240ms; }
+.stagger > *:nth-child(5) { transition-delay: 320ms; }
+.stagger > *:nth-child(6) { transition-delay: 400ms; }
+
+@keyframes pop-in {
+    0%   { transform: scale(0.85) rotate(-4deg); opacity: 0; }
+    100% { transform: scale(1) rotate(-1deg); opacity: 1; }
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(-2deg); }
+    50%      { transform: rotate(2deg); }
+}
+
+.wiggle-on-hover:hover { animation: wiggle 0.35s ease-in-out 2; }
+
 
 /* --------------------------------------------------------------------------
-   12. EASTER EGG: HIDDEN PAWS
+   14. EASTER EGG PAWS
    -------------------------------------------------------------------------- */
 
 .secret-paw {
@@ -316,26 +577,21 @@ footer {
 }
 
 .secret-paw:hover {
-    opacity: 0.8;
+    opacity: 0.85;
     filter: grayscale(0%);
-    transform: scale(1.2);
+    transform: scale(1.3) rotate(-12deg);
 }
 
 .secret-paw.found {
     opacity: 1;
     filter: grayscale(0%);
     color: var(--frozen-juniper);
-    text-shadow: 0px 0px 8px var(--frozen-juniper);
+    text-shadow: var(--glow);
 }
 
 
 /* --------------------------------------------------------------------------
-   13. TOP BAR
-   Three variants, because these were three different components sharing
-   one class name across the old pages.
-     .top-bar             floating overlay (homepage, thank you)
-     .top-bar--split      overlay with items pushed to both ends (game)
-     .top-bar--inline     simple padded bar in normal flow (content pages)
+   15. TOP BAR (three variants, they were three different components)
    -------------------------------------------------------------------------- */
 
 .top-bar {
@@ -349,28 +605,37 @@ footer {
 }
 
 .top-bar--split  { justify-content: space-between; }
-
-.top-bar--inline {
-    position: static;
-    padding: 1rem;
-}
+.top-bar--inline { position: static; padding: 1rem; }
 
 
 /* --------------------------------------------------------------------------
-   14. ACCESSIBILITY FLOOR
+   16. ACCESSIBILITY
    -------------------------------------------------------------------------- */
 
 a:focus-visible,
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+textarea:focus-visible {
     outline: 3px solid var(--frozen-juniper);
-    outline-offset: 2px;
+    outline-offset: 3px;
+    border-radius: 3px;
 }
 
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    padding: 0.75rem 1.25rem;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    z-index: 10000;
+}
+.skip-link:focus { left: 0; }
+
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
@@ -381,23 +646,29 @@ input:focus-visible {
         visibility: visible;
         transform: none;
     }
+    .ticker__track { animation: none; }
 }
 
 
 /* --------------------------------------------------------------------------
-   15. MOBILE
-   Straighten everything out. Rotated cards do not work on a narrow screen.
+   17. MOBILE
+   Straighten everything. Rotation does not work on a narrow screen.
    -------------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
-    .hero-section h1 { font-size: 3.5rem; }
-
     .card,
+    .card:nth-child(3n+2),
+    .card:nth-child(3n+3),
     .hero-section {
         transform: rotate(0deg) !important;
     }
+    .card:hover { transform: translate(0, -3px) !important; }
 
-    .card:hover {
-        transform: translate(0, 0) !important;
+    .hero-section h1 {
+        text-shadow: 2px 2px 0 var(--frozen-juniper), 4px 4px 0 var(--long-black);
     }
+
+    .container { padding-top: 2.5rem; }
+    .site-nav { padding: 0.55rem 0.85rem; }
+    .site-nav a.nav-link { font-size: 0.72rem; padding: 0.3rem 0.45rem; }
 }

@@ -20,30 +20,6 @@ body {
     justify-content: center;
     min-height: 100vh;
 }
-
-.btn-rugged {
-    background-color: #5DCCCA;
-    border: 3px solid #1D0D12;
-    color: #1D0D12;
-    padding: 0.5rem 1rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    border-radius: 4px;
-    cursor: pointer;
-    box-shadow: 4px 4px 0px #1D0D12;
-    transition: all 0.1s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-rugged:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px #1D0D12;
-    background-color: #DAD2CA;
-}
-
 .thank-you-card {
     text-align: center;
     max-width: 600px;

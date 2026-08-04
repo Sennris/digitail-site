@@ -20,30 +20,6 @@ body {
 .top-bar {
     padding: 1rem;
 }
-
-.btn-rugged {
-    background-color: #5DCCCA;
-    border: 3px solid #1D0D12;
-    color: #1D0D12;
-    padding: 0.5rem 1rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    border-radius: 4px;
-    cursor: pointer;
-    box-shadow: 4px 4px 0px #1D0D12;
-    transition: all 0.1s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-rugged:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px #1D0D12;
-    background-color: #DAD2CA;
-}
-
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -58,11 +34,6 @@ body {
     margin-bottom: 4rem;
     transform: rotate(0.5deg);
 }
-
-.hero-section h1 {
-    font-size: 3rem;
-}
-
 .ethos-section {
     background: rgba(185, 204, 204, 0.95);
     backdrop-filter: blur(5px);
@@ -205,17 +176,6 @@ body {
     font-weight: 600;
     color: #E5DABF;
 }
-
-footer {
-    text-align: center;
-    padding: 3rem;
-    font-family: var(--font-mono);
-    border-top: 3px dashed rgba(185, 204, 204, 0.3);
-    margin-top: 5rem;
-    color: rgba(185, 204, 204, 0.7);
-    background: rgba(0,0,0,0.2);
-}
-
 .secret-paw.found {
     opacity: 1;
     filter: grayscale(0%);
@@ -226,7 +186,6 @@ footer {
 @media (max-width: 768px) {
             .ethos-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .player-card { transform: rotate(0deg) !important; }
-            .hero-section h1 { font-size: 3rem; }
-            .top-bar { padding: 1rem; }
+.top-bar { padding: 1rem; }
         }
 
