@@ -24,11 +24,13 @@ export async function putDevlogs(db, items) {
         stmts.push(
             db.prepare(
                 `INSERT INTO devlogs (id, sort_date, display_date, title_en, title_mi,
-                 snippet_en, snippet_mi, content_en, content_mi, image, published, updated_at)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
+                 snippet_en, snippet_mi, content_en, content_mi, image,
+                 primary_tag, secondary_tag, published, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
             ).bind(
                 n(d.id), s(d.sortDate), s(d.displayDate), s(d.titleEn), s(d.titleMi),
-                s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image)
+                s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image),
+                s(d.primaryTag), s(d.secondaryTag)
             )
         );
         (d.tags || []).forEach((tag, i) => {
@@ -115,8 +117,9 @@ export async function putTags(db, items) {
     const stmts = [db.prepare('DELETE FROM tags')];
     for (const t of items) {
         stmts.push(
-            db.prepare('INSERT INTO tags (id, name, color, category) VALUES (?,?,?,?)')
-              .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA', s(t.category) || 'general')
+            db.prepare('INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)')
+              .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                    s(t.category) || 'general', s(t.kind) || 'secondary')
         );
     }
     await db.batch(stmts);

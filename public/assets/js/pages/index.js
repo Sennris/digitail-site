@@ -139,14 +139,22 @@
                 // Ticker strip, edited from the admin panel
                 const tickerEl = document.getElementById('site-ticker');
                 const trackEl = document.getElementById('ticker-track');
-                if (tickerEl && trackEl && data.ticker && data.ticker.enabled
-                    && Array.isArray(data.ticker.items) && data.ticker.items.length) {
+                // Settings saved before the ticker existed have no ticker key,
+                // so fall back to defaults rather than hiding the strip.
+                const tickerCfg = data.ticker || {
+                    enabled: true, speed: 32,
+                    items: ['DEVLOGS EVERY WEEK', 'MADE IN OTAUTAHI',
+                            'WISHLIST SOON', 'POWERED BY LONG BLACKS',
+                            'THREE PAWS HIDDEN ON THIS SITE'],
+                };
+                if (tickerEl && trackEl && tickerCfg.enabled !== false
+                    && Array.isArray(tickerCfg.items) && tickerCfg.items.length) {
                     // duplicated so the scroll loops without a visible seam
-                    const once = data.ticker.items
+                    const once = tickerCfg.items
                         .map(t => '<span>' + t + '</span>').join('');
                     trackEl.innerHTML = once + once;
-                    if (data.ticker.speed) {
-                        trackEl.style.animationDuration = data.ticker.speed + 's';
+                    if (tickerCfg.speed) {
+                        trackEl.style.animationDuration = tickerCfg.speed + 's';
                     }
                     tickerEl.hidden = false;
                 }

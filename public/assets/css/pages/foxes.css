@@ -394,7 +394,7 @@ footer {
     border: var(--border-width) solid var(--frozen-juniper);
     box-shadow: 10px 10px 0 var(--long-black);
     color: var(--extra-foam);
-    text-align: left;
+    text-align: center;
     padding: 3.5rem 3rem;
     transform: rotate(-0.5deg);
     position: relative;
@@ -418,8 +418,10 @@ footer {
 
 .charity-section .statement {
     color: var(--flat-white);
-    max-width: 14ch;
-    margin-bottom: 0;
+    max-width: 100%;
+    margin: 0 auto 1rem;
+    text-align: center;
+    transform: rotate(-1deg);
 }
 
 /* The text was centred inside its column, which read as misaligned next
@@ -428,8 +430,8 @@ footer {
     font-size: 1.08rem;
     font-weight: 600;
     max-width: 58ch;
-    margin: 0 0 2rem 0;
-    text-align: left;
+    margin: 0 auto 2rem;
+    text-align: center;
     color: var(--extra-foam);
 }
 
@@ -455,15 +457,15 @@ footer {
 .span-all { grid-column: 1 / -1; }
 
 .charity-section .legal-note {
-    margin: 2.5rem 0 0 0;
+    margin: 2.5rem auto 0;
     padding-top: 1.5rem;
     border-top: 2px dashed rgba(185, 204, 204, 0.25);
     font-family: var(--font-mono);
     font-size: 0.82rem;
     font-weight: 400;
     line-height: 1.7;
-    text-align: left;
-    max-width: 78ch;
+    text-align: center;
+    max-width: 70ch;
     color: rgba(218, 210, 202, 0.72);
 }
 
@@ -471,3 +473,10 @@ footer {
     .charity-section { padding: 2rem 1.25rem; transform: none; }
     .charity-section .statement { max-width: none; }
 }
+
+
+/* Everything in the adopt box sits centred in a single column. */
+.charity-section.split-asym--flip {
+    display: block;
+}
+.charity-section .charity-btn { margin: 0 auto; }

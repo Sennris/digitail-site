@@ -500,3 +500,145 @@ footer {
     .player-card:nth-child(even) { transform: rotate(0deg) !important; }
     .player-card:hover { transform: translate(0, -4px) !important; }
 }
+
+
+/* ==========================================================================
+   TEAM BIO MODAL
+   ==========================================================================
+   Same pattern as the devlogs page, so both behave identically.
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(29, 13, 18, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    border: 3px solid #1D0D12;
+    box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 3rem 2rem;
+    position: relative;
+    color: #1D0D12;
+    transform: scale(0.95) rotate(1deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) rotate(-0.5deg);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #5DCCCA;
+    border: 3px solid #1D0D12;
+    color: #1D0D12;
+    width: 40px;
+    height: 40px;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #1D0D12;
+    transition: all 0.1s ease;
+}
+
+.modal-close-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #1D0D12;
+    background: #DAD2CA;
+}
+
+.modal-header {
+    margin-bottom: 2rem;
+    border-bottom: 3px dashed #1D0D12;
+    padding-bottom: 1rem;
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    margin: 0;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.modal-date {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    opacity: 0.8;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.modal-body p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+.modal-body pre {
+    background: #1D0D12;
+    color: #5DCCCA;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    border: 2px dashed rgba(185, 204, 204, 0.4);
+    margin-bottom: 1.5rem;
+}
+
+.modal-body .image-placeholder {
+    min-height: 250px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.modal-content { padding: 3rem 1.5rem; width: 95%; }
+
+.modal-title { font-size: 2rem; }
+
+.modal-avatar {
+    width: 100%;
+    max-width: 260px;
+    aspect-ratio: 1;
+    margin: 0 auto 1.5rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.modal-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* The bio panel is gone now that bios open in a modal. */
+.card-back { display: none !important; }

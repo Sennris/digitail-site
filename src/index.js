@@ -46,6 +46,8 @@ async function getDevlogs(db) {
     return rows.map((r) => ({
         id: r.id, sortDate: r.sort_date, displayDate: r.display_date,
         tags: tagsById.get(r.id) || [],
+        primaryTag: r.primary_tag || '',
+        secondaryTag: r.secondary_tag || '',
         titleEn: r.title_en, titleMi: r.title_mi,
         snippetEn: r.snippet_en, snippetMi: r.snippet_mi,
         contentEn: r.content_en, contentMi: r.content_mi, image: r.image,
@@ -92,7 +94,8 @@ async function getSocial(db) {
 async function getTags(db) {
     const { results } = await db.prepare('SELECT * FROM tags ORDER BY id').all();
     return results.map((r) => ({
-        id: r.id, name: r.name, color: r.color, category: r.category,
+        id: r.id, name: r.name, color: r.color,
+        category: r.category, kind: r.kind || 'secondary',
     }));
 }
 
@@ -155,6 +158,59 @@ async function handleAuth(request, env, parts) {
             .bind(email, hash, salt).run();
 
         return json({ ok: true, email }, 200, NO_CACHE);
+    }
+
+    // Managing admin accounts. Requires an existing login, unlike setup.
+    if (action === 'users') {
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        if (request.method === 'GET') {
+            const { results } = await env.DB
+                .prepare('SELECT id, email, created_at FROM admin_users ORDER BY id').all();
+            return json(results.map((r) => ({
+                id: r.id, email: r.email, createdAt: r.created_at,
+                isYou: r.email === session.email,
+            })), 200, NO_CACHE);
+        }
+
+        if (request.method === 'POST') {
+            let body;
+            try { body = await request.json(); } catch { return fail('Invalid request body'); }
+            const email = String(body.email || '').trim().toLowerCase();
+            const password = String(body.password || '');
+
+            if (!email.includes('@')) return fail('That does not look like an email address');
+            if (password.length < 10) return fail('Use at least 10 characters');
+
+            const exists = await env.DB
+                .prepare('SELECT id FROM admin_users WHERE email = ?').bind(email).first();
+            if (exists) return fail('That email already has an account', 409);
+
+            const { hash, salt } = await hashPassword(password, undefined, env.SESSION_SECRET);
+            await env.DB
+                .prepare('INSERT INTO admin_users (email, password_hash, salt) VALUES (?,?,?)')
+                .bind(email, hash, salt).run();
+            return json({ ok: true, email }, 200, NO_CACHE);
+        }
+
+        if (request.method === 'DELETE') {
+            const id = Number(parts[3]);
+            const target = await env.DB
+                .prepare('SELECT email FROM admin_users WHERE id = ?').bind(id).first();
+            if (!target) return fail('No such account', 404);
+            if (target.email === session.email) {
+                return fail('You cannot remove your own account while signed in.', 400);
+            }
+            const { n } = await env.DB
+                .prepare('SELECT COUNT(*) AS n FROM admin_users').first();
+            if (n <= 1) return fail('There has to be at least one admin account.', 400);
+
+            await env.DB.prepare('DELETE FROM admin_users WHERE id = ?').bind(id).run();
+            return json({ ok: true, removed: target.email }, 200, NO_CACHE);
+        }
+
+        return fail('Method not allowed', 405);
     }
 
     if (action === 'logout') {

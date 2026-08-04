@@ -606,3 +606,61 @@ One failure, now fixed: the bio hint was 0.66rem at 55% opacity, giving
 WCAG 2.2 requires 24x24 CSS pixels minimum on interactive elements. Nav
 links, buttons and the paws were all under. Now enforced in `core.css`
 section 24.
+
+---
+
+## Phase 6.2: the fix list
+
+### 1. Click anywhere on a card
+
+`assets/js/card-click.js`. Every card on every page opens when clicked
+anywhere, and the button keeps doing exactly what it did. Three rules
+stop this being annoying:
+
+* a click on a real link or button is left alone, so nested links go
+  where they say
+* a click that follows a text selection is ignored, so you can still
+  select and copy from a card
+* the card is never given a fake button role, so keyboard users tab to
+  the real button as before
+
+### 2. Adopt box centred
+
+`.charity-section` is a single centred column now instead of two.
+
+### 3. Ticker
+
+It wasn't broken, your data was older than the feature. Homepage settings
+saved before the ticker existed have no `ticker` key, so the strip stayed
+hidden. It now falls back to defaults when the key is missing. Open the
+admin homepage tab and hit **Save to site** once and your own version is
+stored properly.
+
+### 4. Team bios open in a modal
+
+Same pattern as the devlogs page, so both behave identically. The card
+flip is gone. Escape closes, clicking the backdrop closes, focus returns
+to where it was.
+
+### 5. Two-axis devlog tags
+
+| | what it is | looks like |
+|---|---|---|
+| **Primary** | which game, or studio news | solid teal, hard shadow |
+| **Secondary** | what kind of update | dashed teal outline |
+
+Managed in the admin under **Tags**: two lists, rename, recolour, add and
+remove. Each devlog form has a picker for each. Your existing tags were
+promoted rather than replaced — the ones under the `devlog` category
+became secondary tags, since that is what they already were, and `News`
+became a primary tag called `Studio News`. Nothing was deleted.
+
+Add your game as a primary tag once it has a name.
+
+### 6. Admin accounts
+
+Admin panel, **Settings**: lists everyone with access, add by email and
+password, remove anyone but yourself. Two guards in the API: you cannot
+delete your own account while signed in, and you cannot delete the last
+remaining one. Account changes apply immediately, no "Save to site"
+needed.

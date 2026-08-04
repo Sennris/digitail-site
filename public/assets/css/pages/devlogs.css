@@ -346,3 +346,35 @@ footer {
             .modal-title { font-size: 2rem; }
         }
 
+
+
+/* ==========================================================================
+   TWO-AXIS TAGS
+   ==========================================================================
+   Primary = what the post is about (a game, or studio news).
+   Secondary = what kind of update it is.
+   They need to look different or the distinction is invisible.
+   ========================================================================== */
+
+.tag-badge--primary {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border: 2px solid var(--long-black);
+    font-weight: 800;
+    box-shadow: 2px 2px 0 var(--long-black);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tag-badge--secondary {
+    background: transparent;
+    color: var(--frozen-juniper);
+    border: 2px dashed var(--frozen-juniper);
+    font-weight: 700;
+}
+
+.tag-badge--primary,
+.tag-badge--secondary {
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+}

@@ -50,8 +50,7 @@
                                 <span class="mi">${member.roleMi || member.roleEn}</span>
                             </p>
                             <button type="button" class="flip-hint"
-                                    aria-expanded="false"
-                                    aria-controls="bio-${cardNo}">
+                                    aria-haspopup="dialog">
                                 <span class="en">read bio</span>
                                 <span class="mi">pānui kōrero</span>
                             </button>
@@ -69,21 +68,13 @@
                             </div>
                         </div>
                     `;
-                    const flipBtn = card.querySelector('.flip-hint');
-                    function setFlipped(on) {
-                        card.classList.toggle('flipped', on);
-                        if (flipBtn) flipBtn.setAttribute('aria-expanded', String(on));
-                    }
-                    if (flipBtn) {
-                        flipBtn.addEventListener('click', (e) => {
+                    const bioBtn = card.querySelector('.flip-hint');
+                    if (bioBtn) {
+                        bioBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            setFlipped(!card.classList.contains('flipped'));
+                            openTeamModal(member);
                         });
                     }
-                    // Clicking anywhere on the card still works for mouse users
-                    card.addEventListener('click', () => {
-                        setFlipped(!card.classList.contains('flipped'));
-                    });
 
                     teamGrid.appendChild(card);
                 });
@@ -135,3 +126,49 @@
                 });
             });
         });
+
+
+/* ------------------------------------------------------------------
+   Team bio modal. Same pattern as the devlogs page so the two pages
+   behave identically.
+   ------------------------------------------------------------------ */
+const teamModal = document.getElementById('team-modal');
+
+function openTeamModal(member) {
+    if (!teamModal) return;
+
+    teamModal.querySelector('.modal-title .en').innerText = member.nameEn || '';
+    teamModal.querySelector('.modal-title .mi').innerText = member.nameMi || member.nameEn || '';
+
+    const role = teamModal.querySelector('.modal-date');
+    role.innerHTML = '<span class="en">' + (member.roleEn || '') + '</span>'
+                   + '<span class="mi">' + (member.roleMi || member.roleEn || '') + '</span>';
+
+    const avatar = member.avatar
+        ? '<div class="modal-avatar"><img src="' + member.avatar + '" alt="' + (member.nameEn || '') + '"></div>'
+        : '';
+
+    teamModal.querySelector('#team-modal-body').innerHTML =
+        avatar
+        + '<p><span class="en">' + (member.bioEn || '') + '</span>'
+        + '<span class="mi">' + (member.bioMi || member.bioEn || '') + '</span></p>';
+
+    teamModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTeamModal() {
+    if (!teamModal) return;
+    teamModal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+if (teamModal) {
+    teamModal.querySelector('.modal-close-btn').addEventListener('click', closeTeamModal);
+    teamModal.addEventListener('click', (e) => {
+        if (e.target === teamModal) closeTeamModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && teamModal.classList.contains('active')) closeTeamModal();
+    });
+}

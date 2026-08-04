@@ -36,11 +36,20 @@
                     const card = document.createElement('div');
                     card.className = 'card devlog-card';
                     
-                    const tagsString = log.tags.map(t => t.toLowerCase()).join(', ');
+                    const tagsString = [log.primaryTag, log.secondaryTag, ...(log.tags || [])]
+                        .filter(Boolean).map(t => t.toLowerCase()).join(', ');
                     card.setAttribute('data-tags', tagsString);
                     card.setAttribute('data-date', log.sortDate);
 
-                    const tagsHTML = log.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('');
+                    // Primary tag reads as the subject, secondary as the update type.
+                    const primaryHTML = log.primaryTag
+                        ? `<span class="tag-badge tag-badge--primary">${log.primaryTag}</span>` : '';
+                    const secondaryHTML = log.secondaryTag
+                        ? `<span class="tag-badge tag-badge--secondary">${log.secondaryTag}</span>` : '';
+                    const legacyHTML = (log.tags || [])
+                        .filter(t => t !== log.primaryTag && t !== log.secondaryTag)
+                        .map(tag => `<span class="tag-badge">${tag}</span>`).join('');
+                    const tagsHTML = primaryHTML + secondaryHTML + legacyHTML;
 
                     // The Smart Image Fix
                     const cardImageHTML = log.image ? `<div class="image-placeholder">${log.image}</div>` : '';
