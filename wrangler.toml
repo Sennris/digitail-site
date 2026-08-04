@@ -14,7 +14,6 @@ binding = "DB"
 database_name = "digitail"
 database_id = "bcecdc93-fc38-4ef3-a1f0-516b6f08a0a1"
 
-# Phase 3 will add the R2 bucket here:
-# [[r2_buckets]]
-# binding = "MEDIA"
-# bucket_name = "digitail-media"
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "digitail-media"

@@ -222,3 +222,47 @@ npx wrangler d1 execute digitail --remote --command="DELETE FROM admin_users"
 python3 tools/verify_api.py    # API output matches the original files
 python3 tools/test_writes.py   # saving and reloading preserves everything
 ```
+
+---
+
+## Phase 3: image uploads
+
+Images live in an R2 bucket and are served back through the Worker at
+`/media/<key>`. No second domain, no public bucket to configure.
+
+### Using it
+
+Every image field in the admin panel now has an **Upload image** button
+and a **Library** button. You can also drag a file straight onto the
+field. The URL fills itself in.
+
+The Library lets you reuse anything already uploaded.
+
+### Compression
+
+Images are resized and converted to WebP **in your browser** before
+upload: longest side capped at 1600px, quality 0.85. A 6MB phone photo
+lands as roughly 200KB. If WebP comes out larger than the original, the
+original is kept instead.
+
+GIFs are passed through untouched so animation survives.
+
+### Caching
+
+Object keys include a hash of the file contents, so the same URL always
+means the same bytes. They're served `immutable` with a one year cache
+and answer conditional requests with a 304.
+
+### API
+
+| Method | URL | Auth |
+|---|---|---|
+| POST | `/api/media/upload` | login required |
+| GET | `/api/media` | login required |
+| DELETE | `/api/media/<id>` | login required |
+| GET | `/media/<key>` | public |
+
+### Limits
+
+10MB per file, JPG / PNG / WebP / GIF / AVIF. R2's free tier gives you
+10GB, which at ~200KB per image is somewhere north of 40,000 pictures.

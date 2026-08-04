@@ -12,6 +12,7 @@ import {
     sessionCookie, clearCookie, isRateLimited, logAttempt,
 } from './auth.js';
 import { WRITERS } from './writers.js';
+import { handleUpload, handleList, handleDelete, serveMedia } from './media.js';
 
 const JSON_HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
@@ -186,6 +187,23 @@ async function handleApi(request, env, url) {
 
     if (parts[1] === 'auth') return handleAuth(request, env, parts);
 
+    if (parts[1] === 'media') {
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        if (parts[2] === 'upload' && request.method === 'POST') {
+            try {
+                return await handleUpload(request, env);
+            } catch (e) {
+                return fail(`Upload failed: ${e.message}`, 500);
+            }
+        }
+        if (!parts[2] && request.method === 'GET') return handleList(env);
+        if (parts[2] && request.method === 'DELETE') return handleDelete(env, Number(parts[2]));
+
+        return fail('Unknown media action', 404);
+    }
+
     if (parts[1] === 'content' && parts[2]) {
         const type = parts[2];
 
@@ -234,6 +252,10 @@ export default {
 
         if (url.pathname.startsWith('/api/')) {
             return handleApi(request, env, url);
+        }
+
+        if (url.pathname.startsWith('/media/')) {
+            return serveMedia(request, env, url);
         }
 
         // Gate the admin panel. The login page itself stays public.
