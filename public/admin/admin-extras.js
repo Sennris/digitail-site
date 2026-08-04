@@ -85,7 +85,11 @@
     }
 
     function mountTagManager() {
-        const tab = document.getElementById('tags-tab') || document.getElementById('settings-tab');
+        // These are devlog tags, so they live on the devlogs tab. There is
+        // no tags-tab or settings-tab in this admin; looking for those was
+        // why this panel never appeared.
+        const tab = document.getElementById('devlogs-tab')
+                 || document.querySelector('[id$="-tab"]');
         if (!tab || document.getElementById('tag-kinds-panel')) return;
 
         const panel = document.createElement('div');
@@ -234,8 +238,8 @@
     }
 
     function mountUsers() {
-        const tab = document.getElementById('settings-tab')
-                 || document.getElementById('homepage-tab');
+        const tab = document.getElementById('homepage-tab')
+                 || document.querySelector('[id$="-tab"]');
         if (!tab || document.getElementById('admin-users-panel')) return;
 
         const panel = document.createElement('div');

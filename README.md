@@ -692,3 +692,41 @@ Two fixes:
 Rule for anything added later: **a MutationObserver callback must never
 write to the DOM unconditionally.** Check first, or disconnect while
 writing.
+
+---
+
+## Phase 6.4
+
+### Tag manager was invisible
+
+It looked for a `tags-tab` or `settings-tab`. Neither exists — the tabs
+are devlogs, foxes, game, homepage, social and team. The panel mounts on
+the **devlogs tab** now, which is where you'd look for devlog tags
+anyway. Admin accounts are on the **homepage tab**.
+
+Both fall back to the first `*-tab` element they find, so renaming a tab
+won't make them vanish again.
+
+### A missed migration no longer blocks every save
+
+Saving writes all collections in one go, so a missing column in `devlogs`
+stopped foxes, team, tags, homepage and the ticker from saving too. One
+unrun migration bricked the whole admin.
+
+`putDevlogs` and `putTags` now catch a missing-column error, retry
+without the new fields, and report what needs running. You lose the two
+tags until the migration is applied; you don't lose the ability to save.
+
+### Migrations to run
+
+Check what your database has:
+
+```
+npx wrangler d1 execute digitail --remote --command="SELECT name FROM pragma_table_info('devlogs')"
+```
+
+If `primary_tag` isn't listed:
+
+```
+npx wrangler d1 execute digitail --remote --file=./migrations/0005_tags_and_users.sql
+```

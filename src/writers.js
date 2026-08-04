@@ -12,26 +12,32 @@ const s = (v) => (v === undefined || v === null ? '' : String(v));
 const n = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
 
-export async function putDevlogs(db, items) {
-    if (!Array.isArray(items)) throw new Error('Expected an array of devlogs');
-
+function devlogStatements(db, items, withNewTags) {
     const stmts = [
         db.prepare('DELETE FROM devlog_tags'),
         db.prepare('DELETE FROM devlogs'),
     ];
 
     for (const d of items) {
-        stmts.push(
-            db.prepare(
+        stmts.push(withNewTags
+            ? db.prepare(
                 `INSERT INTO devlogs (id, sort_date, display_date, title_en, title_mi,
                  snippet_en, snippet_mi, content_en, content_mi, image,
                  primary_tag, secondary_tag, published, updated_at)
                  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
-            ).bind(
+              ).bind(
                 n(d.id), s(d.sortDate), s(d.displayDate), s(d.titleEn), s(d.titleMi),
                 s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image),
                 s(d.primaryTag), s(d.secondaryTag)
-            )
+              )
+            : db.prepare(
+                `INSERT INTO devlogs (id, sort_date, display_date, title_en, title_mi,
+                 snippet_en, snippet_mi, content_en, content_mi, image, published, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
+              ).bind(
+                n(d.id), s(d.sortDate), s(d.displayDate), s(d.titleEn), s(d.titleMi),
+                s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image)
+              )
         );
         (d.tags || []).forEach((tag, i) => {
             stmts.push(
@@ -40,8 +46,25 @@ export async function putDevlogs(db, items) {
             );
         });
     }
+    return stmts;
+}
 
-    await db.batch(stmts);
+export async function putDevlogs(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of devlogs');
+
+    try {
+        await db.batch(devlogStatements(db, items, true));
+    } catch (e) {
+        // If migration 0005 hasn't been run yet, primary_tag doesn't exist.
+        // Saving everything else still has to work, so fall back rather than
+        // blocking the whole save.
+        if (!/no column named (primary|secondary)_tag/i.test(e.message)) throw e;
+        await db.batch(devlogStatements(db, items, false));
+        throw new Error(
+            'Saved, but the two-tag columns are missing. Run: ' +
+            'npx wrangler d1 execute digitail --remote --file=./migrations/0005_tags_and_users.sql'
+        );
+    }
     return items.length;
 }
 
@@ -114,15 +137,27 @@ export async function putSocial(db, items) {
 
 export async function putTags(db, items) {
     if (!Array.isArray(items)) throw new Error('Expected an array of tags');
-    const stmts = [db.prepare('DELETE FROM tags')];
-    for (const t of items) {
-        stmts.push(
-            db.prepare('INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)')
-              .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
-                    s(t.category) || 'general', s(t.kind) || 'secondary')
-        );
+
+    const build = (withKind) => {
+        const stmts = [db.prepare('DELETE FROM tags')];
+        for (const t of items) {
+            stmts.push(withKind
+                ? db.prepare('INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)')
+                    .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general', s(t.kind) || 'secondary')
+                : db.prepare('INSERT INTO tags (id, name, color, category) VALUES (?,?,?,?)')
+                    .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general'));
+        }
+        return stmts;
+    };
+
+    try {
+        await db.batch(build(true));
+    } catch (e) {
+        if (!/no column named kind/i.test(e.message)) throw e;
+        await db.batch(build(false));
     }
-    await db.batch(stmts);
     return items.length;
 }
 
