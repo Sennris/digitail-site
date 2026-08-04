@@ -256,3 +256,180 @@ footer {
             .top-bar { padding: 1rem; }
         }
 
+
+
+/* ==========================================================================
+   TEAM CARDS - collectible card treatment
+   ==========================================================================
+   These are already called "player cards", so lean into it properly:
+   a numbered collectible with a foil sweep, a role badge and a rarity
+   stripe, rather than a plain box with a photo in it.
+   ========================================================================== */
+
+.team-grid {
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 2.5rem 2rem;
+}
+
+.player-card {
+    background: var(--arctic-willow);
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    min-height: 0;
+    overflow: visible;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.22s ease;
+}
+
+/* Each card takes a different colourway, like a set */
+.player-card:nth-child(3n+2) { background: var(--flat-white); }
+.player-card:nth-child(3n+3) { background: var(--extra-foam); }
+
+.player-card:nth-child(odd)  { transform: rotate(-1.4deg); }
+.player-card:nth-child(even) { transform: rotate(1.4deg); }
+
+.player-card:hover {
+    transform: translate(-5px, -7px) rotate(0deg) scale(1.03) !important;
+    box-shadow: var(--shadow-xl);
+    border-color: var(--long-black);
+    z-index: 3;
+}
+
+/* Rarity stripe across the top */
+.player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 9px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--frozen-juniper) 0 18px,
+        var(--long-black) 18px 24px
+    );
+    border-bottom: var(--border-width) solid var(--long-black);
+    border-radius: 5px 5px 0 0;
+}
+
+/* Foil sweep on hover */
+.player-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background: linear-gradient(
+        115deg,
+        transparent 38%,
+        rgba(255, 255, 255, 0.55) 47%,
+        rgba(93, 204, 202, 0.35) 52%,
+        transparent 62%
+    );
+    background-size: 280% 280%;
+    background-position: 120% 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: background-position 0.65s ease, opacity 0.25s ease;
+    z-index: 4;
+}
+
+.player-card:hover::after {
+    opacity: 1;
+    background-position: -40% 0;
+}
+
+.card-front { padding: 1.9rem 1.4rem 1.5rem; }
+
+/* Collector number, hangs off the corner */
+.player-number {
+    position: absolute;
+    top: -0.85rem;
+    left: -0.85rem;
+    z-index: 6;
+    background: var(--long-black);
+    color: var(--frozen-juniper);
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.6rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    transform: rotate(-8deg);
+}
+
+.player-avatar {
+    height: 210px;
+    border: var(--border-width) solid var(--long-black);
+    background-color: rgba(29, 13, 18, 0.08);
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(29, 13, 18, 0.08) 0 9px,
+        transparent 9px 18px
+    );
+    color: var(--long-black);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.player-avatar::after {
+    content: '🐾';
+    position: absolute;
+    bottom: 0.4rem;
+    right: 0.6rem;
+    font-size: 1.3rem;
+    opacity: 0.3;
+    transform: rotate(-14deg);
+}
+
+.player-card:hover .player-avatar { border-color: var(--long-black); }
+
+/* Role sits on a badge that straddles the photo edge */
+.card-front p {
+    position: absolute;
+    top: 218px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    background: var(--long-black);
+    color: var(--frozen-juniper);
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.45);
+    white-space: nowrap;
+    margin: 0;
+}
+
+.card-front h3 {
+    font-size: 2.1rem;
+    letter-spacing: -0.02em;
+    margin-top: 0.4rem;
+}
+
+/* Flip hint, so it's obvious there's more */
+.flip-hint {
+    display: block;
+    margin-top: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.55;
+    color: var(--long-black);
+}
+
+.player-card:hover .flip-hint { opacity: 0.9; }
+
+@media (max-width: 768px) {
+    .player-card,
+    .player-card:nth-child(odd),
+    .player-card:nth-child(even) { transform: rotate(0deg) !important; }
+    .player-card:hover { transform: translate(0, -4px) !important; }
+}

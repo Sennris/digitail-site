@@ -28,15 +28,17 @@
             })
             .then(members => {
                 teamGrid.innerHTML = '';
-                members.forEach(member => {
+                members.forEach((member, index) => {
                     const card = document.createElement('div');
                     card.className = 'player-card';
+                    const cardNo = String(index + 1).padStart(2, '0');
                     
                     const avatarHTML = member.avatar 
                         ? '<img src="' + member.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">'
-                        : '[ Image ]';
+                        : '<span class="en">[ photo soon ]</span><span class="mi">[ pikitia ā muri ]</span>';
                     
                     card.innerHTML = `
+                        <div class="player-number">#${cardNo}</div>
                         <div class="card-front">
                             <div class="player-avatar">${avatarHTML}</div>
                             <h3>
@@ -47,6 +49,10 @@
                                 <span class="en">${member.roleEn}</span>
                                 <span class="mi">${member.roleMi || member.roleEn}</span>
                             </p>
+                            <span class="flip-hint">
+                                <span class="en">click for bio</span>
+                                <span class="mi">pāwhiri mō te kōrero</span>
+                            </span>
                         </div>
                         <div class="card-back">
                             <div class="stat-row">
