@@ -64,7 +64,7 @@
         }
 
         // --- FETCH HOMEPAGE CONTENT FROM JSON ---
-        fetch('homepage.json')
+        fetch('/api/content/homepage')
             .then(response => response.json())
             .then(data => {
                 // Hero section
@@ -174,7 +174,7 @@
             .catch(error => console.error('Error fetching homepage data:', error));
 
         // --- FETCH LATEST DEVLOG FOR HOMEPAGE ---
-        fetch('devlogs.json')
+        fetch('/api/content/devlogs')
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
@@ -192,7 +192,7 @@
             .catch(error => console.error('Error fetching latest devlog:', error));
 
         // --- FETCH LATEST SOCIAL POST FOR HOMEPAGE ---
-        fetch('social.json')
+        fetch('/api/content/social')
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
@@ -215,7 +215,7 @@
             .catch(error => console.error('Error fetching social posts:', error));
 
         // --- FETCH LATEST FOX FOR HOMEPAGE ---
-        fetch('foxes.json')
+        fetch('/api/content/foxes')
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {

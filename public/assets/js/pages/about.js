@@ -21,7 +21,7 @@
 
         // --- FETCH TEAM DATA FROM JSON ---
         const teamGrid = document.getElementById('team-grid');
-        fetch('team.json')
+        fetch('/api/content/team')
             .then(response => {
                 if (!response.ok) throw new Error("team.json not found");
                 return response.json();

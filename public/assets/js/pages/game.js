@@ -17,7 +17,7 @@ const langToggleBtn = document.getElementById('lang-toggle-btn');
         });
 
         // --- FETCH GAME DATA FROM JSON ---
-        fetch('game.json')
+        fetch('/api/content/game')
             .then(response => {
                 if (!response.ok) throw new Error("game.json not found");
                 return response.json();

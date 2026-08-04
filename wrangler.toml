@@ -1,17 +1,20 @@
 name = "digitail-studios"
+main = "src/index.js"
 compatibility_date = "2026-08-01"
 
+# Static files. The Worker hands anything that isn't /api/* straight here.
 [assets]
 directory = "./public"
+binding = "ASSETS"
 not_found_handling = "404-page"
 
-# Phase 1 will add the D1 binding here:
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "digitail"
-# database_id = "<filled in after you create the database>"
+# Content database
+[[d1_databases]]
+binding = "DB"
+database_name = "digitail"
+database_id = "bcecdc93-fc38-4ef3-a1f0-516b6f08a0a1"
 
-# Phase 3 will add the R2 binding here:
+# Phase 3 will add the R2 bucket here:
 # [[r2_buckets]]
 # binding = "MEDIA"
 # bucket_name = "digitail-media"

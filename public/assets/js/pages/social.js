@@ -102,7 +102,7 @@
         }
 
         // 4. Fetch social.json
-        fetch('social.json')
+        fetch('/api/content/social')
             .then(response => {
                 if (!response.ok) throw new Error("social.json not found");
                 return response.json();

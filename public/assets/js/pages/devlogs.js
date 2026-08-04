@@ -25,7 +25,7 @@
         let currentFilter = 'all';
 
         // Load the database
-        fetch('devlogs.json')
+        fetch('/api/content/devlogs')
             .then(response => {
                 if (!response.ok) throw new Error("JSON file not found");
                 return response.json();

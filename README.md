@@ -126,3 +126,42 @@ Build settings:
 | 4 | Newsletter in D1 | |
 | 5 | Design punch-up | |
 | 6 | SEO, analytics, accessibility, backups | |
+
+---
+
+## Phase 1: the content database
+
+Content now lives in Cloudflare D1 instead of `.json` files.
+
+### API endpoints (read only for now)
+
+| URL | Returns |
+|---|---|
+| `/api/content/devlogs` | all published devlogs, newest first |
+| `/api/content/foxes` | adopted foxes |
+| `/api/content/team` | the pack |
+| `/api/content/social` | social posts, newest first |
+| `/api/content/tags` | tag definitions |
+| `/api/content/homepage` | homepage config, mascot, announcement, links |
+| `/api/content/game` | game info |
+| `/api/health` | quick check that the Worker is alive |
+
+Each returns exactly the same JSON shape the old files did. That is
+verified by `tools/verify_api.py`, which rebuilds the database locally
+and deep-diffs every endpoint against the original file.
+
+### Files
+
+```
+src/index.js                 the Worker: API plus static asset serving
+migrations/0001_initial.sql  schema
+migrations/0002_seed.sql     your existing content, generated
+tools/make_seed.py           regenerates the seed from .json files
+tools/verify_api.py          proves API output matches the old files
+```
+
+### The old .json files
+
+They are still sitting in `public/` and nothing reads them anymore.
+Leave them there until the site is confirmed working on the database,
+then they can be deleted. They are your rollback.

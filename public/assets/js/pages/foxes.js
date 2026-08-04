@@ -37,7 +37,7 @@
             hiddenElements.forEach((el) => observer.observe(el));
         }
 
-        fetch('foxes.json')
+        fetch('/api/content/foxes')
             .then(response => {
                 if (!response.ok) throw new Error("JSON file not found");
                 return response.json();
