@@ -75,8 +75,8 @@ body {
     font-size: 1.02rem;
 
     /* Faint dot grid. Stops the background reading as an empty void. */
-    background-image: radial-gradient(rgba(185, 204, 204, 0.07) 1px, transparent 1px);
-    background-size: 26px 26px;
+    background-image: radial-gradient(rgba(185, 204, 204, 0.11) 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
 /* Film grain over the whole page. This is most of why it stops looking flat. */
@@ -86,8 +86,7 @@ body::after {
     inset: 0;
     pointer-events: none;
     z-index: 9998;
-    opacity: 0.32;
-    mix-blend-mode: overlay;
+    opacity: 0.10;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
@@ -591,9 +590,21 @@ footer {
 
 
 /* --------------------------------------------------------------------------
-   15. TOP BAR (three variants, they were three different components)
+   15. LANGUAGE TOGGLE IN THE NAV
+   This used to be an absolutely positioned .top-bar which now collides
+   with the sticky nav, so it lives inside the nav instead.
    -------------------------------------------------------------------------- */
 
+.nav-lang {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
+    box-shadow: 3px 3px 0 var(--long-black);
+    margin-left: 0.5rem;
+}
+
+.nav-lang:hover { transform: translate(-1px, -1px) rotate(-2deg); }
+
+/* Kept for the thank-you page, which has no nav */
 .top-bar {
     position: absolute;
     top: 0;
@@ -603,7 +614,6 @@ footer {
     padding: 1.5rem 2rem;
     z-index: 1000;
 }
-
 .top-bar--split  { justify-content: space-between; }
 .top-bar--inline { position: static; padding: 1rem; }
 
@@ -671,4 +681,141 @@ textarea:focus-visible {
     .container { padding-top: 2.5rem; }
     .site-nav { padding: 0.55rem 0.85rem; }
     .site-nav a.nav-link { font-size: 0.72rem; padding: 0.3rem 0.45rem; }
+}
+
+
+/* ==========================================================================
+   18. ASYMMETRY
+   ==========================================================================
+   Deliberately off-balance layouts. Nothing sits in a neat centred column.
+   ========================================================================== */
+
+/* Two columns that refuse to be equal, and offset vertically. */
+.split-asym {
+    display: grid;
+    grid-template-columns: 1.35fr 0.85fr;
+    gap: 3rem;
+    align-items: start;
+}
+.split-asym > *:nth-child(2) { margin-top: 4.5rem; }
+
+.split-asym--flip { grid-template-columns: 0.85fr 1.35fr; }
+.split-asym--flip > *:nth-child(1) { margin-top: 4.5rem; }
+.split-asym--flip > *:nth-child(2) { margin-top: 0; }
+
+/* Nudge a block sideways out of the column. */
+.offset-left  { margin-left: -3.5rem; }
+.offset-right { margin-right: -3.5rem; margin-left: 3.5rem; }
+.offset-down  { margin-top: 3rem; }
+
+/* A stack where every item steps further across the page. */
+.stack-drift > *:nth-child(1) { margin-left: 0; }
+.stack-drift > *:nth-child(2) { margin-left: 4%; }
+.stack-drift > *:nth-child(3) { margin-left: 8%; }
+.stack-drift > *:nth-child(4) { margin-left: 4%; }
+.stack-drift > *:nth-child(5) { margin-left: 10%; }
+.stack-drift > *:nth-child(6) { margin-left: 2%; }
+.stack-drift > * { max-width: 88%; }
+
+/* Big off-centre statement heading with a slab behind part of it. */
+.statement {
+    font-family: var(--font-display);
+    font-size: var(--size-xl);
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--flat-white);
+    max-width: 18ch;
+    margin: 0 0 1.5rem;
+    transform: rotate(-1.2deg);
+}
+.statement em {
+    font-style: normal;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    padding: 0 0.25em;
+    display: inline-block;
+    transform: rotate(1.8deg);
+    box-shadow: 4px 4px 0 var(--long-black);
+}
+.statement--right { margin-left: auto; text-align: right; transform: rotate(1deg); }
+
+/* Corner label, sits half outside whatever it's pinned to. */
+.sticker-label {
+    position: absolute;
+    top: -1.1rem;
+    right: -1.1rem;
+    z-index: 5;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.35rem;
+    padding: 0.2rem 0.75rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 4px;
+    box-shadow: 4px 4px 0 var(--long-black);
+    transform: rotate(6deg);
+    pointer-events: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   19. FOX PHOTO + YEAR STICKER
+   The year used to sit inside the photo box. It now hangs off the corner.
+   -------------------------------------------------------------------------- */
+
+.fox-photo-wrap {
+    position: relative;
+    margin-bottom: 1.4rem;
+}
+
+.fox-photo-wrap .image-placeholder { margin-bottom: 0; }
+
+.year-badge {
+    position: absolute;
+    top: -1.1rem;
+    right: -1.1rem;
+    z-index: 5;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+    padding: 0.15rem 0.8rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 4px;
+    box-shadow: 4px 4px 0 var(--long-black);
+    transform: rotate(6deg);
+}
+
+
+/* --------------------------------------------------------------------------
+   20. COMMUNITY LINK ROWS
+   Full-width identical grey bars were the flattest thing on the homepage.
+   -------------------------------------------------------------------------- */
+
+.community-link {
+    position: relative;
+    border-left: 10px solid var(--frozen-juniper);
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.16s ease;
+}
+.community-link:nth-child(2n) { border-left-color: var(--flat-white); }
+.community-link:nth-child(3n) { border-left-color: var(--arctic-willow); }
+
+.community-link:hover {
+    transform: translateX(10px) rotate(-0.6deg);
+    box-shadow: var(--shadow-lg);
+}
+
+
+@media (max-width: 900px) {
+    .split-asym,
+    .split-asym--flip { grid-template-columns: 1fr; gap: 1.5rem; }
+    .split-asym > *,
+    .split-asym--flip > * { margin-top: 0 !important; }
+    .offset-left, .offset-right { margin-left: 0; margin-right: 0; }
+    .stack-drift > * { margin-left: 0 !important; max-width: 100%; }
+    .statement { max-width: none; transform: none; }
 }

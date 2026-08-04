@@ -22,21 +22,15 @@
         <a class="nav-link" href="foxes.html">foxes</a>
         <a class="nav-link" href="social.html">social</a>
         <a class="nav-link" href="about.html">about</a>
-    </nav>
-
-    <div class="ticker">
-        <div class="ticker__track">
-            <span>🦊 DEVLOGS EVERY WEEK</span><span>❄️ MADE IN ŌTAUTAHI</span><span>🎮 WISHLIST SOON</span><span>☕ POWERED BY LONG BLACKS</span><span>🐾 THREE PAWS HIDDEN ON THIS SITE</span>
-            <span>🦊 DEVLOGS EVERY WEEK</span><span>❄️ MADE IN ŌTAUTAHI</span><span>🎮 WISHLIST SOON</span><span>☕ POWERED BY LONG BLACKS</span><span>🐾 THREE PAWS HIDDEN ON THIS SITE</span>
-        </div>
-    </div>
- 
-
-    <div class="top-bar">
-        <button id="lang-toggle-btn" class="lang-toggle-btn">
+        <button id="lang-toggle-btn" class="btn-rugged nav-lang">
             🌐 <span class="en">Te Reo Māori</span><span class="mi">English</span>
         </button>
+    </nav>
+
+    <div class="ticker" id="site-ticker" hidden>
+        <div class="ticker__track" id="ticker-track"></div>
     </div>
+ 
 
     <div id="announcement-banner" class="announcement-banner"></div>
 
@@ -105,13 +99,13 @@
 
         <section class="alternating-row">
             <div class="text-side">
-                <div class="tagline">
-                    <span class="en">See whats happening in the den.<br>Join a community that actually gives a fox.</span>
-                    <span class="mi">Tirohia ngā mahi i te rua.<br>Hono mai ki tētahi hapori e aroha pono ana.</span>
+                <div class="statement">
+                    <span class="en">See what's happening<br>in the <em>den</em>.<br>Join a community that<br>actually gives a <em>fox</em>.</span>
+                    <span class="mi">Tirohia ngā mahi<br>i te <em>rua</em>.<br>Hono mai ki tētahi hapori<br>e <em>aroha pono</em> ana.</span>
                 </div>
             </div>
             
-            <div class="card-grid stagger" id="community-links-grid">
+            <div class="card-grid stagger stack-drift" id="community-links-grid">
                 <!-- Community link banners loaded dynamically from homepage.json -->
                 <div class="banner fade-in-section" style="transition-delay: 0.1s;">
                     <h4><span class="en">Loading...</span><span class="mi">E uta ana...</span></h4>

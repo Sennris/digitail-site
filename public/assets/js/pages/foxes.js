@@ -50,9 +50,11 @@
                     const imageHTML = fox.image ? fox.image : `<span class="en">[ Photo Placeholder ]</span><span class="mi">[ Pikitia Placeholder ]</span>`;
 
                     card.innerHTML = `
-                        <div class="image-placeholder card-image-source">
+                        <div class="fox-photo-wrap">
                             <div class="year-badge">${fox.year}</div>
-                            ${imageHTML}
+                            <div class="image-placeholder card-image-source">
+                                ${imageHTML}
+                            </div>
                         </div>
                         <h3>
                             <span class="en">${fox.nameEn}</span>

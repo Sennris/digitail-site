@@ -136,6 +136,21 @@
                     }
                 }
 
+                // Ticker strip, edited from the admin panel
+                const tickerEl = document.getElementById('site-ticker');
+                const trackEl = document.getElementById('ticker-track');
+                if (tickerEl && trackEl && data.ticker && data.ticker.enabled
+                    && Array.isArray(data.ticker.items) && data.ticker.items.length) {
+                    // duplicated so the scroll loops without a visible seam
+                    const once = data.ticker.items
+                        .map(t => '<span>' + t + '</span>').join('');
+                    trackEl.innerHTML = once + once;
+                    if (data.ticker.speed) {
+                        trackEl.style.animationDuration = data.ticker.speed + 's';
+                    }
+                    tickerEl.hidden = false;
+                }
+
                 // Community Links (card-grid banners)
                 if (data.communityLinks && data.communityLinks.length > 0) {
                     const grid = document.getElementById('community-links-grid');
@@ -148,7 +163,7 @@
                             const linkStyle = link.link ? ' display: block; text-decoration: none;' : '';
                             
                             const el = document.createElement(tag);
-                            el.className = 'banner fade-in-section';
+                            el.className = 'banner community-link fade-in-section';
                             el.style.cssText = 'transition-delay: ' + delay + 's;' + linkStyle;
                             if (link.link) el.href = link.link;
                             

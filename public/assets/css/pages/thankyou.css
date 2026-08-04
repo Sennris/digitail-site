@@ -1,5 +1,10 @@
 /* thankyou.html - page specific styles.
-   Shared design system lives in ../core.css */
+   Visual design lives in ../core.css. This file keeps layout,
+   structure and anything unique to this page. */
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
     --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -20,6 +25,33 @@ body {
     justify-content: center;
     min-height: 100vh;
 }
+
+body.lang-en .mi {
+    display: none;
+}
+
+body.lang-mi .en {
+    display: none;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.btn-rugged {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .thank-you-card {
     text-align: center;
     max-width: 600px;
@@ -33,16 +65,6 @@ body {
     color: #1D0D12;
     transform: rotate(-1deg);
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-0% {
-    transform: scale(0.8) rotate(-5deg);
-    opacity: 0;
-}
-
-100% {
-    transform: scale(1) rotate(-1deg);
-    opacity: 1;
 }
 
 .thank-you-card h1 {
@@ -83,6 +105,9 @@ body {
 .manual-link:hover {
     color: #5DCCCA;
 }
+
+
+/* ---- responsive and animation blocks ---- */
 
 @keyframes popIn {
             0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }

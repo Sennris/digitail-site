@@ -1,5 +1,10 @@
 /* social.html - page specific styles.
-   Shared design system lives in ../core.css */
+   Visual design lives in ../core.css. This file keeps layout,
+   structure and anything unique to this page. */
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
     --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -17,9 +22,32 @@ body {
     overflow-x: hidden;
 }
 
-.top-bar {
-    padding: 1rem;
+body.lang-en .mi {
+    display: none;
 }
+
+body.lang-mi .en {
+    display: none;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.btn-rugged {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .btn-rugged:hover, .btn-rugged.active {
     transform: translate(2px, 2px);
     box-shadow: 1px 1px 0px #1D0D12;
@@ -33,16 +61,31 @@ body {
 }
 
 .hero-section {
-    text-align: center;
     padding: 8vh 2rem;
-    border: 3px dashed rgba(185, 204, 204, 0.4);
-    border-radius: 4px;
     margin-bottom: 3rem;
-    transform: rotate(0.5deg);
 }
+
+.hero-section h1 {
+    margin-bottom: 0rem;
+}
+
+.hero-section p {
+    margin-top: 0;
+    max-width: 700px;
+    margin: 1rem auto 0 auto;
+}
+
 .controls-bar {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: rgba(185, 204, 204, 0.1);
+    border: 2px solid rgba(185, 204, 204, 0.2);
+    border-radius: 4px;
 }
 
 .filter-group {
@@ -77,11 +120,24 @@ body {
 }
 
 .social-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
 }
 
 .social-card {
-    transform: rotate(0deg) !important;
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    padding: 1.5rem;
+    border-radius: 4px;
+    border: 3px solid #1D0D12;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
+    transition: all 0.2s ease;
+    color: #1D0D12;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
 }
 
 .social-card:nth-child(even) {
@@ -216,9 +272,24 @@ body {
     transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     will-change: opacity, visibility;
 }
-@media (max-width: 768px) {
 
-.top-bar { padding: 1rem; }
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+footer {
+    padding: 3rem;
+    margin-top: 5rem;
+}
+
+
+/* ---- responsive and animation blocks ---- */
+
+@media (max-width: 768px) {
+            .hero-section h1 { font-size: 3rem; }
+            .top-bar { padding: 1rem; }
             .social-card { transform: rotate(0deg) !important; }
             .social-grid { grid-template-columns: 1fr; }
             .controls-bar { flex-direction: column; align-items: stretch; }

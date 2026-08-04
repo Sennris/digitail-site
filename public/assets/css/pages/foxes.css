@@ -1,5 +1,10 @@
 /* foxes.html - page specific styles.
-   Shared design system lives in ../core.css */
+   Visual design lives in ../core.css. This file keeps layout,
+   structure and anything unique to this page. */
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
     --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -17,9 +22,32 @@ body {
     overflow-x: hidden;
 }
 
-.top-bar {
-    padding: 1rem;
+body.lang-en .mi {
+    display: none;
 }
+
+body.lang-mi .en {
+    display: none;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.btn-rugged {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .btn-rugged:hover, .btn-rugged.active {
     transform: translate(2px, 2px);
     box-shadow: 1px 1px 0px #1D0D12;
@@ -33,27 +61,43 @@ body {
 }
 
 .hero-section {
-    text-align: center;
     padding: 8vh 2rem;
-    border: 3px dashed rgba(185, 204, 204, 0.4);
-    border-radius: 4px;
     margin-bottom: 4rem;
-    transform: rotate(-0.5deg);
 }
+
+.hero-section h1 {
+    margin-bottom: 0rem;
+}
+
+.hero-section p {
+    margin-top: 0;
+    max-width: 700px;
+    margin: 1rem auto 0 auto;
+}
+
 .fox-grid {
-    grid-template-columns: 1fr;
-}
-.card:nth-child(even) {
-    transform: rotate(1.5deg);
-}
-
-.card:nth-child(odd) {
-    transform: rotate(-1.5deg);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 3rem 2rem;
+    margin-bottom: 6rem;
 }
 
-.card:nth-child(3n) {
-    transform: rotate(0.5deg);
+.card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
 }
+
+.image-placeholder {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
 .image-placeholder img {
     width: 100%;
     height: 100%;
@@ -75,6 +119,11 @@ body {
     transform: rotate(5deg);
     z-index: 10;
 }
+
+.card h3 {
+    margin: 0.5rem 0;
+}
+
 .stat-row {
     margin-bottom: 1rem;
     font-family: var(--font-mono);
@@ -92,6 +141,20 @@ body {
 .stat-value {
     color: rgba(29, 13, 18, 0.8);
 }
+
+.card p {
+    flex-grow: 1;
+    margin-top: 0.5rem;
+}
+
+.read-more {
+    display: inline-block;
+    margin-top: 1.5rem;
+    align-self: flex-start;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -116,8 +179,20 @@ body {
 }
 
 .modal-content {
-    padding: 2rem 1.5rem;
-    width: 95%;
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    border: 3px solid #1D0D12;
+    box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 3rem 2rem;
+    position: relative;
+    color: #1D0D12;
+    transform: scale(0.95) rotate(1deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .modal-overlay.active .modal-content {
@@ -157,7 +232,11 @@ body {
 }
 
 .modal-title {
-    font-size: 2rem;
+    font-family: var(--font-display);
+    font-size: 3rem;
+    margin: 0;
+    line-height: 1.1;
+    text-transform: uppercase;
 }
 
 .modal-year {
@@ -182,8 +261,15 @@ body {
 }
 
 .charity-section {
-    padding: 2rem;
-    transform: rotate(0deg);
+    background: rgba(93, 204, 202, 0.95);
+    backdrop-filter: blur(5px);
+    padding: 3rem;
+    border: 3px solid #1D0D12;
+    box-shadow: 8px 8px 0px rgba(0,0,0,0.8);
+    border-radius: 4px;
+    text-align: center;
+    color: #1D0D12;
+    transform: rotate(-0.5deg);
 }
 
 .charity-section h2 {
@@ -233,12 +319,40 @@ body {
     margin: 1.5rem auto 0 auto;
     line-height: 1.4;
 }
+
+footer {
+    padding: 3rem;
+    margin-top: 5rem;
+}
+
 .fade-in-section {
     opacity: 0;
     transform: translateY(30px) rotate(0deg);
     visibility: hidden;
     transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     will-change: opacity, visibility;
+}
+
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.secret-paw {
+    cursor: pointer;
+    opacity: 0.3;
+    filter: grayscale(100%);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    user-select: none;
+    display: inline-block;
+}
+
+.secret-paw:hover {
+    opacity: 0.8;
+    filter: grayscale(0%);
+    transform: scale(1.2);
 }
 
 .secret-paw.found {
@@ -248,10 +362,14 @@ body {
     text-shadow: 0px 0px 8px #5DCCCA;
 }
 
-@media (max-width: 768px) {
 
-.top-bar { padding: 1rem; }
-.fox-grid { grid-template-columns: 1fr; }
+/* ---- responsive and animation blocks ---- */
+
+@media (max-width: 768px) {
+            .hero-section h1 { font-size: 3rem; }
+            .top-bar { padding: 1rem; }
+            .card { transform: rotate(0deg) !important; }
+            .fox-grid { grid-template-columns: 1fr; }
             .charity-section { padding: 2rem; transform: rotate(0deg); }
             .modal-content { padding: 2rem 1.5rem; width: 95%; }
             .modal-title { font-size: 2rem; }

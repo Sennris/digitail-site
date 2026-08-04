@@ -339,3 +339,60 @@ All in `core.css`:
 * Card rotation angles: the `.card:nth-child()` rules
 * Ticker speed: the `ticker-scroll` animation duration
 * Heading size: `--size-mega`
+
+---
+
+## Phase 5.1: fixes from the first review
+
+### Two bugs traced back to Phase 0
+
+The original CSS splitter keyed rules by selector in a dictionary and did
+not separate `@media` blocks from top-level rules. So a mobile override
+like `.card { transform: rotate(0deg) }` silently destroyed the real
+top-level `.card` rule that carried `display: flex; flex-direction: column`.
+
+That is why the devlog cards fell apart and why the Steam wishlist button
+rendered as a plain underlined link: `.btn-massive` lost its definition
+the same way.
+
+The page stylesheets have been **rebuilt from the original HTML** with a
+parser that respects the media-query boundary, and the split is now done
+by CSS **property** rather than by selector: `core.css` owns the visual
+properties, each page keeps its own layout and structure. Regenerate with
+`tools/rebuild_page_css.py` if it is ever needed again.
+
+### Also fixed
+
+* **Grain is visible now.** It was set to `mix-blend-mode: overlay`, which
+  on a near-black background cancels itself out almost entirely.
+* **Language toggle moved into the nav.** The old `.top-bar` was
+  absolutely positioned at `top: 0` and collided with the new sticky nav.
+  The "Back to Den" link went with it, since the nav has a home link.
+* **Fox year badge is a sticker.** It hangs off the top-right corner of
+  the photo instead of sitting inside it.
+* **Community banners drift** across the page with coloured left spines
+  instead of being identical full-width bars.
+
+### Asymmetry
+
+New utilities in `core.css` section 18:
+
+| Class | Effect |
+|---|---|
+| `.split-asym` | Two columns, 1.35fr / 0.85fr, second one dropped 4.5rem |
+| `.split-asym--flip` | Same, mirrored |
+| `.stack-drift` | Each child steps further across the page |
+| `.offset-left` / `.offset-right` | Pull a block out of the column |
+| `.statement` | Big off-centre heading; wrap words in `<em>` for a highlight slab |
+| `.sticker-label` | Corner label that hangs half outside its parent |
+
+All of them collapse to a single column under 900px.
+
+Applied so far to the homepage "den" tagline and the foxes charity
+section. Any other section can take them by adding the class.
+
+### Ticker
+
+No longer hardcoded. It reads from the homepage settings, so it is edited
+in the admin panel: **Homepage tab, at the top**. One message per line,
+a show/hide toggle, a speed slider and a live preview.

@@ -1,5 +1,10 @@
 /* about.html - page specific styles.
-   Shared design system lives in ../core.css */
+   Visual design lives in ../core.css. This file keeps layout,
+   structure and anything unique to this page. */
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
     --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -17,9 +22,32 @@ body {
     overflow-x: hidden;
 }
 
-.top-bar {
-    padding: 1rem;
+body.lang-en .mi {
+    display: none;
 }
+
+body.lang-mi .en {
+    display: none;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.btn-rugged {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -27,13 +55,14 @@ body {
 }
 
 .hero-section {
-    text-align: center;
     padding: 8vh 2rem;
-    border: 3px dashed rgba(185, 204, 204, 0.4);
-    border-radius: 4px;
     margin-bottom: 4rem;
-    transform: rotate(0.5deg);
 }
+
+.hero-section h1 {
+    margin-bottom: 0rem;
+}
+
 .ethos-section {
     background: rgba(185, 204, 204, 0.95);
     backdrop-filter: blur(5px);
@@ -47,8 +76,10 @@ body {
 }
 
 .ethos-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 2rem;
 }
 
 .ethos-grid h3 {
@@ -75,7 +106,17 @@ body {
 }
 
 .player-card {
-    transform: rotate(0deg) !important;
+    position: relative;
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    border: 3px solid #1D0D12;
+    border-radius: 4px;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 460px;
+    display: flex;
 }
 
 .player-card:nth-child(odd) {
@@ -176,6 +217,28 @@ body {
     font-weight: 600;
     color: #E5DABF;
 }
+
+footer {
+    padding: 3rem;
+    margin-top: 5rem;
+}
+
+.secret-paw {
+    cursor: pointer;
+    opacity: 0.3;
+    filter: grayscale(100%);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    user-select: none;
+    display: inline-block;
+}
+
+.secret-paw:hover {
+    opacity: 0.8;
+    filter: grayscale(0%);
+    transform: scale(1.2);
+}
+
 .secret-paw.found {
     opacity: 1;
     filter: grayscale(0%);
@@ -183,9 +246,13 @@ body {
     text-shadow: 0px 0px 8px #5DCCCA;
 }
 
+
+/* ---- responsive and animation blocks ---- */
+
 @media (max-width: 768px) {
             .ethos-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .player-card { transform: rotate(0deg) !important; }
-.top-bar { padding: 1rem; }
+            .hero-section h1 { font-size: 3rem; }
+            .top-bar { padding: 1rem; }
         }
 
