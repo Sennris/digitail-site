@@ -282,12 +282,54 @@ footer {
                 box-shadow 0.22s ease;
 }
 
-/* Each card takes a different colourway, like a set */
-.player-card:nth-child(3n+2) { background: var(--flat-white); }
-.player-card:nth-child(3n+3) { background: var(--extra-foam); }
+/* The bio panel used to sit at top:100% and rely on overflow:hidden to
+   stay out of sight. The corner badge needs overflow visible, so the
+   panel is hidden on its own terms now. */
+.card-back {
+    top: 0 !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6%);
+    border-radius: 6px;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    z-index: 5;
+}
 
-.player-card:nth-child(odd)  { transform: rotate(-1.4deg); }
-.player-card:nth-child(even) { transform: rotate(1.4deg); }
+.player-card:hover .card-back,
+.player-card.flipped .card-back {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Colourways on a 7-cycle.
+   A 3-cycle lined up exactly with the 3-column grid, so every column came
+   out one flat colour. 7 and 3 are coprime, so the pattern walks across
+   the rows and never forms a stripe. */
+.player-card:nth-child(7n+1) { background: var(--arctic-willow); }
+.player-card:nth-child(7n+2) { background: var(--flat-white); }
+.player-card:nth-child(7n+3) { background: var(--extra-foam); }
+.player-card:nth-child(7n+4) { background: var(--flat-white); }
+.player-card:nth-child(7n+5) { background: var(--extra-foam); }
+.player-card:nth-child(7n+6) { background: var(--arctic-willow); }
+.player-card:nth-child(7n+7) { background: var(--extra-foam); }
+
+/* Rotation on a 5-cycle, so tilt and colour drift out of sync with
+   each other as well as with the grid. */
+.player-card:nth-child(5n+1) { transform: rotate(-1.5deg); }
+.player-card:nth-child(5n+2) { transform: rotate(1.1deg); }
+.player-card:nth-child(5n+3) { transform: rotate(-0.5deg); }
+.player-card:nth-child(5n+4) { transform: rotate(1.9deg); }
+.player-card:nth-child(5n+5) { transform: rotate(-1.1deg); }
+
+/* Rarity stripe alternates direction too */
+.player-card:nth-child(even)::before {
+    background: repeating-linear-gradient(
+        90deg,
+        var(--long-black) 0 18px,
+        var(--frozen-juniper) 18px 24px
+    );
+}
 
 .player-card:hover {
     transform: translate(-5px, -7px) rotate(0deg) scale(1.03) !important;
@@ -319,22 +361,26 @@ footer {
     border-radius: 6px;
     background: linear-gradient(
         115deg,
-        transparent 38%,
-        rgba(255, 255, 255, 0.55) 47%,
-        rgba(93, 204, 202, 0.35) 52%,
-        transparent 62%
+        transparent 30%,
+        rgba(255, 255, 255, 0.30) 40%,
+        rgba(255, 255, 255, 0.70) 48%,
+        rgba(93, 204, 202, 0.45) 55%,
+        rgba(255, 255, 255, 0.22) 62%,
+        transparent 72%
     );
     background-size: 280% 280%;
-    background-position: 120% 0;
+    background-position: 135% 0;
     opacity: 0;
     pointer-events: none;
-    transition: background-position 0.65s ease, opacity 0.25s ease;
+    /* Slow enough to actually see the light travel across the card. */
+    transition: background-position 1.5s cubic-bezier(0.25, 0.6, 0.3, 1),
+                opacity 0.4s ease;
     z-index: 4;
 }
 
 .player-card:hover::after {
     opacity: 1;
-    background-position: -40% 0;
+    background-position: -55% 0;
 }
 
 .card-front { padding: 1.9rem 1.4rem 1.5rem; }

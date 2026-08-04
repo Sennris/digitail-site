@@ -252,10 +252,20 @@ h1, h2, h3, h4 {
     text-transform: uppercase;
     margin: 0 0 0.4rem;
     color: var(--flat-white);
-    /* Layered shadow in two palette colours, rather than flat black */
+    /* A thin black keyline sits between the cream letterform and the
+       teal shadow. Cream directly against Frozen Juniper vibrates and is
+       hard on the eyes; the dark line separates them. */
     text-shadow:
-        3px 3px 0 var(--frozen-juniper),
-        7px 7px 0 var(--long-black);
+        -2px -2px 0 var(--long-black),
+         2px -2px 0 var(--long-black),
+        -2px  2px 0 var(--long-black),
+         2px  2px 0 var(--long-black),
+         0   -2px 0 var(--long-black),
+         0    2px 0 var(--long-black),
+        -2px  0   0 var(--long-black),
+         2px  0   0 var(--long-black),
+         5px  5px 0 var(--frozen-juniper),
+         9px  9px 0 var(--long-black);
 }
 
 .hero-section p {
@@ -675,7 +685,13 @@ textarea:focus-visible {
     .card:hover { transform: translate(0, -3px) !important; }
 
     .hero-section h1 {
-        text-shadow: 2px 2px 0 var(--frozen-juniper), 4px 4px 0 var(--long-black);
+        text-shadow:
+            -1.5px -1.5px 0 var(--long-black),
+             1.5px -1.5px 0 var(--long-black),
+            -1.5px  1.5px 0 var(--long-black),
+             1.5px  1.5px 0 var(--long-black),
+             3px 3px 0 var(--frozen-juniper),
+             5px 5px 0 var(--long-black);
     }
 
     .container { padding-top: 2.5rem; }
@@ -732,6 +748,7 @@ textarea:focus-visible {
     font-style: normal;
     background: var(--frozen-juniper);
     color: var(--long-black);
+    border: 2px solid var(--long-black);
     padding: 0 0.25em;
     display: inline-block;
     transform: rotate(1.8deg);

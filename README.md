@@ -396,3 +396,42 @@ section. Any other section can take them by adding the class.
 No longer hardcoded. It reads from the homepage settings, so it is edited
 in the admin panel: **Homepage tab, at the top**. One message per line,
 a show/hide toggle, a speed slider and a live preview.
+
+---
+
+## Phase 5.3
+
+### Team card colours stopped striping
+
+The colourways were on a 3-cycle and the grid is 3 columns, so every
+column came out one flat colour. They are now on a **7-cycle**, and
+rotation is on a separate **5-cycle**. 7, 5 and 3 share no factors, so
+colour and tilt both walk across the rows and never line up with the
+columns or with each other. The rarity stripe also flips direction on
+even cards.
+
+### Foil sweep
+
+Was 0.65s, fast enough that you registered a flicker without seeing what
+happened. Now 1.5s on an ease-out curve, with a wider, brighter band
+(a white core, a teal trailing edge and soft falloff on both sides) so
+the light visibly travels across the card.
+
+### Two bugs fixed
+
+* **Bio panel leaking below the cards.** `.card-back` sat at `top: 100%`
+  and depended on `overflow: hidden` to stay out of sight. The corner
+  number badge needs `overflow: visible`, which exposed it. It is now
+  hidden with `opacity` and `visibility` instead of being clipped, and
+  fades up rather than sliding.
+* **"Click for bio" was a lie.** The flip was hover-only. Cards now
+  toggle on click too, which also means it works on phones, where hover
+  does not exist.
+
+### Hero title keyline
+
+Flat White sitting directly against Frozen Juniper vibrates at the edge
+and is tiring to look at. There is now a 2px Long Black keyline drawn all
+the way around the letterforms, between the cream and the teal shadow,
+so the two bright colours never touch. The highlighter slabs in
+`.statement` got a matching 2px outline.

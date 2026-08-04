@@ -67,6 +67,10 @@
                             </div>
                         </div>
                     `;
+                    card.addEventListener('click', () => {
+                        card.classList.toggle('flipped');
+                    });
+
                     teamGrid.appendChild(card);
                 });
             })
