@@ -61,9 +61,14 @@
 
     function start() {
         scan();
-        // Cards are rendered after the API responds, so keep watching.
-        new MutationObserver(scan).observe(document.body,
-            { childList: true, subtree: true });
+        // Cards are rendered after the API responds, so keep watching,
+        // but coalesce to one pass per frame.
+        let queued = false;
+        new MutationObserver(() => {
+            if (queued) return;
+            queued = true;
+            requestAnimationFrame(() => { queued = false; scan(); });
+        }).observe(document.body, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') {

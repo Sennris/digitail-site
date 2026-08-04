@@ -112,14 +112,26 @@
     }
 
     // The admin builds its tabs on the fly, so wait for the homepage tab.
-    const observer = new MutationObserver(mount);
-    window.addEventListener('DOMContentLoaded', () => {
-        mount();
-        observer.observe(document.body, { childList: true, subtree: true });
+    let queued = false;
+    const observer = new MutationObserver(() => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+            queued = false;
+            mount();
+            // Nothing left to watch for once the panel exists.
+            if (document.getElementById('ticker-editor')) observer.disconnect();
+        });
     });
-    if (document.readyState !== 'loading') {
+
+    function start() {
         mount();
         observer.observe(document.body, { childList: true, subtree: true });
+    }
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
     }
 
     // Refill once content arrives from the server.

@@ -227,7 +227,12 @@
         mount();
     }
 
-    // Modals and cards are built after content loads, so keep looking.
-    new MutationObserver(enhanceModals).observe(document.documentElement,
-        { childList: true, subtree: true });
+    // Modals are built after content loads, so keep looking, but at most
+    // once per frame rather than on every DOM change.
+    let queued = false;
+    new MutationObserver(() => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; enhanceModals(); });
+    }).observe(document.documentElement, { childList: true, subtree: true });
 })();

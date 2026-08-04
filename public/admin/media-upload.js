@@ -239,14 +239,23 @@
         });
     }
 
-    const observer = new MutationObserver(scan);
-    window.addEventListener('DOMContentLoaded', () => {
-        scan();
-        observer.observe(document.body, { childList: true, subtree: true });
+    // One pass per frame. Without this, scan() runs on every single DOM
+    // change and the admin crawls once a few hundred rows are on screen.
+    let queued = false;
+    const observer = new MutationObserver(() => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; scan(); });
     });
-    if (document.readyState !== 'loading') {
+
+    function start() {
         scan();
         observer.observe(document.body, { childList: true, subtree: true });
+    }
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', start);
+    } else {
+        start();
     }
 
     window.uploadImage = upload;

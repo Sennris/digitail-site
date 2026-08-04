@@ -50,10 +50,18 @@
         [['devlog-primary-tag', 'primary'], ['devlog-secondary-tag', 'secondary']].forEach(([id, kind]) => {
             const sel = document.getElementById(id);
             if (!sel) return;
-            const current = sel.value;
-            sel.innerHTML = '<option value="">(none)</option>'
+
+            const wanted = '<option value="">(none)</option>'
                 + tagsOfKind(kind).map((t) =>
                     `<option value="${t.name}">${t.name}</option>`).join('');
+
+            // Only touch the DOM if it would actually change. Rewriting
+            // unconditionally from inside a MutationObserver callback
+            // retriggers the observer and loops forever.
+            if (sel.innerHTML === wanted) return;
+
+            const current = sel.value;
+            sel.innerHTML = wanted;
             if (current) sel.value = current;
         });
     }
@@ -331,8 +339,22 @@
         refreshPickers();
     }
 
-    new MutationObserver(mountAll).observe(document.documentElement,
-        { childList: true, subtree: true });
+    // One pass per frame at most, and stop watching once all three
+    // panels exist. Without this the admin pegs a CPU core.
+    let queued = false;
+    const observer = new MutationObserver(() => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+            queued = false;
+            mountAll();
+            const done = document.getElementById('devlog-primary-tag')
+                      && document.getElementById('tag-kinds-panel')
+                      && document.getElementById('admin-users-panel');
+            if (done) observer.disconnect();
+        });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', mountAll);

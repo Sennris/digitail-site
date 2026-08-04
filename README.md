@@ -664,3 +664,31 @@ password, remove anyone but yourself. Two guards in the API: you cannot
 delete your own account while signed in, and you cannot delete the last
 remaining one. Account changes apply immediately, no "Save to site"
 needed.
+
+---
+
+## Phase 6.3: admin performance
+
+The admin panel had become unusably slow. Not the network, a bug in
+`admin-extras.js`.
+
+`refreshPickers()` rewrote the tag `<select>` contents on every call, and
+it was called from a MutationObserver callback. Rewriting the DOM inside
+an observer callback retriggers that same observer, so it looped
+endlessly and pinned a CPU core.
+
+Two fixes:
+
+1. **Guard the write.** `refreshPickers()` now compares against what is
+   already there and returns without touching the DOM if nothing would
+   change. No mutation means no retrigger.
+2. **Debounce every observer.** All five (`admin-extras`, `media-upload`,
+   `ticker-editor`, `a11y`, `card-click`) now coalesce to one pass per
+   animation frame instead of running a full `querySelectorAll` on every
+   individual DOM change. `admin-extras` and `ticker-editor` also
+   disconnect once their panels exist, since there is nothing left to
+   watch for.
+
+Rule for anything added later: **a MutationObserver callback must never
+write to the DOM unconditionally.** Check first, or disconnect while
+writing.
