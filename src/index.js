@@ -216,7 +216,26 @@ async function handleApi(request, env, url) {
     const parts = url.pathname.split('/').filter(Boolean);
 
     if (parts[1] === 'health') {
-        return json({ ok: true, time: new Date().toISOString() }, 200, NO_CACHE);
+        // Reports whether each binding and secret is present. Never the
+        // values themselves, only whether they exist and are non-empty.
+        let dbOk = false;
+        let adminCount = null;
+        try {
+            const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM admin_users').first();
+            adminCount = row?.n ?? null;
+            dbOk = true;
+        } catch { /* leave dbOk false */ }
+
+        return json({
+            ok: true,
+            time: new Date().toISOString(),
+            database: dbOk ? 'connected' : 'NOT WORKING',
+            adminAccounts: adminCount,
+            sessionSecret: env.SESSION_SECRET
+                ? `set (${String(env.SESSION_SECRET).length} chars)`
+                : 'MISSING OR EMPTY',
+            mediaBucket: env.MEDIA ? 'bound' : 'not bound',
+        }, 200, NO_CACHE);
     }
 
     if (parts[1] === 'auth') {
