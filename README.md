@@ -435,3 +435,34 @@ and is tiring to look at. There is now a 2px Long Black keyline drawn all
 the way around the letterforms, between the cream and the teal shadow,
 so the two bright colours never touch. The highlighter slabs in
 `.statement` got a matching 2px outline.
+
+---
+
+## Phase 5.4
+
+### Admin "Back to Site" went nowhere useful
+
+The link was `href="index.html"`, which from inside `/admin/` resolves
+to `/admin/index.html` — the admin homepage. It is now `href="/"`.
+
+### Charity section on the foxes page
+
+Three separate problems:
+
+* **Glare.** It was a solid `rgba(93, 204, 202, 0.95)` panel filling most
+  of the viewport. That much saturated teal behind cream text is
+  genuinely fatiguing, and it was the only block of its kind on an
+  otherwise dark site. It is now dark like everything else, with the teal
+  as a border, a soft corner wash and the heading slab.
+* **Alignment.** The section had `text-align: center` and the paragraph
+  had `margin: 0 auto`, so the body copy centred itself inside a column
+  that sat beside a left-aligned heading. Both now left aligned.
+* **Stray disclaimer.** The legal note was a third child of a two-column
+  grid, so it dropped into column one. It now spans the full width with
+  a dashed rule above it.
+
+The columns were also flipped to `.split-asym--flip`, so the long
+paragraph gets the wide column and the short heading gets the narrow one,
+rather than the other way round.
+
+The black-outlined slab behind "PACK" is untouched.
