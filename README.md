@@ -165,3 +165,60 @@ tools/verify_api.py          proves API output matches the old files
 They are still sitting in `public/` and nothing reads them anymore.
 Leave them there until the site is confirmed working on the database,
 then they can be deleted. They are your rollback.
+
+---
+
+## Phase 2: admin login and saving
+
+The admin panel now loads live content and saves straight to the database.
+No more importing and downloading JSON files.
+
+### How it works
+
+* Open `/admin/` and you get a login page if you aren't signed in
+* Once in, the panel loads everything from the API automatically
+* **Save to site** writes it back. That's the whole workflow.
+
+### API
+
+| Method | URL | Auth |
+|---|---|---|
+| GET | `/api/content/<type>` | public |
+| PUT | `/api/content/<type>` | login required |
+| POST | `/api/auth/login` | public |
+| POST | `/api/auth/logout` | - |
+| GET | `/api/auth/me` | - |
+
+### Security
+
+* Passwords hashed with PBKDF2-SHA256, 210,000 iterations, random salt
+* Sessions are HMAC-signed, HttpOnly, Secure, SameSite=Strict, 12 hour expiry
+* 5 failed logins from one IP triggers a 15 minute lockout
+* Login responses take the same time whether or not the email exists
+* `SESSION_SECRET` lives in a Cloudflare secret, never in this repo
+
+### A note on how saving works
+
+The admin panel keeps each content type as a whole list in memory, so
+saving replaces the whole collection in one transaction rather than
+updating single rows. Simple and safe at this scale. If the devlog count
+ever reaches the thousands, `src/writers.js` is the file to revisit.
+
+### Changing your password
+
+```
+node tools/make-password.js you@email.com "your new password"
+```
+
+Run the command it prints, after first deleting the old row:
+
+```
+npx wrangler d1 execute digitail --remote --command="DELETE FROM admin_users"
+```
+
+### Tests
+
+```
+python3 tools/verify_api.py    # API output matches the original files
+python3 tools/test_writes.py   # saving and reloading preserves everything
+```

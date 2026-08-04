@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Manager | Digi Tail Studios</title>
     
@@ -12,8 +13,11 @@
     <div class="top-bar">
         <h1>🦊 Content Manager</h1>
         <div style="display: flex; gap: 1rem;">
-            <button class="btn-rugged" onclick="downloadAllJSON()">
-                💾 Download All JSON
+            <button class="btn-rugged" id="save-all-btn" onclick="saveAllToServer()">
+                💾 Save to site
+            </button>
+            <button class="btn-rugged" onclick="fetch('/api/auth/logout',{method:'POST'}).then(()=>location.href='/admin/login.html')">
+                Sign out
             </button>
             <a href="index.html" class="btn-rugged">
                 ← Back to Site
@@ -225,5 +229,6 @@
     <input type="file" id="file-input" accept=".json">
 
     <script src="admin-script.js"></script>
+    <script src="api-adapter.js"></script>
 </body>
 </html>
