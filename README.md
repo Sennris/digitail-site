@@ -466,3 +466,16 @@ paragraph gets the wide column and the short heading gets the narrow one,
 rather than the other way round.
 
 The black-outlined slab behind "PACK" is untouched.
+
+---
+
+## Phase 5.5
+
+* **Globe emoji removed from the language button.** It wasn't rendering
+  on Windows anyway, so it was just an empty box taking up space.
+* **Card stripes are consistent now.** Even cards used to invert the
+  gradient, so odd cards read as a teal bar with black ticks and even
+  cards as a black bar with teal ticks. Against the dark page those
+  looked like completely different stripe lengths rather than a
+  deliberate variation. Every card gets the same stripe; the variety
+  comes from the colour and rotation cycles instead.
