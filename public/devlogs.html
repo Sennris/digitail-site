@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Logs | Digi Tail Studios</title>
+    
+        <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/devlogs.css">
+</head>
+<body class="lang-en"> 
+
+    <div class="top-bar">
+        <a href="index.html" class="btn-rugged">
+            <span class="en">← Back to Den</span>
+            <span class="mi">← Hoki ki te Rua</span>
+        </a>
+        <button id="lang-toggle-btn" class="btn-rugged">
+            🌐 <span class="en">Te Reo Māori</span><span class="mi">English</span>
+        </button>
+    </div>
+
+    <div id="devlog-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <span class="modal-date"></span>
+                <h2 class="modal-title">
+                    <span class="en"></span>
+                    <span class="mi"></span>
+                </h2>
+            </div>
+            <div class="modal-body" id="modal-body-content">
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+
+        <header class="hero-section">
+            <h1>
+                <span class="en">Dev Logs</span>
+                <span class="mi">TOO ADD</span>
+            </h1>
+            <p>
+                <span class="en">// Development Logs, Ramblings, and Patch Notes.</span>
+                <span class="mi">// Ngā Rātaka, Ngā Kōrero, me ngā Whakahōu.</span>
+            </p>
+        </header>
+
+        <div class="controls-bar">
+            <div class="filter-group">
+                <button class="btn-rugged active" data-filter="all">
+                    <span class="en">All Logs</span><span class="mi">Katoa</span>
+                </button>
+                <button class="btn-rugged" data-filter="code">
+                    <span class="en">Code</span><span class="mi">Waehere</span>
+                </button>
+                <button class="btn-rugged" data-filter="bug">
+                    <span class="en">Bugs</span><span class="mi">Hapa</span>
+                </button>
+                <button class="btn-rugged" data-filter="art">
+                    <span class="en">Art</span><span class="mi">Toi</span>
+                </button>
+                <button class="btn-rugged" data-filter="audio">
+                    <span class="en">Audio</span><span class="mi">Ororongo</span>
+                </button>
+                <button class="btn-rugged" data-filter="news">
+                    <span class="en">Studio News</span><span class="mi">Rongo Whare</span>
+                </button>
+            </div>
+            
+            <div class="sort-group">
+                <span class="en">Sort By:</span><span class="mi">Raupapa:</span>
+                <select id="sort-select" class="rugged-select">
+                    <option value="newest" class="en">Newest First</option>
+                    <option value="newest" class="mi">Pito Hōu Tuatahi</option>
+                    <option value="oldest" class="en">Oldest First</option>
+                    <option value="oldest" class="mi">Pito Tawhito Tuatahi</option>
+                </select>
+            </div>
+        </div>
+
+        <section class="devlog-grid" id="devlog-grid">
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Digi Tail Studios. 
+            <span class="en">Stay wild.</span>
+            <span class="mi">Kia mohoao tonu.</span>
+        </p>
+    </footer>
+
+    <script src="/assets/js/pages/devlogs.js"></script>
+</body>
+</html>

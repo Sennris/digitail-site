@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Code",
+    "color": "#5DCCCA",
+    "category": "devlog"
+  },
+  {
+    "id": 2,
+    "name": "Bug",
+    "color": "#E74C3C",
+    "category": "devlog"
+  },
+  {
+    "id": 3,
+    "name": "Art",
+    "color": "#E5DABF",
+    "category": "devlog"
+  },
+  {
+    "id": 4,
+    "name": "Audio",
+    "color": "#B9CCCC",
+    "category": "devlog"
+  },
+  {
+    "id": 5,
+    "name": "News",
+    "color": "#5DCCCA",
+    "category": "general"
+  },
+  {
+    "id": 6,
+    "name": "Physics",
+    "color": "#5DCCCA",
+    "category": "devlog"
+  },
+  {
+    "id": 7,
+    "name": "Mechanics",
+    "color": "#5DCCCA",
+    "category": "devlog"
+  }
+]

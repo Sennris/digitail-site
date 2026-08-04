@@ -1,0 +1,112 @@
+{
+  "mascot": {
+    "current": "default",
+    "autoSwitch": true,
+    "versions": {
+      "default": {
+        "name": "Default Arctic Fox",
+        "image": "",
+        "description": "Our classic studio mascot"
+      },
+      "halloween": {
+        "name": "Spooky Fox",
+        "image": "",
+        "description": "Halloween version with costume",
+        "activeDates": ["10-01", "10-31"]
+      },
+      "christmas": {
+        "name": "Holiday Fox",
+        "image": "",
+        "description": "Festive winter fox",
+        "activeDates": ["12-01", "12-31"]
+      },
+      "newyear": {
+        "name": "Party Fox",
+        "image": "",
+        "description": "New Year celebration",
+        "activeDates": ["12-31", "01-07"]
+      }
+    }
+  },
+  "hero": {
+    "titleEn": "Digi Tail Studios",
+    "titleMi": "Digi Tail Studios",
+    "taglineEn": "// Indie Game Development from Aotearoa",
+    "taglineMi": "// Whanaketanga Kēmu Motuhake mai i Aotearoa"
+  },
+  "announcement": {
+    "enabled": false,
+    "text": "",
+    "link": "",
+    "style": "info"
+  },
+  "features": [
+    {
+      "id": 1,
+      "titleEn": "Our Game",
+      "titleMi": "Tā Mātou Kēmu",
+      "textEn": "We're building something special. A game that combines innovative mechanics with compelling narrative. Follow our journey as we share development updates, challenges, and victories.",
+      "textMi": "Kei te hanga mātou i tētahi mea motuhake. He kēmu e whakakotahi ana i ngā tikanga auaha me te kōrero whakamīharo.",
+      "link": "game.html",
+      "buttonTextEn": "View Project",
+      "buttonTextMi": "Tirohia te Kaupapa"
+    },
+    {
+      "id": 2,
+      "titleEn": "Development Logs",
+      "titleMi": "Ngā Rātaka Whanaketanga",
+      "textEn": "Real talk about game development. We document our wins, our bugs, our late-night debugging sessions, and everything in between. No corporate polish—just honest development.",
+      "textMi": "Ngā kōrero pono mō te whanaketanga kēmu. Ka tuhia e mātou ā mātou wikitoria, ā mātou hapa, me ngā wā patuiro pō.",
+      "link": "devlogs.html",
+      "buttonTextEn": "Read Devlogs",
+      "buttonTextMi": "Pānuihia Ngā Rātaka"
+    }
+  ],
+  "communityLinks": [
+    {
+      "id": 1,
+      "emoji": "🍜",
+      "titleEn": "Dev Logs",
+      "titleMi": "Ngā Rātaka Whakawhanake",
+      "textEn": "Real updates. Real bugs. Real ramen. Come join our discord and help us decide if its a bug or a feature.",
+      "textMi": "Ngā whakahōu pono. Ngā hapa pono. Rāmene pono. Hono mai ki tō mātou Discord.",
+      "link": "devlogs.html"
+    },
+    {
+      "id": 2,
+      "emoji": "🎮",
+      "titleEn": "Playtests",
+      "titleMi": "Whakamātau Kēmu",
+      "textEn": "LFG: Brave souls to wander through our latest build.\nWarning: May contain traces of rogue code.",
+      "textMi": "E Rapu Ana: He hunga māia ki te hīkoi i tā mātou kēmu hōu.\nWhakatūpato: He waehere hē pea kei roto.",
+      "link": ""
+    },
+    {
+      "id": 3,
+      "emoji": "☕",
+      "titleEn": "Community",
+      "titleMi": "Hapori Tautoko",
+      "textEn": "Looking for a sanctuary for creatives? We're building it. Join the pack for art, updates, and good energy.",
+      "textMi": "E rapu ana i tētahi wāhi haumaru mō te hunga auaha? Hono mai ki te rōpū mō ngā mahi toi.",
+      "link": ""
+    },
+    {
+      "id": 4,
+      "emoji": "🎮",
+      "titleEn": "Steam Wishlist",
+      "titleMi": "Rārangi Hiahia Steam",
+      "textEn": "We're just some tired nerds making things we love. If that's your vibe, hit wishlist and help us break the simulation.",
+      "textMi": "He ihumanea ngenge noa iho mātou e hanga ana i ngā mea e arohaina ana. Tāpirihia ki tō rārangi hiahia.",
+      "link": ""
+    },
+    {
+      "id": 5,
+      "emoji": "📣",
+      "titleEn": "Social Feed",
+      "titleMi": "Pae Pāpāho",
+      "textEn": "Catch our latest posts, videos, and updates from across the internet. All in one place.",
+      "textMi": "Tirohia ā mātou tuhinga, ataata, me ngā whakahōu hou katoa. Kei tētahi wāhi kotahi.",
+      "link": "social.html"
+    }
+  ]
+}

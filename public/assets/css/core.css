@@ -1,0 +1,403 @@
+/* ==========================================================================
+   DIGI TAIL STUDIOS - CORE STYLESHEET
+   ==========================================================================
+   This is the single source of truth for the site's design system.
+   Every page loads this file first, then its own page CSS on top.
+
+   If you want to change a colour, a font, or the look of a button
+   ANYWHERE on the site, change it here once and it changes everywhere.
+
+   Page-specific styles live in assets/css/pages/<pagename>.css
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. DESIGN TOKENS
+   The studio palette. Named the way we talk about them.
+   -------------------------------------------------------------------------- */
+
+:root {
+    /* Palette */
+    --long-black:      #1D0D12;   /* deep background */
+    --extra-foam:      #DAD2CA;   /* default body text */
+    --frozen-juniper:  #5DCCCA;   /* primary accent, teal */
+    --arctic-willow:   #B9CCCC;   /* card surfaces, muted */
+    --flat-white:      #E5DABF;   /* headings, warm cream */
+    --alert-red:       #E74C3C;   /* errors and warnings only */
+
+    /* Derived surfaces */
+    --card-surface:    rgba(185, 204, 204, 0.95);
+    --card-surface-dim:rgba(185, 204, 204, 0.10);
+    --hairline:        rgba(185, 204, 204, 0.40);
+    --hairline-soft:   rgba(185, 204, 204, 0.30);
+
+    /* Shadows: the hard offset shadow is the studio's signature */
+    --shadow-sm:       3px 3px 0px rgba(0,0,0,0.5);
+    --shadow-md:       6px 6px 0px rgba(0,0,0,0.8);
+    --shadow-lg:       8px 8px 0px rgba(0,0,0,0.8);
+    --shadow-xl:      12px 12px 0px rgba(0,0,0,0.8);
+
+    /* Type */
+    --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    --font-mono:    'Courier New', Courier, monospace;
+    --font-body:    system-ui, -apple-system, sans-serif;
+
+    /* Structure */
+    --border-width: 3px;
+    --radius:       4px;
+    --page-max:     1200px;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. RESET AND BASE
+   -------------------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    background-color: var(--long-black);
+    color: var(--extra-foam);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. BILINGUAL TOGGLE
+   Wrap English in <span class="en"> and te reo in <span class="mi">.
+   The body class decides which one is visible.
+   -------------------------------------------------------------------------- */
+
+body.lang-en .mi { display: none; }
+body.lang-mi .en { display: none; }
+
+
+/* --------------------------------------------------------------------------
+   4. LAYOUT
+   .container is the standard page wrapper.
+   Add .container--flush on pages where a hero sits above it (the homepage).
+   -------------------------------------------------------------------------- */
+
+.container {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 6rem 1rem 2rem 1rem;
+}
+
+.container--flush { padding: 2rem 1rem; }
+.container--wide  { max-width: 1600px; padding: 2rem; }
+
+
+/* --------------------------------------------------------------------------
+   5. BUTTONS
+   .btn-rugged is the studio's standard button: solid fill, hard border,
+   offset shadow that collapses on press.
+   -------------------------------------------------------------------------- */
+
+.btn-rugged {
+    background-color: var(--frozen-juniper);
+    border: var(--border-width) solid var(--long-black);
+    color: var(--long-black);
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    border-radius: var(--radius);
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--long-black);
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-rugged:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--long-black);
+    background-color: var(--extra-foam);
+}
+
+.btn-rugged:focus-visible {
+    outline: 3px solid var(--flat-white);
+    outline-offset: 3px;
+}
+
+/* Alias kept so existing markup using .lang-toggle-btn still works */
+.lang-toggle-btn { }
+
+
+/* --------------------------------------------------------------------------
+   6. CARDS
+   The light, rotated, hard-shadowed panel used across the public site.
+   -------------------------------------------------------------------------- */
+
+.card {
+    background: var(--card-surface);
+    backdrop-filter: blur(5px);
+    padding: 2rem;
+    border-radius: var(--radius);
+    border: var(--border-width) solid var(--long-black);
+    box-shadow: var(--shadow-md);
+    transition: all 0.15s ease;
+    color: var(--long-black);
+    transform: rotate(-1deg);
+}
+
+.card:hover {
+    box-shadow: 9px 9px 0px rgba(0,0,0,0.8);
+    transform: translate(-2px, -2px) rotate(-1deg);
+}
+
+.card .pre-title {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--long-black);
+    font-weight: 700;
+    opacity: 0.7;
+}
+
+.card h3 {
+    font-family: var(--font-display);
+    margin: 0.5rem 0;
+    color: var(--long-black);
+    font-size: 1.8rem;
+    line-height: 1.1;
+}
+
+.card p {
+    font-size: 0.95rem;
+    color: var(--long-black);
+    font-weight: 600;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. READ MORE LINK
+   -------------------------------------------------------------------------- */
+
+.read-more {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    background: var(--long-black);
+    color: var(--extra-foam);
+    padding: 5px 10px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.1s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.read-more:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+    background-color: var(--frozen-juniper);
+    color: var(--long-black);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. IMAGE PLACEHOLDERS
+   Shown until real art is dropped in via the admin panel.
+   -------------------------------------------------------------------------- */
+
+.image-placeholder {
+    width: 100%;
+    height: 250px;
+    background-color: rgba(29, 13, 18, 0.1);
+    border-radius: 2px;
+    border: var(--border-width) dashed var(--long-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--long-black);
+    font-family: var(--font-mono);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.image-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. HERO
+   Base hero. Pages vary the rotation and padding via modifiers.
+   -------------------------------------------------------------------------- */
+
+.hero-section {
+    text-align: center;
+    padding: 8vh 2rem;
+    border: var(--border-width) dashed var(--hairline);
+    border-radius: var(--radius);
+    margin-bottom: 4rem;
+    transform: rotate(0.5deg);
+}
+
+.hero-section--tall  { padding: 15vh 2rem 10vh; }
+.hero-section--left  { transform: rotate(-0.5deg); }
+.hero-section--tight { margin-bottom: 3rem; }
+
+.hero-section h1 {
+    font-family: var(--font-display);
+    font-size: 5rem;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    color: var(--flat-white);
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+}
+
+.hero-section p {
+    font-family: var(--font-mono);
+    color: var(--frozen-juniper);
+    font-size: 1.1rem;
+    margin-top: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   10. FOOTER
+   -------------------------------------------------------------------------- */
+
+footer {
+    text-align: center;
+    padding: 3rem;
+    font-family: var(--font-mono);
+    border-top: var(--border-width) dashed var(--hairline-soft);
+    margin-top: 5rem;
+    color: rgba(185, 204, 204, 0.7);
+    background: rgba(0,0,0,0.2);
+}
+
+
+/* --------------------------------------------------------------------------
+   11. SCROLL REVEAL
+   Elements with .fade-in-section are revealed by assets/js/reveal.js
+   -------------------------------------------------------------------------- */
+
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(30px);
+    visibility: hidden;
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    will-change: opacity, visibility;
+}
+
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+
+/* --------------------------------------------------------------------------
+   12. EASTER EGG: HIDDEN PAWS
+   -------------------------------------------------------------------------- */
+
+.secret-paw {
+    cursor: pointer;
+    opacity: 0.3;
+    filter: grayscale(100%);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    user-select: none;
+    display: inline-block;
+}
+
+.secret-paw:hover {
+    opacity: 0.8;
+    filter: grayscale(0%);
+    transform: scale(1.2);
+}
+
+.secret-paw.found {
+    opacity: 1;
+    filter: grayscale(0%);
+    color: var(--frozen-juniper);
+    text-shadow: 0px 0px 8px var(--frozen-juniper);
+}
+
+
+/* --------------------------------------------------------------------------
+   13. TOP BAR
+   Three variants, because these were three different components sharing
+   one class name across the old pages.
+     .top-bar             floating overlay (homepage, thank you)
+     .top-bar--split      overlay with items pushed to both ends (game)
+     .top-bar--inline     simple padded bar in normal flow (content pages)
+   -------------------------------------------------------------------------- */
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.top-bar--split  { justify-content: space-between; }
+
+.top-bar--inline {
+    position: static;
+    padding: 1rem;
+}
+
+
+/* --------------------------------------------------------------------------
+   14. ACCESSIBILITY FLOOR
+   -------------------------------------------------------------------------- */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--frozen-juniper);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .fade-in-section {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+   15. MOBILE
+   Straighten everything out. Rotated cards do not work on a narrow screen.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .hero-section h1 { font-size: 3.5rem; }
+
+    .card,
+    .hero-section {
+        transform: rotate(0deg) !important;
+    }
+
+    .card:hover {
+        transform: translate(0, 0) !important;
+    }
+}

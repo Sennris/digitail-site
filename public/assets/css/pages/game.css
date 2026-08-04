@@ -1,0 +1,301 @@
+/* game.html - page specific styles.
+   Shared design system lives in ../core.css */
+
+:root {
+    --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-body: system-ui, -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    background-color: #1D0D12;
+    color: #DAD2CA;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.btn-rugged {
+    background-color: #5DCCCA;
+    border: 3px solid #1D0D12;
+    color: #1D0D12;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #1D0D12;
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-rugged:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #1D0D12;
+    background-color: #DAD2CA;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 6rem 1rem 2rem 1rem;
+}
+
+.game-hero {
+    text-align: center;
+    max-width: 1000px;
+    margin: 2rem auto 6rem auto;
+    padding: 2rem;
+    background-color: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    border-radius: 4px;
+    border: 3px solid #1D0D12;
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.8);
+    color: #1D0D12;
+    transform: rotate(-0.5deg);
+    transition: transform 0.2s ease;
+}
+
+.game-hero:hover {
+    transform: translate(-2px, -2px) rotate(0deg);
+    box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+}
+
+.trailer-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: rgba(29, 13, 18, 0.9);
+    border: 3px dashed #5DCCCA;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #5DCCCA;
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.play-button-stub {
+    width: 80px;
+    height: 80px;
+    background: #E5DABF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border: 4px solid #1D0D12;
+    color: #1D0D12;
+    font-size: 2rem;
+    padding-left: 5px;
+}
+
+.game-hero h1 {
+    font-size: 3rem;
+}
+
+.game-hero p {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.alternating-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 2rem;
+    margin: 8rem 0;
+}
+
+.alternating-row:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
+.text-side {
+    border-left: 0 !important;
+    border-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: left !important;
+    align-items: flex-start !important;
+}
+
+.alternating-row:nth-child(even) .text-side {
+    border-left: 0;
+    border-right: 6px solid #5DCCCA;
+    padding-left: 0;
+    padding-right: 1.5rem;
+    text-align: right;
+    align-items: flex-end;
+}
+
+.text-side p {
+    font-size: 1.1rem;
+    color: #DAD2CA;
+    max-width: 90%;
+    margin: 0;
+}
+
+.tagline {
+    font-size: 2rem;
+}
+
+.card-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.screenshot-card {
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 3px solid #1D0D12;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
+    transition: all 0.15s ease;
+}
+
+.screenshot-card:hover {
+    box-shadow: 9px 9px 0px rgba(0,0,0,0.8);
+    transform: translate(-2px, -2px) rotate(0deg) !important;
+    border-color: #5DCCCA;
+}
+
+.screenshot-placeholder {
+    width: 100%;
+    height: 300px;
+    background-color: rgba(29, 13, 18, 0.2);
+    border-radius: 2px;
+    border: 3px dashed #1D0D12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1D0D12;
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-style: italic;
+}
+
+.alternating-row:nth-child(odd) .screenshot-card {
+    transform: rotate(1.5deg);
+}
+
+.alternating-row:nth-child(even) .screenshot-card {
+    transform: rotate(-1.5deg);
+}
+
+.cta-section {
+    text-align: center;
+    max-width: 700px;
+    margin: 8rem auto 4rem auto;
+    padding: 4rem 2rem;
+    background-color: #5DCCCA;
+    border-radius: 4px;
+    border: 4px solid #1D0D12;
+    box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+    color: #1D0D12;
+    transform: rotate(1deg);
+    transition: all 0.2s ease;
+}
+
+.cta-section:hover {
+    transform: translate(-4px, -4px) rotate(1deg);
+    box-shadow: 16px 16px 0px rgba(0,0,0,0.9);
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+}
+
+.cta-section p {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+}
+
+.btn-massive {
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+}
+
+.btn-massive:hover {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+    color: #5DCCCA;
+}
+
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(30px) rotate(0deg);
+    visibility: hidden;
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    will-change: opacity, visibility;
+}
+
+footer {
+    text-align: center;
+    padding: 3rem;
+    font-family: var(--font-mono);
+    border-top: 3px dashed rgba(185, 204, 204, 0.3);
+    margin-top: 5rem;
+    color: rgba(185, 204, 204, 0.7);
+    background: rgba(0,0,0,0.2);
+}
+
+.alternating-row, .alternating-row:nth-child(even) {
+    flex-direction: column;
+    gap: 2rem;
+    margin: 6rem 0;
+}
+
+.screenshot-card, .game-hero, .cta-section {
+    transform: rotate(0deg) !important;
+}
+
+@media (max-width: 768px) {
+            .alternating-row, .alternating-row:nth-child(even) {
+                flex-direction: column;
+                gap: 2rem;
+                margin: 6rem 0;
+            }
+            .text-side {
+                border-left: 0 !important;
+                border-right: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                text-align: left !important;
+                align-items: flex-start !important;
+            }
+            .game-hero h1 { font-size: 3rem; }
+            .tagline { font-size: 2rem; }
+            .cta-section h2 { font-size: 2.5rem; }
+            .btn-massive { font-size: 1.5rem; padding: 1rem 2rem; }
+            .screenshot-card, .game-hero, .cta-section { transform: rotate(0deg) !important; }
+        }
+

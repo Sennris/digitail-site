@@ -1,0 +1,115 @@
+/* thankyou.html - page specific styles.
+   Shared design system lives in ../core.css */
+
+:root {
+    --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-body: system-ui, -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    background-color: #1D0D12;
+    color: #DAD2CA;
+    line-height: 1.6;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.btn-rugged {
+    background-color: #5DCCCA;
+    border: 3px solid #1D0D12;
+    color: #1D0D12;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #1D0D12;
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-rugged:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #1D0D12;
+    background-color: #DAD2CA;
+}
+
+.thank-you-card {
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    background: rgba(185, 204, 204, 0.95);
+    backdrop-filter: blur(5px);
+    padding: 4rem 2rem;
+    border-radius: 4px;
+    border: 3px solid #1D0D12;
+    box-shadow: 12px 12px 0px rgba(0,0,0,0.8);
+    color: #1D0D12;
+    transform: rotate(-1deg);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+0% {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+}
+
+100% {
+    transform: scale(1) rotate(-1deg);
+    opacity: 1;
+}
+
+.thank-you-card h1 {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #1D0D12;
+}
+
+.thank-you-card p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.loading-text {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    color: #5DCCCA;
+    background: #1D0D12;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+    margin-bottom: 2rem;
+}
+
+.manual-link {
+    font-family: var(--font-mono);
+    color: #1D0D12;
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.manual-link:hover {
+    color: #5DCCCA;
+}
+
+@keyframes popIn {
+            0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            100% { transform: scale(1) rotate(-1deg); opacity: 1; }
+        }
+

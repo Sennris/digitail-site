@@ -1,0 +1,14 @@
+name = "digitail-studios"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "public"
+
+# Phase 1 will add the D1 binding here:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "digitail"
+# database_id = "<filled in after you create the database>"
+
+# Phase 3 will add the R2 binding here:
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "digitail-media"

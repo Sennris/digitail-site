@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Feed | Digi Tail Studios</title>
+    
+        <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/social.css">
+</head>
+<body class="lang-en"> 
+
+    <div class="top-bar">
+        <a href="index.html" class="btn-rugged">
+            <span class="en">← Back to Den</span>
+            <span class="mi">← Hoki ki te Rua</span>
+        </a>
+        <button id="lang-toggle-btn" class="btn-rugged">
+            🌐 <span class="en">Te Reo Māori</span><span class="mi">English</span>
+        </button>
+    </div>
+
+    <main class="container">
+
+        <header class="hero-section fade-in-section is-visible">
+            <h1>
+                <span class="en">Social Feed</span>
+                <span class="mi">Pae Pāpāho</span>
+            </h1>
+            <p>
+                <span class="en">// Posts, videos, and behind-the-scenes chaos from across the internet.</span>
+                <span class="mi">// Ngā tuhinga, ataata, me ngā mahi i muri i te ārai mai i te ipurangi.</span>
+            </p>
+        </header>
+
+        <div class="controls-bar">
+            <div class="filter-group" id="platform-filters">
+                <button class="filter-btn active" onclick="filterPosts('all')">
+                    <span class="en">All</span><span class="mi">Katoa</span>
+                </button>
+            </div>
+        </div>
+
+        <section class="social-grid" id="social-grid">
+            <!-- Social posts loaded from social.json -->
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Digi Tail Studios.
+            <span class="en">Stay wild.</span>
+            <span class="mi">Kia mohoao tonu.</span>
+        </p>
+    </footer>
+
+    <script src="/assets/js/pages/social.js"></script>
+</body>
+</html>

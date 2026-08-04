@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Manager | Digi Tail Studios</title>
+    
+        <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/content-manager.css">
+</head>
+<body>
+    <div class="top-bar">
+        <h1>🦊 Content Manager</h1>
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn-rugged" onclick="downloadAllJSON()">
+                💾 Download All JSON
+            </button>
+            <a href="index.html" class="btn-rugged">
+                ← Back to Site
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tab-nav">
+            <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
+            <button class="tab-button" onclick="switchTab('foxes', this)">🦊 Foxes</button>
+            <button class="tab-button" onclick="switchTab('team', this)">👥 Team</button>
+            <button class="tab-button" onclick="switchTab('game', this)">🎮 Game Info</button>
+            <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
+            <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- DEVLOGS TAB -->
+        <div id="devlogs-tab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="devlog-total">0</div>
+                    <div class="label">Total Devlogs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="devlog-month">0</div>
+                    <div class="label">This Month</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Devlogs</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('devlog')">
+                            ✨ New Devlog
+                        </button>
+                        <div class="upload-area" onclick="uploadJSON('devlogs')">
+                            📂 Load devlogs.json
+                        </div>
+                        <div id="devlogs-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="devlog-editor" style="display: none;">
+                        <!-- Devlog form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOXES TAB -->
+        <div id="foxes-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="fox-total">0</div>
+                    <div class="label">Total Foxes</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Foxes</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('fox')">
+                            ✨ New Fox
+                        </button>
+                        <div class="upload-area" onclick="uploadJSON('foxes')">
+                            📂 Load foxes.json
+                        </div>
+                        <div id="foxes-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="fox-editor" style="display: none;">
+                        <!-- Fox form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEAM TAB -->
+        <div id="team-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="team-total">0</div>
+                    <div class="label">Team Members</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Team</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('team')">
+                            ✨ New Member
+                        </button>
+                        <div class="upload-area" onclick="uploadJSON('team')">
+                            📂 Load team.json
+                        </div>
+                        <div id="team-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="team-editor" style="display: none;">
+                        <!-- Team form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME TAB -->
+        <div id="game-tab" class="tab-content">
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Game Info</h2>
+                        <div class="upload-area" onclick="uploadJSON('game')">
+                            📂 Load game.json
+                        </div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="game-editor">
+                        <!-- Game info form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SOCIAL TAB -->
+        <div id="social-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="social-total">0</div>
+                    <div class="label">Total Posts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="social-instagram">0</div>
+                    <div class="label">Instagram</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="social-youtube">0</div>
+                    <div class="label">YouTube</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Social Posts</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('social')">
+                            ✨ New Post
+                        </button>
+                        <div class="upload-area" onclick="uploadJSON('social')">
+                            📂 Load social.json
+                        </div>
+                        <div id="social-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="social-editor" style="display: none;">
+                        <!-- Social form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOMEPAGE TAB -->
+        <div id="homepage-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="links-total">0</div>
+                    <div class="label">Community Links</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Homepage</h2>
+                        <div class="upload-area" onclick="uploadJSON('homepage')" style="margin-bottom: 1rem;">
+                            📂 Load homepage.json
+                        </div>
+                        <hr style="border: 1px dashed var(--arctic-willow); margin: 1rem 0;">
+                        <h3 style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--frozen-juniper); margin: 0 0 0.5rem 0;">Community Links</h3>
+                        <p style="font-size: 0.8rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">The card banners in the "See what's happening in the den" section.</p>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('link')">
+                            ✨ New Link
+                        </button>
+                        <div id="links-list" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="homepage-editor">
+                        <!-- Homepage settings form populated by JS -->
+                    </div>
+                    <div class="card" id="link-editor" style="display: none;">
+                        <!-- Link form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <input type="file" id="file-input" accept=".json">
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
