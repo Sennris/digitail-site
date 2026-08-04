@@ -223,7 +223,7 @@
                     
                     if (newest.thumbnail) {
                         document.getElementById('home-social-image').innerHTML = 
-                            '<img src="' + newest.thumbnail + '" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">';
+                            '<img src="' + newest.thumbnail + '" alt="' + (newest.title || 'Latest social post') + '" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">';
                     }
                 }
             })

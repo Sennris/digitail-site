@@ -479,3 +479,66 @@ The black-outlined slab behind "PACK" is untouched.
   looked like completely different stripe lengths rather than a
   deliberate variation. Every card gets the same stripe; the variety
   comes from the colour and rotation cycles instead.
+
+---
+
+## Phase 6: SEO, link previews, 404, accessibility
+
+### Link previews
+
+Every page now carries Open Graph and Twitter Card tags. A link posted in
+Discord, Bluesky, Slack or Mastodon shows a title, a description and the
+share card instead of a bare URL.
+
+`public/og-image.png` (1200x630) is a **placeholder** built in the studio
+palette. Replace it with real key art when you have some, keeping the same
+filename and dimensions and nothing else needs to change. Regenerate the
+placeholder with `python3 tools/make_og_image.py`.
+
+To re-run the tag injection after editing descriptions:
+
+```
+python3 tools/add_seo.py
+```
+
+Descriptions live at the top of that file, one per page. It strips its own
+previous output first, so it is safe to run repeatedly.
+
+### Search engines
+
+* `robots.txt` allows everything except `/admin/` and `/api/`
+* `sitemap.xml` lists the six public pages
+* Every page has a canonical URL on `www.digitailstudios.com`, so the
+  `www` and non-`www` versions don't compete with each other
+* `thankyou.html` is `noindex` — it should never appear in search results
+* The homepage carries Organization structured data
+
+### 404
+
+`public/404.html`, served automatically thanks to
+`not_found_handling = "404-page"` in `wrangler.toml`. Bilingual, has the
+nav, a wandering fox, and links back into the site.
+
+### Accessibility
+
+* **`<html lang>` now follows the language toggle.** The toggle only
+  swapped a class on `<body>`, so a screen reader was announcing te reo
+  Māori using English pronunciation rules. `assets/js/lang-attr.js`
+  watches the body class and keeps the attribute in step.
+* Alt text on team avatars and social thumbnails; admin preview images
+  explicitly marked decorative so screen readers skip them
+* `aria-label="Main"` on the nav
+* Skip-to-content link on every page
+* Visible focus rings and a `prefers-reduced-motion` block (added earlier)
+
+### Analytics, one manual step
+
+Cloudflare Web Analytics is free, needs no cookie banner, and is not
+wired up yet because it needs a token from your dashboard:
+
+1. Cloudflare dashboard, **Analytics & Logs**, **Web Analytics**
+2. **Add a site**, enter `digitailstudios.com`
+3. Copy the `<script>` snippet it gives you
+4. Paste it just before `</body>` in each page in `public/`
+
+Or send me the token and I'll wire it in.

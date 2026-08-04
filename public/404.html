@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost in the snow | Digi Tail Studios</title>
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#1D0D12">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/core.css">
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .lost {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 3rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lost__code {
+            font-family: var(--font-display);
+            font-size: clamp(6rem, 22vw, 15rem);
+            line-height: 0.85;
+            color: var(--flat-white);
+            margin: 0;
+            text-shadow:
+                -2px -2px 0 var(--long-black),  2px -2px 0 var(--long-black),
+                -2px  2px 0 var(--long-black),  2px  2px 0 var(--long-black),
+                 0   -2px 0 var(--long-black),  0    2px 0 var(--long-black),
+                -2px  0   0 var(--long-black),  2px  0   0 var(--long-black),
+                 8px  8px 0 var(--frozen-juniper),
+                13px 13px 0 var(--long-black);
+            transform: rotate(-2deg);
+        }
+
+        .lost__fox {
+            font-size: clamp(3rem, 9vw, 5rem);
+            display: block;
+            margin: 1.5rem 0 0.5rem;
+            animation: sniff 3.5s ease-in-out infinite;
+        }
+
+        @keyframes sniff {
+            0%, 100% { transform: rotate(-6deg) translateY(0); }
+            50%      { transform: rotate(6deg) translateY(-8px); }
+        }
+
+        .lost__msg {
+            font-family: var(--font-display);
+            font-size: clamp(1.4rem, 4vw, 2.4rem);
+            text-transform: uppercase;
+            color: var(--flat-white);
+            margin: 1rem 0 0.5rem;
+            max-width: 20ch;
+        }
+
+        .lost__sub {
+            font-family: var(--font-mono);
+            color: var(--frozen-juniper);
+            font-size: 0.95rem;
+            margin: 0 0 2.5rem;
+            max-width: 44ch;
+        }
+
+        .lost__links {
+            display: flex;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .lost__paw {
+            position: absolute;
+            font-size: 1.6rem;
+            opacity: 0.14;
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="lang-en">
+
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main">
+        <a class="site-nav__brand" href="/"><span aria-hidden="true">🦊</span> Digi Tail</a>
+        <a class="nav-link" href="/">home</a>
+        <a class="nav-link" href="/game">game</a>
+        <a class="nav-link" href="/devlogs">devlogs</a>
+        <a class="nav-link" href="/foxes">foxes</a>
+        <a class="nav-link" href="/social">social</a>
+        <a class="nav-link" href="/about">about</a>
+        <button id="lang-toggle-btn" class="btn-rugged nav-lang"><span class="en">Te Reo Māori</span><span class="mi">English</span></button>
+    </nav>
+
+    <main class="lost" id="main">
+        <span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);">🐾</span>
+        <span class="lost__paw" style="top:26%; left:19%; transform:rotate(12deg);">🐾</span>
+        <span class="lost__paw" style="top:41%; left:13%; transform:rotate(-8deg);">🐾</span>
+        <span class="lost__paw" style="top:20%; right:14%; transform:rotate(24deg);">🐾</span>
+        <span class="lost__paw" style="top:38%; right:9%; transform:rotate(-14deg);">🐾</span>
+        <span class="lost__paw" style="bottom:16%; right:18%; transform:rotate(8deg);">🐾</span>
+
+        <p class="lost__code">404</p>
+        <span class="lost__fox" aria-hidden="true">🦊</span>
+
+        <h1 class="lost__msg">
+            <span class="en">This page went out for a wander</span>
+            <span class="mi">Kua ngaro tēnei whārangi</span>
+        </h1>
+
+        <p class="lost__sub">
+            <span class="en">// tracks lead this way, then stop. the snow got to them first.</span>
+            <span class="mi">// ka mutu ngā tapuwae i konei. nā te hukarere pea.</span>
+        </p>
+
+        <div class="lost__links">
+            <a href="/" class="btn-rugged">
+                <span class="en">Back to the den</span><span class="mi">Hoki ki te rua</span>
+            </a>
+            <a href="/devlogs" class="btn-rugged">
+                <span class="en">Read the devlogs</span><span class="mi">Pānui rātaka</span>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            &copy; 2026 Digi Tail Studios.
+            <span class="en">Stay wild.</span>
+            <span class="mi">Kia mohoao tonu.</span>
+        </p>
+    </footer>
+
+    <script>
+        // Remember the visitor's language choice like the rest of the site does
+        (function () {
+            const saved = localStorage.getItem('digitail-lang') || 'en';
+            document.body.classList.remove('lang-en', 'lang-mi');
+            document.body.classList.add('lang-' + saved);
+
+            document.getElementById('lang-toggle-btn').addEventListener('click', () => {
+                const next = document.body.classList.contains('lang-en') ? 'mi' : 'en';
+                document.body.classList.remove('lang-en', 'lang-mi');
+                document.body.classList.add('lang-' + next);
+                localStorage.setItem('digitail-lang', next);
+            });
+        })();
+    </script>
+    <script src="/assets/js/lang-attr.js"></script>
+</body>
+</html>

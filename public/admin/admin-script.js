@@ -613,7 +613,7 @@ function setupImagePreviews() {
                 const url = e.target.value.trim();
                 const preview = document.getElementById(previewId);
                 if (url) {
-                    preview.innerHTML = `<img src="${url}" class="image-preview" onerror="this.style.display='none'">`;
+                    preview.innerHTML = `<img src="${url}" class="image-preview" alt="" onerror="this.style.display='none'">`;
                 } else {
                     preview.innerHTML = '';
                 }
@@ -645,7 +645,7 @@ function populateForm(type, item) {
                 const match = item.image.match(/src='([^']+)'/);
                 if (match) {
                     document.getElementById('devlog-image').value = match[1];
-                    document.getElementById('devlog-image-preview').innerHTML = `<img src="${match[1]}" class="image-preview">`;
+                    document.getElementById('devlog-image-preview').innerHTML = `<img src="${match[1]}" class="image-preview" alt="">`;
                 }
             }
         } else {
@@ -681,7 +681,7 @@ function populateForm(type, item) {
             document.getElementById('fox-bio-mi').value = item.bioMi;
             if (item.image) {
                 document.getElementById('fox-image').value = item.image;
-                document.getElementById('fox-image-preview').innerHTML = `<img src="${item.image}" class="image-preview">`;
+                document.getElementById('fox-image-preview').innerHTML = `<img src="${item.image}" class="image-preview" alt="">`;
             }
         } else {
             document.getElementById('fox-title').textContent = 'New Fox';
@@ -711,7 +711,7 @@ function populateForm(type, item) {
             document.getElementById('team-bio-mi').value = item.bioMi;
             if (item.avatar) {
                 document.getElementById('team-avatar').value = item.avatar;
-                document.getElementById('team-image-preview').innerHTML = `<img src="${item.avatar}" class="image-preview">`;
+                document.getElementById('team-image-preview').innerHTML = `<img src="${item.avatar}" class="image-preview" alt="">`;
             }
         } else {
             document.getElementById('team-title').textContent = 'New Team Member';
@@ -758,7 +758,7 @@ function populateForm(type, item) {
             document.getElementById('social-thumbnail').value = item.thumbnail || '';
             document.getElementById('social-description').value = item.description || '';
             if (item.thumbnail) {
-                document.getElementById('social-image-preview').innerHTML = `<img src="${item.thumbnail}" class="image-preview">`;
+                document.getElementById('social-image-preview').innerHTML = `<img src="${item.thumbnail}" class="image-preview" alt="">`;
             }
             selectedTags = item.tags ? [...item.tags] : [];
         } else {
@@ -795,7 +795,7 @@ function populateHomepageForm(hp) {
         document.getElementById('hp-announce-link').value = hp.announcement.link || '';
         document.getElementById('hp-announce-style').value = hp.announcement.style || 'info';
         if (hp.announcement.image) {
-            document.getElementById('hp-announce-image-preview').innerHTML = '<img src="' + hp.announcement.image + '" class="image-preview" style="max-width:100%;">';
+            document.getElementById('hp-announce-image-preview').innerHTML = '<img src="' + hp.announcement.image + '" class="image-preview" alt="" style="max-width:100%;">';
         }
     }
     if (hp.mascot) {
@@ -812,7 +812,7 @@ function populateHomepageForm(hp) {
             });
             // Preview default mascot
             if (hp.mascot.versions.default && hp.mascot.versions.default.image) {
-                document.getElementById('hp-mascot-default-preview').innerHTML = '<img src="' + hp.mascot.versions.default.image + '" class="image-preview" style="max-height:120px;">';
+                document.getElementById('hp-mascot-default-preview').innerHTML = '<img src="' + hp.mascot.versions.default.image + '" class="image-preview" alt="" style="max-height:120px;">';
             }
         }
     }

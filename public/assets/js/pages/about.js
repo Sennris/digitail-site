@@ -34,7 +34,7 @@
                     const cardNo = String(index + 1).padStart(2, '0');
                     
                     const avatarHTML = member.avatar 
-                        ? '<img src="' + member.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">'
+                        ? '<img src="' + member.avatar + '" alt="' + member.nameEn + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">'
                         : '<span class="en">[ photo soon ]</span><span class="mi">[ pikitia ā muri ]</span>';
                     
                     card.innerHTML = `
