@@ -68,9 +68,21 @@ const els = new Map(FIELDS.map((id) => [id, makeEl()]));
 
 const sandbox = {
     console,
-    data: {},
+    // Deliberately NO `data` property here.
+    //
+    // admin-script.js declares `let data`, and a top-level `let` in a
+    // classic script does not become a property of window. An earlier
+    // version of this file put `data: {}` on the sandbox, which made
+    // `window.data` truthy here and nowhere else - so a real bug in
+    // admin-extras.js sailed through this test twice.
     document: {
         getElementById: (id) => els.get(id) || null,
+        createElement: () => {
+            const el = makeEl();
+            el.children = [];
+            el.appendChild = function (c) { this.children.push(c); };
+            return el;
+        },
         addEventListener() {},
         querySelectorAll: () => [],
         querySelector: () => null,
@@ -113,6 +125,12 @@ const stored = {
     },
     ticker: { enabled: true, speed: 40, items: ['A', 'B'] },
 };
+
+console.log('\nThe sandbox matches the browser:');
+check('window.data is undefined, as it is in a real browser',
+    vm.runInContext('typeof window.data', sandbox) === 'undefined');
+check('the script\'s own data binding is reachable',
+    vm.runInContext('typeof data', sandbox) === 'object');
 
 console.log('\nHomepage settings survive a round trip:');
 
@@ -224,6 +242,60 @@ console.log('\nA tag you create shows up in the devlog dropdown:');
     check('primary picker only offers primary tags',
         pNames.includes('Paper Crown') && !pNames.includes('Shader Wrangling'),
         `got [${pNames.join(', ')}]`);
+}
+
+/* ---- the ticker editor must read and write the stored settings ---- */
+
+console.log('\nTicker edits reach the stored settings:');
+{
+    // These stubs remember their listeners so the test can fire the same
+    // 'input' event the editor listens for, rather than reaching inside
+    // ticker-editor.js for a function it does not expose.
+    const fire = [];
+    ['ticker-enabled', 'ticker-items', 'ticker-speed',
+     'ticker-speed-label', 'ticker-preview'].forEach((id) => {
+        const el = makeEl();
+        el.addEventListener = function (type, fn) {
+            if (type === 'input') fire.push(fn);
+        };
+        els.set(id, el);
+    });
+    // mount() needs the homepage tab and its ticker slot to exist, and must
+    // NOT find an existing #ticker-editor, or it bails before wiring up.
+    els.set('homepage-tab', makeEl());
+    els.set('hp-ticker-slot', (() => {
+        const el = makeEl();
+        el.appendChild = function () {};
+        return el;
+    })());
+
+    setData({
+        homepage: { ticker: { enabled: true, speed: 44, items: ['STORED ONE', 'STORED TWO'] } },
+        tags: [], devlogs: [],
+    });
+
+    vm.runInContext(readFileSync('public/admin/ticker-editor.js', 'utf8'), sandbox,
+        { filename: 'ticker-editor.js' });
+
+    // The editor fills its fields from read(); if read() hands back a
+    // throwaway defaults object, the stored items never appear.
+    const itemsField = els.get('ticker-items');
+    check('the stored ticker items load into the editor',
+        itemsField.value.includes('STORED ONE'), `got "${itemsField.value}"`);
+    check('the stored speed loads into the editor',
+        String(els.get('ticker-speed').value) === '44');
+
+    // And an edit has to land on the real settings object, not a copy.
+    els.get('ticker-items').value = 'EDITED ITEM';
+    els.get('ticker-enabled').checked = false;
+    els.get('ticker-speed').value = 20;
+    fire.forEach((fn) => fn());
+    const stored2 = getData().homepage.ticker;
+    check('an edit reaches the stored settings',
+        Array.isArray(stored2.items) && stored2.items[0] === 'EDITED ITEM',
+        `got ${JSON.stringify(stored2.items)}`);
+    check('switching the ticker off reaches the stored settings',
+        stored2.enabled === false);
 }
 
 console.log(failures === 0

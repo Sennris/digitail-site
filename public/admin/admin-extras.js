@@ -14,9 +14,21 @@
 
     const PANEL_BORDER = '3px solid #5DCCCA';
 
+    // admin-script.js declares its store as `let data`. A top-level `let`
+    // in a classic script does NOT land on window - only `var` and function
+    // declarations do. Anything guarding on `window.data` therefore reads
+    // nothing, forever. Reach the real binding instead.
+    function store() {
+        return (typeof data === 'undefined' || !data) ? null : data;
+    }
+
+    function allTags() {
+        const d = store();
+        return d && Array.isArray(d.tags) ? d.tags : [];
+    }
+
     function tagsOfKind(kind) {
-        return (window.data && Array.isArray(data.tags) ? data.tags : [])
-            .filter((t) => (t.kind || 'secondary') === kind);
+        return allTags().filter((t) => (t.kind || 'secondary') === kind);
     }
 
     /* ================= 1. devlog form pickers ================= */
@@ -44,10 +56,6 @@
             </div>`;
         container.parentElement.insertBefore(wrap, container);
         refreshPickers();
-    }
-
-    function allTags() {
-        return (window.data && Array.isArray(data.tags) ? data.tags : []);
     }
 
     // Rebuild a dropdown from a list of tags.

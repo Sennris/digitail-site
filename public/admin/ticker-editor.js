@@ -69,7 +69,11 @@
     }
 
     function read() {
-        if (!window.data) return { ...DEFAULTS };
+        // Same trap as admin-extras.js: `window.data` is undefined because
+        // admin-script.js declares it with `let`. Guarding on it meant this
+        // returned a throwaway object every time, so the editor showed the
+        // defaults and every ticker edit was discarded on save.
+        if (typeof data === 'undefined' || !data) return { ...DEFAULTS };
         if (!data.homepage) data.homepage = {};
         if (!data.homepage.ticker) data.homepage.ticker = { ...DEFAULTS };
         return data.homepage.ticker;
