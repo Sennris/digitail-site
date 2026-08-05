@@ -191,8 +191,16 @@
         </div>
 
         <!-- HOMEPAGE TAB -->
-        <div id="homepage-tab" class="tab-content">
-            <div class="stats-grid">
+        <div id="homepage-tab" class="tab-content" data-sub="hero">
+            <div class="subtab-bar" role="tablist" aria-label="Homepage sections">
+                <button type="button" class="subtab active" onclick="switchHomepageSub('hero', this)">Hero</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('announce', this)">Announcement</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('mascot', this)">Mascot</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('ticker', this)">Ticker</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('links', this)">Community links</button>
+            </div>
+
+            <div class="stats-grid" id="hp-links-stats">
                 <div class="stat-card">
                     <div class="number" id="links-total">0</div>
                     <div class="label">Community Links</div>
@@ -200,7 +208,7 @@
             </div>
 
             <div class="main-grid">
-                <div class="sidebar">
+                <div class="sidebar" id="hp-links-panel">
                     <div class="card">
                         <h2>Homepage</h2>
                         
@@ -213,6 +221,7 @@
                     </div>
                 </div>
                 <div class="main-content">
+                    <div id="hp-ticker-slot"></div>
                     <div class="card" id="homepage-editor">
                         <!-- Homepage settings form populated by JS -->
                     </div>

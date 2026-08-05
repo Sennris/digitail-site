@@ -102,7 +102,11 @@
         const tab = document.getElementById('homepage-tab');
         if (!tab) return;
 
-        tab.insertBefore(panel(), tab.firstChild);
+        // Prefer the dedicated slot inside the Ticker subtab. Falls back to
+        // the top of the tab if the slot is not there for any reason.
+        const slot = document.getElementById('hp-ticker-slot');
+        if (slot) slot.appendChild(panel());
+        else tab.insertBefore(panel(), tab.firstChild);
         ['ticker-enabled', 'ticker-items', 'ticker-speed'].forEach((id) => {
             const el = document.getElementById(id);
             el.addEventListener('input', sync);

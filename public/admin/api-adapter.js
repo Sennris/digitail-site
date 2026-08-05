@@ -17,15 +17,19 @@
 
     /* ---------- load ---------- */
 
+    // Never let a cached copy answer here. The admin has to show what is
+    // actually stored, or you end up editing a stale version of the site.
+    const FRESH = { cache: 'no-store' };
+
     async function loadFromServer() {
         const results = await Promise.all([
             ...TYPES.map((t) =>
-                fetch(`/api/content/${t}`)
+                fetch(`/api/content/${t}`, FRESH)
                     .then((r) => (r.ok ? r.json() : []))
                     .catch(() => [])
             ),
-            fetch('/api/content/homepage').then((r) => (r.ok ? r.json() : null)).catch(() => null),
-            fetch('/api/content/game').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            fetch('/api/content/homepage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            fetch('/api/content/game', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
 
         TYPES.forEach((t, i) => { data[t] = results[i] || []; });
@@ -90,6 +94,10 @@
 
             if (data.game) await putContent('game', data.game);
 
+            // Read it straight back. If what you see after saving is not
+            // what you meant to save, you find out now rather than on the
+            // live site.
+            await loadFromServer();
             showAlert('✅ Saved. The live site is updated.', 'success');
         } catch (e) {
             showAlert(`❌ ${e.message}`, 'error');

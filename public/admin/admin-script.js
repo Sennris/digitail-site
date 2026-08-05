@@ -21,6 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Tab Switching
+// Homepage subtabs.
+//
+// Sections are HIDDEN, never removed - every field stays in the page, so a
+// save still picks up all of them no matter which subtab happens to be open.
+function switchHomepageSub(name, clickedBtn) {
+    const tab = document.getElementById('homepage-tab');
+    if (!tab) return;
+    tab.setAttribute('data-sub', name);
+    tab.querySelectorAll('.subtab').forEach(function (b) { b.classList.remove('active'); });
+    if (clickedBtn) clickedBtn.classList.add('active');
+    if (name !== 'links') {
+        const editor = document.getElementById('link-editor');
+        if (editor) editor.style.display = 'none';
+    }
+}
+
 function switchTab(tabName, clickedBtn) {
     currentTab = tabName;
     
@@ -478,6 +494,7 @@ function initializeForms() {
         homepageEditor.innerHTML = `
             <h2>Homepage Settings</h2>
             <form id="homepage-form" onsubmit="saveHomepageInfo(event)">
+                <div class="hp-sec" data-sec="hero">
                 <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono); margin-top: 0;">Hero Section</h3>
                 <div class="form-group">
                     <label>Site Title</label>
@@ -492,7 +509,9 @@ function initializeForms() {
                     <input type="text" id="hp-hero-tagline-mi" placeholder="// Whanaketanga Kēmu Motuhake mai i Aotearoa">
                 </div>
 
-                <hr style="border: 1px dashed var(--arctic-willow); margin: 2rem 0;">
+                </div>
+
+                <div class="hp-sec" data-sec="announce">
                 <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono);">Announcement Banner</h3>
                 <div class="form-group">
                     <label>
@@ -523,7 +542,9 @@ function initializeForms() {
                     </select>
                 </div>
 
-                <hr style="border: 1px dashed var(--arctic-willow); margin: 2rem 0;">
+                </div>
+
+                <div class="hp-sec" data-sec="mascot">
                 <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono);">Mascot Settings</h3>
                 <div class="form-group">
                     <label>Current Mascot</label>
@@ -558,6 +579,8 @@ function initializeForms() {
                 <div class="form-group">
                     <label>New Year Mascot Image URL</label>
                     <input type="text" id="hp-mascot-newyear-img" placeholder="Party fox image (Dec 31 - Jan 7)">
+                </div>
+
                 </div>
 
                 <div class="button-group">

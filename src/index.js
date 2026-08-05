@@ -18,6 +18,8 @@ import {
     handleSubscriberExport, handleSubscriberSync, newsletterHealth,
 } from './newsletter.js';
 
+// Not for /api/content/* - see the GET handler. Caching content reads meant
+// a save could take up to a minute to show up, on the site and in the admin.
 const JSON_HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'public, max-age=60',
@@ -410,7 +412,10 @@ async function handleApi(request, env, url) {
             try {
                 const data = await reader(env.DB);
                 if (data === null) return fail(`No data stored for ${type}`, 404);
-                return json(data);
+                // NO_CACHE on purpose. A cached copy of this is a published
+                // change that has not appeared yet, on the site or in the
+                // admin panel. See the note on JSON_HEADERS above.
+                return json(data, 200, NO_CACHE);
             } catch (e) {
                 return fail(`Database error: ${e.message}`, 500);
             }
