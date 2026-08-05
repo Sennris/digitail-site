@@ -127,8 +127,23 @@
     window.saveAllToServer = saveAllToServer;
     window.loadFromServer = loadFromServer;
 
-    window.addEventListener('DOMContentLoaded', loadFromServer);
-    if (document.readyState !== 'loading') loadFromServer();
+    // Go through window.loadFromServer, not the local one: admin-extras.js
+    // wraps it to redraw the tag manager and the tag dropdowns once the
+    // content has arrived. Calling the inner function skips all of that,
+    // which is why the tag manager sat empty until something else forced a
+    // redraw. The flag stops a double load when readyState is already
+    // 'interactive' but DOMContentLoaded has not fired yet.
+    let booted = false;
+    function boot() {
+        if (booted) return;
+        booted = true;
+        return (window.loadFromServer || loadFromServer)();
+    }
+
+    window.addEventListener('DOMContentLoaded', boot);
+    // setTimeout so any script that loads after this one has a chance to
+    // install its wrapper first.
+    if (document.readyState !== 'loading') setTimeout(boot, 0);
 
     // Warn before leaving with unsaved edits.
     let dirty = false;

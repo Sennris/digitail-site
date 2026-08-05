@@ -366,10 +366,14 @@ footer {
     letter-spacing: 0.06em;
 }
 
+/* Teal on a pale card measured about 1.1:1 - effectively invisible.
+   The distinction from the primary badge is filled vs outlined, not
+   colour, so this takes the card's own ink and keeps the dashed edge.
+   inherit/currentColor means it still works if a card ever goes dark. */
 .tag-badge--secondary {
-    background: transparent;
-    color: var(--frozen-juniper);
-    border: 2px dashed var(--frozen-juniper);
+    background: rgba(93, 204, 202, 0.30);
+    color: inherit;
+    border: 2px dashed currentColor;
     font-weight: 700;
 }
 

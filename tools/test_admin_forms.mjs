@@ -81,6 +81,14 @@ const sandbox = {
             const el = makeEl();
             el.children = [];
             el.appendChild = function (c) { this.children.push(c); };
+            el.insertBefore = function (c) { this.children.unshift(c); };
+            // Register under its id the moment one is set, so
+            // document.getElementById can find it afterwards - that is what
+            // the real DOM does once the element is inserted.
+            Object.defineProperty(el, 'id', {
+                get() { return this._id || ''; },
+                set(v) { this._id = v; if (v) els.set(v, this); },
+            });
             return el;
         },
         addEventListener() {},
@@ -296,6 +304,81 @@ console.log('\nTicker edits reach the stored settings:');
         `got ${JSON.stringify(stored2.items)}`);
     check('switching the ticker off reaches the stored settings',
         stored2.enabled === false);
+}
+
+/* ---- the tag manager must catch up with tags that arrive later ---- */
+
+console.log('\nThe tag manager shows tags that load after it is built:');
+{
+    // Fresh sandbox: the panel gets built while the tag list is still empty,
+    // exactly as it is on a real page load, and the content arrives after.
+    const els2 = new Map();
+    const mk = () => ({
+        value: '', checked: false, innerHTML: '', textContent: '',
+        style: {}, dataset: {}, children: [],
+        classList: { add() {}, remove() {}, contains: () => false },
+        addEventListener() {}, setAttribute() {},
+        querySelectorAll: () => [],
+        appendChild(c) { this.children.push(c); },
+        insertBefore(c) { this.children.unshift(c); },
+    });
+    els2.set('devlogs-tab', mk());
+
+    const sb = {
+        console: { log() {}, warn() {}, error() {} },
+        document: {
+            getElementById: (id) => els2.get(id) || null,
+            querySelector: () => null,
+            querySelectorAll: () => [],
+            addEventListener() {},
+            documentElement: {},
+            createElement: () => {
+                const el = mk();
+                Object.defineProperty(el, 'id', {
+                    get() { return this._id || ''; },
+                    set(v) { this._id = v; if (v) els2.set(v, this); },
+                });
+                return el;
+            },
+        },
+        MutationObserver: class { observe() {} disconnect() {} },
+        requestAnimationFrame: (fn) => fn(),
+        Option: function (label, value) { return { label, value }; },
+        showAlert() {}, alert() {}, confirm: () => true,
+    };
+    sb.window = sb;
+    vm.createContext(sb);
+
+    // The store exists but has no tags yet - the fetch has not landed.
+    vm.runInContext('let data = { tags: [], devlogs: [] };', sb);
+    vm.runInContext(readFileSync('public/admin/admin-extras.js', 'utf8'), sb,
+        { filename: 'admin-extras.js' });
+
+    const panel = els2.get('tag-kinds-panel');
+    check('the panel gets built even with no tags loaded yet', Boolean(panel));
+    check('and it says so', panel && panel.innerHTML.includes('None yet.'));
+
+    // Now the content arrives, and something triggers a remount - which is
+    // what happens when the admin finishes loading.
+    // Deliberately NOT 'Paper Crown' / 'Bug Fix': those two strings appear
+    // in the panel's own input placeholders ("e.g. Paper Crown"), so an
+    // earlier version of this check matched the placeholder and passed
+    // while the list was still empty.
+    vm.runInContext(`data.tags = [
+        { id: 1, name: 'Zephyr Project', kind: 'primary' },
+        { id: 2, name: 'Refactor Day', kind: 'secondary' }
+    ];`, sb);
+    vm.runInContext('window.loadFromServer = async function () {};', sb);
+    sb.document.addEventListener = () => {};
+    vm.runInContext(readFileSync('public/admin/admin-extras.js', 'utf8'), sb,
+        { filename: 'admin-extras.js (remount)' });
+
+    const after = els2.get('tag-kinds-panel');
+    const html = (after && after.innerHTML) || '';
+    check('the tag list catches up without anyone pressing Add',
+        html.includes('Zephyr Project') && html.includes('Refactor Day'),
+        html.includes('None yet.') ? 'still says None yet.' : '');
+    check('and the empty-state message is gone', !html.includes('None yet.'));
 }
 
 console.log(failures === 0

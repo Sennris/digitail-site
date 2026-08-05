@@ -136,6 +136,15 @@
         const panel = document.getElementById('tag-kinds-panel');
         if (!panel) return;
 
+        // Redraw only when the tags have actually changed. This is called
+        // from mountAll(), which the MutationObserver drives - rewriting
+        // innerHTML unconditionally from there retriggers the observer and
+        // loops forever.
+        const signature = allTags()
+            .map((t) => [t.id, t.kind, t.name, t.color].join('\u001f')).join('\u0000');
+        if (panel.dataset.tagSignature === signature) return;
+        panel.dataset.tagSignature = signature;
+
         panel.innerHTML = `
             <h3 style="font-family:var(--font-display); margin:0 0 0.35rem;">Devlog tags</h3>
             <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.75; margin:0 0 1.25rem;">
@@ -371,6 +380,10 @@
         mountDevlogPickers();
         mountTagManager();
         mountUsers();
+        // mountTagManager() returns early once the panel exists, so the
+        // redraw has to happen here or the list never catches up with data
+        // that arrived after the panel was built.
+        renderTagManager();
         refreshPickers();
     }
 
