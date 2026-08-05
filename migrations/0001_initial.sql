@@ -6,19 +6,9 @@
 -- switching a page over is a one-line change to its fetch URL.
 -- ============================================================
 
-DROP TABLE IF EXISTS devlog_tags;
-DROP TABLE IF EXISTS social_tags;
-DROP TABLE IF EXISTS devlogs;
-DROP TABLE IF EXISTS foxes;
-DROP TABLE IF EXISTS team;
-DROP TABLE IF EXISTS social_posts;
-DROP TABLE IF EXISTS tags;
-DROP TABLE IF EXISTS settings;
-DROP TABLE IF EXISTS subscribers;
-
 
 -- ---------- Dev logs ----------------------------------------
-CREATE TABLE devlogs (
+CREATE TABLE IF NOT EXISTS devlogs (
     id            INTEGER PRIMARY KEY,
     sort_date     TEXT    NOT NULL,          -- YYYYMMDD, used for ordering
     display_date  TEXT    NOT NULL,          -- human readable, shown on the card
@@ -33,11 +23,11 @@ CREATE TABLE devlogs (
     created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
     updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX idx_devlogs_sort ON devlogs(sort_date DESC);
+CREATE INDEX IF NOT EXISTS idx_devlogs_sort ON devlogs(sort_date DESC);
 
 
 -- ---------- Tags --------------------------------------------
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
     id       INTEGER PRIMARY KEY,
     name     TEXT NOT NULL UNIQUE,
     color    TEXT NOT NULL DEFAULT '#5DCCCA',
@@ -45,14 +35,14 @@ CREATE TABLE tags (
 );
 
 -- Tags are stored on posts by name, matching the current JSON files.
-CREATE TABLE devlog_tags (
+CREATE TABLE IF NOT EXISTS devlog_tags (
     devlog_id INTEGER NOT NULL REFERENCES devlogs(id) ON DELETE CASCADE,
     tag_name  TEXT    NOT NULL,
     position  INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (devlog_id, tag_name)
 );
 
-CREATE TABLE social_tags (
+CREATE TABLE IF NOT EXISTS social_tags (
     post_id  INTEGER NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE,
     tag_name TEXT    NOT NULL,
     position INTEGER NOT NULL DEFAULT 0,
@@ -61,7 +51,7 @@ CREATE TABLE social_tags (
 
 
 -- ---------- Adopted foxes -----------------------------------
-CREATE TABLE foxes (
+CREATE TABLE IF NOT EXISTS foxes (
     id          INTEGER PRIMARY KEY,
     name_en     TEXT    NOT NULL DEFAULT '',
     name_mi     TEXT    NOT NULL DEFAULT '',
@@ -77,7 +67,7 @@ CREATE TABLE foxes (
 
 
 -- ---------- The pack ----------------------------------------
-CREATE TABLE team (
+CREATE TABLE IF NOT EXISTS team (
     id         INTEGER PRIMARY KEY,
     name_en    TEXT    NOT NULL DEFAULT '',
     name_mi    TEXT    NOT NULL DEFAULT '',
@@ -91,7 +81,7 @@ CREATE TABLE team (
 
 
 -- ---------- Social posts ------------------------------------
-CREATE TABLE social_posts (
+CREATE TABLE IF NOT EXISTS social_posts (
     id          INTEGER PRIMARY KEY,
     platform    TEXT NOT NULL DEFAULT '',
     title       TEXT NOT NULL DEFAULT '',
@@ -100,14 +90,14 @@ CREATE TABLE social_posts (
     thumbnail   TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT ''
 );
-CREATE INDEX idx_social_date ON social_posts(date DESC);
+CREATE INDEX IF NOT EXISTS idx_social_date ON social_posts(date DESC);
 
 
 -- ---------- Settings ----------------------------------------
 -- homepage.json and game.json are nested config objects that the
 -- admin panel always saves whole, so they live here as JSON blobs
 -- rather than being shredded into columns.
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
     key        TEXT PRIMARY KEY,
     value      TEXT NOT NULL,
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -115,7 +105,7 @@ CREATE TABLE settings (
 
 
 -- ---------- Newsletter (Phase 4, table created now) ---------
-CREATE TABLE subscribers (
+CREATE TABLE IF NOT EXISTS subscribers (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     email        TEXT NOT NULL UNIQUE,
     name         TEXT NOT NULL DEFAULT '',
@@ -125,4 +115,4 @@ CREATE TABLE subscribers (
     source       TEXT NOT NULL DEFAULT 'website',
     created_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX idx_subscribers_status ON subscribers(status);
+CREATE INDEX IF NOT EXISTS idx_subscribers_status ON subscribers(status);

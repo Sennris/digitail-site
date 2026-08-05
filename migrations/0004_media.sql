@@ -2,9 +2,8 @@
 -- Uploaded media (images stored in R2)
 -- ============================================================
 
-DROP TABLE IF EXISTS media;
 
-CREATE TABLE media (
+CREATE TABLE IF NOT EXISTS media (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     r2_key      TEXT NOT NULL UNIQUE,   -- path inside the bucket
     url         TEXT NOT NULL,          -- what goes in the content
@@ -16,4 +15,4 @@ CREATE TABLE media (
     alt_text    TEXT NOT NULL DEFAULT '',
     uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX idx_media_uploaded ON media(uploaded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_media_uploaded ON media(uploaded_at DESC);

@@ -1,6 +1,7 @@
 # Digi Tail Studios website
 
-Static site on Cloudflare Pages, moving toward a D1-backed CMS.
+A Cloudflare Worker serving static assets, backed by a D1 database
+with a browser-based admin panel. Push to `main` to deploy.
 
 ---
 
@@ -120,12 +121,12 @@ Build settings:
 | Phase | What | Status |
 |---|---|---|
 | 0 | Consolidate CSS and JS, repo, deploy pipeline | CSS done, JS partial |
-| 1 | D1 database plus read API | next |
-| 2 | Write API plus admin login | |
-| 3 | R2 image uploads | |
-| 4 | Newsletter in D1 | |
-| 5 | Design punch-up | |
-| 6 | SEO, analytics, accessibility, backups | |
+| 1 | D1 database plus read API | done |
+| 2 | Write API plus admin login | done |
+| 3 | R2 image uploads | done |
+| 4 | Newsletter in D1 | not started |
+| 5 | Design punch-up | done |
+| 6 | SEO, analytics, accessibility, backups | done |
 
 ---
 
@@ -206,14 +207,9 @@ ever reaches the thousands, `src/writers.js` is the file to revisit.
 
 ### Setting up or resetting your password
 
-Visit `/admin/setup.html`. It only works when no admin account exists,
-so to reset a forgotten password, clear the account first:
-
-```
-npx wrangler d1 execute digitail --remote --command="DELETE FROM admin_users"
-```
-
-Then go to `/admin/setup.html` and create it again.
+Visit `/admin/setup.html`. It only works when the site has never been
+set up. See **Migrations > Resetting a forgotten password** below —
+clearing `admin_users` alone is no longer enough, on purpose.
 
 ### Why the iteration count looks low
 
@@ -730,3 +726,56 @@ If `primary_tag` isn't listed:
 ```
 npx wrangler d1 execute digitail --remote --file=./migrations/0005_tags_and_users.sql
 ```
+
+---
+
+## Migrations
+
+Check what the database has already had applied:
+
+```
+npx wrangler d1 execute digitail --remote --command="SELECT filename, applied_at FROM schema_migrations"
+```
+
+Then run only what is missing:
+
+```
+npx wrangler d1 execute digitail --remote --file=./migrations/000N_whatever.sql
+```
+
+Every migration except `0005` is safe to run twice — tables are
+`IF NOT EXISTS`, seed rows are `INSERT OR IGNORE`, and nothing drops
+anything. `0005` adds columns, which SQLite cannot guard, so a second
+run stops with `duplicate column name` before changing anything. Check
+the ledger first and you will not hit it.
+
+This was not always true. Until August 2026 the schema files each opened
+with `DROP TABLE IF EXISTS`, so running `0001` against the live database
+would have destroyed all content, and running `0003` would have deleted
+the admin account **and reopened `/admin/setup.html` to the public**.
+Those DROPs now live in `tools/DANGER_reset_database.sql`, out of the
+migrations folder and named so nobody runs one by accident.
+
+Verify after changing any migration:
+
+```
+python3 tools/test_migrations.py
+node --experimental-sqlite tools/test_setup_gate.mjs
+```
+
+The first builds a database, adds content that only exists in
+production, re-applies everything and checks nothing was lost. The
+second drives the real Worker handler against a real database to
+confirm account creation stays locked once the site has been set up.
+
+### Resetting a forgotten password
+
+Setup is latched by an `admin_bootstrapped` row in `settings`, which
+deliberately survives `admin_users` being dropped. Clear both:
+
+```
+npx wrangler d1 execute digitail --remote --command="DELETE FROM admin_users"
+npx wrangler d1 execute digitail --remote --command="DELETE FROM settings WHERE key = 'admin_bootstrapped'"
+```
+
+Then visit `/admin/setup.html`.

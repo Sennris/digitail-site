@@ -128,16 +128,30 @@ async function handleAuth(request, env, parts) {
 
     // One-time account creation. Refuses once an admin exists, so it
     // cannot be used to add a second account later.
+    //
+    // It also refuses once the site has EVER been set up, tracked by a
+    // flag in settings. Checking admin_users alone was not enough:
+    // re-running 0003_auth.sql, or any other route to an empty table,
+    // silently reopened this endpoint to the public. settings is not
+    // touched by that migration, so the flag outlives the accident.
+    // To deliberately reset a lost password, clear both:
+    //   DELETE FROM admin_users;
+    //   DELETE FROM settings WHERE key = 'admin_bootstrapped';
     if (action === 'setup') {
         const existing = await env.DB
             .prepare('SELECT COUNT(*) AS n FROM admin_users').first();
+        const bootstrapped = await env.DB
+            .prepare("SELECT 1 AS n FROM settings WHERE key = 'admin_bootstrapped'")
+            .first();
+
+        const alreadySetUp = (existing?.n || 0) > 0 || !!bootstrapped;
 
         if (request.method === 'GET') {
-            return json({ needsSetup: (existing?.n || 0) === 0 }, 200, NO_CACHE);
+            return json({ needsSetup: !alreadySetUp }, 200, NO_CACHE);
         }
         if (request.method !== 'POST') return fail('POST required', 405);
 
-        if ((existing?.n || 0) > 0) {
+        if (alreadySetUp) {
             return fail('An admin account already exists.', 403);
         }
         if (!env.SESSION_SECRET) {
@@ -156,6 +170,13 @@ async function handleAuth(request, env, parts) {
         await env.DB
             .prepare('INSERT INTO admin_users (email, password_hash, salt) VALUES (?,?,?)')
             .bind(email, hash, salt).run();
+
+        // Latch setup shut. Survives admin_users being dropped.
+        await env.DB
+            .prepare(`INSERT INTO settings (key, value)
+                      VALUES ('admin_bootstrapped', datetime('now'))
+                      ON CONFLICT(key) DO NOTHING`)
+            .run();
 
         return json({ ok: true, email }, 200, NO_CACHE);
     }

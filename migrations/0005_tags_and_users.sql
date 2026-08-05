@@ -1,6 +1,18 @@
 -- ============================================================
 -- Two-axis devlog tags
 -- ============================================================
+-- NOTE: this is the one migration that is not safe to re-run.
+-- SQLite has no ALTER TABLE ... ADD COLUMN IF NOT EXISTS, so a
+-- second run stops on statement 1 with "duplicate column name:
+-- primary_tag". That is loud but harmless — it fails before
+-- changing anything. Check the ledger before running it:
+--   npx wrangler d1 execute digitail --remote \
+--     --command="SELECT filename FROM schema_migrations"
+-- ============================================================
+
+-- ============================================================
+-- Two-axis devlog tags
+-- ============================================================
 -- PRIMARY tag   = what it's about (which game, or studio news)
 -- SECONDARY tag = what kind of update (bug fix, art, milestone...)
 --
