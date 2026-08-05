@@ -463,11 +463,36 @@ export default {
             if (!session) {
                 return Response.redirect(new URL('/admin/login.html', url).toString(), 302);
             }
-            // Serving an admin page slides the session window along, so
-            // "Back to Site" then returning does not demand a fresh login.
             const page = await env.ASSETS.fetch(request);
+
+            // Serving an admin PAGE slides the session window along, so
+            // "Back to Site" then returning does not demand a login.
+            //
+            // Only the page, though. This used to run for every request
+            // under /admin, which meant a fresh login cookie was pinned
+            // to cacheable .js and .css responses. A cached copy then
+            // handed the browser a stale, already-expired cookie and
+            // logged the user straight back out. Two rules now:
+            // credentials only ride on the document request, and any
+            // response carrying one is marked no-store.
+            // "Is this the page itself, or something the page pulled in?"
+            // Ask the asset server what it actually served rather than
+            // guessing from the URL - /admin, /admin/ and /admin/index.html
+            // are all the same document, and guessing from the path got
+            // this wrong once already.
+            const servedHtml = (page.headers.get('Content-Type') || '').includes('text/html');
+            const isDocument = request.method === 'GET' && servedHtml;
+
+            // 204/304 and redirects cannot carry a body; rebuilding one
+            // with a body throws.
+            const bodyless = page.status === 204 || page.status === 304
+                || (page.status >= 300 && page.status < 400);
+
+            if (!isDocument || bodyless) return page;
+
             const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
             const withCookie = new Response(page.body, page);
+            withCookie.headers.set('Cache-Control', 'no-store');
             withCookie.headers.append('Set-Cookie', sessionCookie(fresh));
             return withCookie;
         }

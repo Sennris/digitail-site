@@ -47,11 +47,26 @@ for (const f of readdirSync(join(ROOT, 'migrations')).sort()) {
 const env = {
     DB: d1(db),
     SESSION_SECRET: SECRET,
-    ASSETS: { fetch: async () => new Response('<html>admin</html>', { status: 200 }) },
+    ASSETS: {
+        fetch: async (req) => new Response('<html>admin</html>', {
+            status: 200,
+            // Real asset servers return cacheable responses. That is the
+            // whole point of the regression check at the bottom.
+            headers: {
+                'Content-Type': (function (path) {
+                    if (path.endsWith('.js')) return 'application/javascript';
+                    if (path.endsWith('.css')) return 'text/css';
+                    if (path.endsWith('.png')) return 'image/png';
+                    return 'text/html; charset=utf-8';
+                }(new URL(req.url).pathname)),
+                'Cache-Control': 'public, max-age=3600',
+            },
+        }),
+    },
 };
 
 const get = (path, cookie) => new Request(`https://www.digitailstudios.com${path}`,
-    cookie ? { headers: { Cookie: `dt_session=${cookie}` } } : undefined);
+    { headers: { Accept: 'text/html,application/xhtml+xml', ...(cookie ? { Cookie: `dt_session=${cookie}` } : {}) } });
 const post = (path, cookie) => new Request(`https://www.digitailstudios.com${path}`,
     { method: 'POST', headers: cookie ? { Cookie: `dt_session=${cookie}` } : {} });
 
@@ -122,6 +137,47 @@ res = await worker.fetch(post('/api/auth/keepalive', null), env);
 check('keepalive without a cookie is 401', res.status === 401, `got ${res.status}`);
 res = await worker.fetch(get('/admin/index.html', null), env);
 check('admin pages without a cookie bounce to login', res.status === 302, `got ${res.status}`);
+
+
+
+/* ---- regression: credentials must never ride on cacheable assets ----
+ *
+ * The login loop of August 2026: a fresh session cookie was attached to
+ * every response under /admin, including .js files. Those are cacheable,
+ * so a cached copy handed the browser an already-expired cookie and
+ * logged it straight back out seconds after signing in.
+ */
+
+console.log('\nRegression: cookies must not ride on cacheable assets:');
+{
+    const live = await createSession(1, 'cat@example.test', SECRET);
+
+    const asset = await worker.fetch(new Request(
+        'https://www.digitailstudios.com/admin/admin-script.js',
+        { headers: { Cookie: `dt_session=${live}`, Accept: '*/*' } }), env);
+    check('a .js asset carries NO Set-Cookie',
+        !asset.headers.get('Set-Cookie'), asset.headers.get('Set-Cookie') || '(none)');
+
+    const css = await worker.fetch(new Request(
+        'https://www.digitailstudios.com/admin/style.css',
+        { headers: { Cookie: `dt_session=${live}`, Accept: 'text/css,*/*' } }), env);
+    check('a .css asset carries NO Set-Cookie', !css.headers.get('Set-Cookie'));
+
+    const doc = await worker.fetch(new Request(
+        'https://www.digitailstudios.com/admin/',
+        { headers: { Cookie: `dt_session=${live}`, Accept: 'text/html,application/xhtml+xml' } }), env);
+    check('the document DOES refresh the cookie', !!doc.headers.get('Set-Cookie'));
+    check('and is marked no-store so nothing caches the credential',
+        (doc.headers.get('Cache-Control') || '').includes('no-store'),
+        doc.headers.get('Cache-Control') || '(none)');
+
+    // Whatever carries a Set-Cookie must never be cacheable, full stop.
+    for (const [label, res] of [['document', doc], ['asset', asset]]) {
+        const hasCookie = !!res.headers.get('Set-Cookie');
+        const cacheable = !(res.headers.get('Cache-Control') || '').includes('no-store');
+        check(`${label}: not (carries a credential AND cacheable)`, !(hasCookie && cacheable));
+    }
+}
 
 console.log();
 if (failures.length) {
