@@ -811,9 +811,17 @@ function populateForm(type, item) {
 }
 
 // Populate Homepage Form
+// Which forms have been filled in from stored data. Collecting from a form
+// that was never filled would publish blanks over real content, so the
+// collect functions below refuse to run until the matching flag is set.
+const formsPopulated = { homepage: false, game: false };
+
 function populateHomepageForm(hp) {
     const heroTitle = document.getElementById('hp-hero-title');
-    if (!heroTitle) return; // form not initialized yet
+    if (!heroTitle) return false; // form not built yet
+    if (!hp) return false;
+
+    formsPopulated.homepage = true;
     
     if (hp.hero) {
         heroTitle.value = hp.hero.titleEn || '';
@@ -848,6 +856,22 @@ function populateHomepageForm(hp) {
             }
         }
     }
+
+    return true;
+}
+
+function populateGameForm(game) {
+    const titleEn = document.getElementById('game-title-en');
+    if (!titleEn || !game) return false;
+
+    titleEn.value = game.titleEn || '';
+    document.getElementById('game-title-mi').value = game.titleMi || '';
+    document.getElementById('game-tagline-en').value = game.taglineEn || '';
+    document.getElementById('game-tagline-mi').value = game.taglineMi || '';
+    document.getElementById('game-trailer').value = game.trailerUrl || '';
+
+    formsPopulated.game = true;
+    return true;
 }
 
 // Tag Management
@@ -974,6 +998,10 @@ function saveItem(event, type) {
 // Save Game Info
 function collectGameInfo() {
     if (!document.getElementById('game-title-en')) return false;
+    if (!formsPopulated.game) {
+        console.warn('[admin] game form not loaded yet; leaving stored settings alone');
+        return false;
+    }
 
     data.game = {
         titleEn: document.getElementById('game-title-en').value,
@@ -1001,6 +1029,12 @@ function saveGameInfo(event) {
 // site, published the old ticked value.
 function collectHomepageInfo() {
     if (!document.getElementById('hp-announce-enabled')) return false;
+    // Never publish a form that was never filled in - that is how blanks
+    // get written over real content.
+    if (!formsPopulated.homepage) {
+        console.warn('[admin] homepage form not loaded yet; leaving stored settings alone');
+        return false;
+    }
 
     if (!data.homepage) data.homepage = {};
     

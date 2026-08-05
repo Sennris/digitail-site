@@ -42,8 +42,17 @@
         data.game = game || null;
 
         if (typeof renderAllLists === 'function') renderAllLists();
-        if (typeof loadGameForm === 'function') loadGameForm();
-        if (typeof loadHomepageForm === 'function') loadHomepageForm();
+
+        // These used to be called as loadGameForm() / loadHomepageForm(),
+        // which are not the names of any function in admin-script.js. The
+        // typeof guards meant the mistake never surfaced - the forms just
+        // sat empty. Call the real ones, and say so out loud if they are
+        // missing rather than failing quietly.
+        if (typeof populateGameForm === 'function') populateGameForm(data.game);
+        else console.error('[admin] populateGameForm missing - game form will be empty');
+
+        if (typeof populateHomepageForm === 'function') populateHomepageForm(data.homepage);
+        else console.error('[admin] populateHomepageForm missing - homepage form will be empty');
 
         const counts = TYPES.map((t) => `${t} ${data[t].length}`).join(', ');
         console.log('[admin] loaded from server:', counts);
