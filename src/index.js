@@ -130,6 +130,22 @@ async function handleAuth(request, env, parts) {
             : json({ loggedIn: false }, 200, NO_CACHE);
     }
 
+    // The admin panel pings this while its tab is open. Each ping trades
+    // the current cookie for a fresh one, sliding the 15-minute window
+    // along. Stop pinging (tab closed, walked away) and the session
+    // expires on its own.
+    if (action === 'keepalive') {
+        if (request.method !== 'POST') return fail('POST required', 405);
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
+        return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { ...NO_CACHE, 'Set-Cookie': sessionCookie(fresh) },
+        });
+    }
+
     // One-time account creation. Refuses once an admin exists, so it
     // cannot be used to add a second account later.
     //
@@ -447,6 +463,13 @@ export default {
             if (!session) {
                 return Response.redirect(new URL('/admin/login.html', url).toString(), 302);
             }
+            // Serving an admin page slides the session window along, so
+            // "Back to Site" then returning does not demand a fresh login.
+            const page = await env.ASSETS.fetch(request);
+            const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
+            const withCookie = new Response(page.body, page);
+            withCookie.headers.append('Set-Cookie', sessionCookie(fresh));
+            return withCookie;
         }
 
         return env.ASSETS.fetch(request);

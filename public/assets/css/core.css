@@ -214,12 +214,64 @@ body.lang-mi .en { display: none; }
 
 .ticker:hover .ticker__track { animation-play-state: paused; }
 
-.ticker__track span { padding: 0 1.6rem; }
+.ticker__track span { padding: 0 1.1rem; }
+
+.ticker__sep {
+    color: var(--long-black);
+    opacity: 0.55;
+    padding: 0 !important;
+}
 
 @keyframes ticker-scroll {
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
 }
+
+
+/* --------------------------------------------------------------------------
+   6b. HOMEPAGE TOP-OF-PAGE SEPARATION
+   The ticker, announcement banner and hero were reading as one
+   continuous wall. Each now has its own visual treatment so the eye
+   gets a "new section" moment. Layout spacing lives in pages/index.css.
+   -------------------------------------------------------------------------- */
+
+/* The hero becomes a framed panel rather than floating on the page bg. */
+.hero-section--framed {
+    background: rgba(185, 204, 204, 0.07);
+    border: var(--border-width) dashed var(--arctic-willow);
+    box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* The mascot gets pinned on like a sticker instead of hovering loose. */
+.hero-mascot {
+    background: rgba(93, 204, 202, 0.09);
+    border: 3px dashed var(--frozen-juniper);
+    border-radius: 6px;
+    transform: rotate(-2deg);
+}
+
+/* The announcement banner names itself with a corner tag, so it reads
+   as a pinned notice rather than a slice of the hero. Bilingual via the
+   body language class, like everything else. */
+.announcement-banner.active::before {
+    position: absolute;
+    top: -0.85rem;
+    left: 1.25rem;
+    z-index: 2;
+    background: var(--flat-white);
+    color: var(--long-black);
+    border: 3px solid var(--long-black);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    transform: rotate(-1.5deg);
+}
+body.lang-en .announcement-banner.active::before { content: '\1F4E3 Announcement'; }
+body.lang-mi .announcement-banner.active::before { content: '\1F4E3 P\101nui'; }
 
 
 /* --------------------------------------------------------------------------
@@ -888,6 +940,9 @@ textarea:focus-visible {
     transform: rotate(0deg) !important;
 }
 .pref-reduce-noise .charity-section::before { display: none; }
+.pref-reduce-noise .hero-mascot { transform: none; }
+.pref-reduce-noise .announcement-banner.active::before { transform: none; }
+.pref-reduce-noise .hero-section--framed { box-shadow: none; }
 .pref-reduce-noise .stack-drift > * { margin-left: 0 !important; max-width: 100%; }
 .pref-reduce-noise .image-placeholder { background-image: none; }
 .pref-reduce-noise .hero-section h1 {
@@ -979,7 +1034,7 @@ textarea:focus-visible {
    Anything drawn with backgrounds or shadows has to keep a real border
    or it vanishes entirely. */
 @media (forced-colors: active) {
-    .card, .player-card, .btn-rugged, .read-more, .badge,
+    .card, .player-card, .btn-rugged, .read-more, .badge, .hero-mascot,
     .year-badge, .display-prefs__panel, .image-placeholder {
         border: 2px solid ButtonBorder;
         box-shadow: none;
@@ -1045,3 +1100,12 @@ textarea:focus-visible {
     text-decoration: underline;
     text-underline-offset: 3px;
 }
+
+
+/* Footer privacy link */
+.footer-privacy {
+    color: var(--arctic-willow);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.footer-privacy:hover { color: var(--frozen-juniper); }

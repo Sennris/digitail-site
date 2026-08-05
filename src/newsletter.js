@@ -74,7 +74,9 @@ export async function verifyTurnstile(request, env, token) {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                secret: env.TURNSTILE_SECRET,
+                // trim(): a stray newline from a copy-paste is invisible
+                // in `wrangler secret list` but breaks verification.
+                secret: String(env.TURNSTILE_SECRET).trim(),
                 response: token,
                 remoteip: clientIp(request),
             }),
@@ -331,7 +333,8 @@ async function buttondown(env, path, options = {}) {
         const response = await fetch(`${BUTTONDOWN_API}${path}`, {
             ...options,
             headers: {
-                Authorization: `Token ${env.BUTTONDOWN_API_KEY}`,
+                // trim() guards against an invisible pasted newline.
+                Authorization: `Token ${String(env.BUTTONDOWN_API_KEY).trim()}`,
                 'Content-Type': 'application/json',
                 ...(options.headers || {}),
             },

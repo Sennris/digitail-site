@@ -202,19 +202,33 @@
                 const tickerEl = document.getElementById('site-ticker');
                 const trackEl = document.getElementById('ticker-track');
                 // Settings saved before the ticker existed have no ticker key,
-                // so fall back to defaults rather than hiding the strip.
+                // so fall back to the same defaults the admin editor shows.
                 const tickerCfg = data.ticker || {
                     enabled: true, speed: 32,
-                    items: ['DEVLOGS EVERY WEEK', 'MADE IN OTAUTAHI',
-                            'WISHLIST SOON', 'POWERED BY LONG BLACKS',
-                            'THREE PAWS HIDDEN ON THIS SITE'],
+                    items: ['\u{1F98A} DEVLOGS EVERY WEEK', '\u2744\uFE0F MADE IN \u014CTAUTAHI',
+                            '\u{1F3AE} WISHLIST SOON', '\u2615 POWERED BY LONG BLACKS',
+                            '\u{1F43E} THREE PAWS HIDDEN ON THIS SITE'],
                 };
                 if (tickerEl && trackEl && tickerCfg.enabled !== false
                     && Array.isArray(tickerCfg.items) && tickerCfg.items.length) {
-                    // duplicated so the scroll loops without a visible seam
-                    const once = tickerCfg.items
-                        .map(t => '<span>' + t + '</span>').join('');
-                    trackEl.innerHTML = once + once;
+                    trackEl.textContent = '';
+                    // Two copies so the scroll loops without a visible seam.
+                    // The second is hidden from screen readers, which would
+                    // otherwise hear every notice twice.
+                    [false, true].forEach(function (isDuplicate) {
+                        tickerCfg.items.forEach(function (item) {
+                            const cell = document.createElement('span');
+                            cell.textContent = item;
+                            if (isDuplicate) cell.setAttribute('aria-hidden', 'true');
+                            trackEl.appendChild(cell);
+
+                            const dot = document.createElement('span');
+                            dot.className = 'ticker__sep';
+                            dot.textContent = '\u2022';
+                            dot.setAttribute('aria-hidden', 'true');
+                            trackEl.appendChild(dot);
+                        });
+                    });
                     if (tickerCfg.speed) {
                         trackEl.style.animationDuration = tickerCfg.speed + 's';
                     }

@@ -69,7 +69,8 @@ body.lang-mi .en {
 }
 
 .hero-section {
-    padding: 15vh 2rem 10vh;
+    padding: 12vh 2rem 9vh;
+    margin-top: clamp(2rem, 5vw, 3.25rem);
     margin-bottom: 4rem;
 }
 
@@ -96,6 +97,7 @@ body.lang-mi .en {
     flex: 0 0 auto;
     width: 180px;
     height: 180px;
+    padding: 0.9rem;
     display: none;
 }
 
@@ -146,9 +148,10 @@ body.lang-mi .en {
 
 .announcement-banner.text-only {
     text-align: center;
-    padding: 1rem 2rem;
+    padding: 1.1rem 2rem 1rem;
     font-family: var(--font-mono);
     font-weight: 700;
+    border-top: 3px solid #1D0D12;
 }
 
 .announcement-banner.text-only a {

@@ -26,16 +26,27 @@
     </div>
 
     <div class="container">
-        <div class="tab-nav">
-            <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
-            <button class="tab-button" onclick="switchTab('foxes', this)">🦊 Foxes</button>
-            <button class="tab-button" onclick="switchTab('team', this)">👥 Team</button>
-            <button class="tab-button" onclick="switchTab('game', this)">🎮 Game Info</button>
-            <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
-            <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
-            <button class="tab-button" onclick="switchTab('subscribers', this)">✉️ Subscribers</button>
-        </div>
+        <div class="admin-shell">
+        <nav class="admin-side" aria-label="Admin sections">
+            <div class="side-group">
+                <div class="side-label">Content</div>
+                <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
+                <button class="tab-button" onclick="switchTab('game', this)">🎮 Game Info</button>
+                <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
+            </div>
+            <div class="side-group">
+                <div class="side-label">Studio</div>
+                <button class="tab-button" onclick="switchTab('team', this)">👥 Team</button>
+                <button class="tab-button" onclick="switchTab('foxes', this)">🦊 Foxes</button>
+                <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
+            </div>
+            <div class="side-group">
+                <div class="side-label">Audience</div>
+                <button class="tab-button" onclick="switchTab('subscribers', this)">✉️ Subscribers</button>
+            </div>
+        </nav>
 
+        <div class="admin-main">
         <div id="alert-container"></div>
 
         <!-- DEVLOGS TAB -->
@@ -259,6 +270,9 @@
             </div>
         </div>
 
+        </div><!-- /.admin-main -->
+        </div><!-- /.admin-shell -->
+
     </div>
 
     <input type="file" id="file-input" accept=".json">
@@ -269,5 +283,6 @@
     <script src="ticker-editor.js"></script>
     <script src="admin-extras.js"></script>
     <script src="admin-subscribers.js"></script>
+    <script src="session-guard.js"></script>
 </body>
 </html>

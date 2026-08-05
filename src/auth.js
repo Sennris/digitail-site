@@ -14,7 +14,13 @@
 // also peppered with a secret that lives in Cloudflare rather than in
 // the database. A stolen database is useless without it.
 const ITERATIONS = 8000;
-const SESSION_HOURS = 12;
+// Sessions are short and sliding rather than long and fixed. The admin
+// panel pings /api/auth/keepalive while its tab is open, and every admin
+// page load re-issues the cookie, so working in the panel keeps you in
+// indefinitely. Walk away, close the tab, or close the browser, and the
+// session dies within this window. The cookie itself has no Max-Age, so
+// it also does not survive the browser closing.
+const IDLE_MINUTES = 15;
 const COOKIE_NAME = 'dt_session';
 
 const enc = new TextEncoder();
@@ -44,6 +50,10 @@ function safeEqual(a, b) {
 /* ---------- passwords ---------- */
 
 /** Mix the pepper into the password before it ever reaches PBKDF2. */
+// SESSION_SECRET is deliberately never trimmed or normalised. It peppers
+// every stored password hash, so changing its bytes in any way - even
+// stripping whitespace it might contain - would invalidate the admin
+// password. Whatever was set is what must be used, exactly.
 async function pepper(password, secret) {
     if (!secret) return password;
     const key = await crypto.subtle.importKey(
@@ -97,7 +107,7 @@ export async function createSession(userId, email, secret) {
     const payload = JSON.stringify({
         uid: userId,
         email,
-        exp: Date.now() + SESSION_HOURS * 3600 * 1000,
+        exp: Date.now() + IDLE_MINUTES * 60 * 1000,
     });
     const sig = await sign(payload, secret);
     return `${b64encode(payload)}.${sig}`;
@@ -137,7 +147,9 @@ export async function readSession(token, secret) {
 /* ---------- cookies ---------- */
 
 export function sessionCookie(token) {
-    return `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_HOURS * 3600}`;
+    // Deliberately no Max-Age: a cookie without one is dropped when the
+    // browser closes, which is half of the sign-out-on-leave behaviour.
+    return `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/`;
 }
 
 export function clearCookie() {
