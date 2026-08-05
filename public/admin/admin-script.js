@@ -50,8 +50,14 @@ function hideAllEditors() {
 }
 
 // File Upload Handling
+//
+// The JSON import was removed - the panel reads and writes the live
+// database now, so importing an old file could only ever overwrite good
+// content with stale content. These are kept as harmless no-ops so
+// nothing that still calls them throws.
 function setupFileInput() {
     const fileInput = document.getElementById('file-input');
+    if (!fileInput) return;
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -62,6 +68,7 @@ function setupFileInput() {
 
 function uploadJSON(type) {
     const fileInput = document.getElementById('file-input');
+    if (!fileInput) return;
     fileInput.dataset.type = type;
     fileInput.click();
 }
@@ -555,6 +562,7 @@ function initializeForms() {
 
                 <div class="button-group">
                     <button type="submit" class="btn-rugged">💾 Save Homepage Settings</button>
+                    <span class="save-hint">Saved as a draft. Press \ud83d\udcbe Save to site at the top of the page to publish it.</span>
                 </div>
             </form>
         `;
@@ -587,6 +595,7 @@ function initializeForms() {
             </div>
             <div class="button-group">
                 <button type="submit" class="btn-rugged">💾 Save Game Info</button>
+                    <span class="save-hint">Saved as a draft. Press \ud83d\udcbe Save to site at the top of the page to publish it.</span>
             </div>
         </form>
     `;
@@ -940,9 +949,9 @@ function saveItem(event, type) {
 }
 
 // Save Game Info
-function saveGameInfo(event) {
-    event.preventDefault();
-    
+function collectGameInfo() {
+    if (!document.getElementById('game-title-en')) return false;
+
     data.game = {
         titleEn: document.getElementById('game-title-en').value,
         titleMi: document.getElementById('game-title-mi').value,
@@ -950,14 +959,26 @@ function saveGameInfo(event) {
         taglineMi: document.getElementById('game-tagline-mi').value,
         trailerUrl: document.getElementById('game-trailer').value.trim()
     };
-    
-    showAlert('✅ Game information saved!', 'success');
+
+    return true;
+}
+
+function saveGameInfo(event) {
+    if (event) event.preventDefault();
+    collectGameInfo();
+    showAlert('✅ Game info updated. Press 💾 Save to site to publish it.', 'success');
 }
 
 // Save Homepage Info
-function saveHomepageInfo(event) {
-    event.preventDefault();
-    
+//
+// Split in two on purpose. collectHomepageInfo() reads the form into the
+// working copy and is ALSO called by "Save to site", so a change can never
+// be left behind in a form you did not press the button under. That was
+// the announcement banner bug: unticking Enabled, then pressing Save to
+// site, published the old ticked value.
+function collectHomepageInfo() {
+    if (!document.getElementById('hp-announce-enabled')) return false;
+
     if (!data.homepage) data.homepage = {};
     
     data.homepage.hero = {
@@ -989,8 +1010,14 @@ function saveHomepageInfo(event) {
         if (imgInput) versions[key].image = imgInput.value.trim();
     });
     data.homepage.mascot.versions = versions;
-    
-    showAlert('✅ Homepage settings saved!', 'success');
+
+    return true;
+}
+
+function saveHomepageInfo(event) {
+    if (event) event.preventDefault();
+    collectHomepageInfo();
+    showAlert('✅ Homepage settings updated. Press 💾 Save to site to publish them.', 'success');
 }
 
 // Delete Item

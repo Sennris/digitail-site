@@ -107,3 +107,32 @@ body.lang-mi .en { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .simple-card { transform: none; }
 }
+
+
+/* ---- links on the privacy and unsubscribe pages were browser-default
+   and looked unfinished next to the rest of the site ---- */
+
+.simple-card a {
+    color: var(--frozen-juniper);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid rgba(93, 204, 202, 0.45);
+    padding-bottom: 1px;
+    transition: background-color 0.15s ease, color 0.15s ease,
+                border-color 0.15s ease;
+}
+
+.simple-card a:hover,
+.simple-card a:focus-visible {
+    color: var(--long-black);
+    background-color: var(--frozen-juniper);
+    border-bottom-color: var(--long-black);
+    box-shadow: 0 0 0 3px var(--frozen-juniper);
+    border-radius: 2px;
+}
+
+/* Email addresses and the like read better as a tag than a sentence link */
+.simple-card a[href^="mailto:"] {
+    font-family: var(--font-mono);
+    font-size: 0.95em;
+}

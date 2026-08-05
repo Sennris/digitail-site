@@ -504,6 +504,22 @@ footer {
 .newsletter-form .cf-turnstile {
     margin: 0.5rem 0;
     min-height: 65px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.newsletter-form .cf-turnstile iframe {
+    max-width: 100% !important;
+}
+
+/* The widget will not render below 300px wide, so on the narrowest
+   phones it gets scaled down rather than allowed to poke out. */
+@media (max-width: 420px) {
+    .newsletter-form .cf-turnstile {
+        transform: scale(0.88);
+        transform-origin: left center;
+        min-height: 58px;
+    }
 }
 
 .newsletter-form .form-status {
@@ -512,8 +528,51 @@ footer {
     line-height: 1.4;
 }
 
+/* The newsletter panel is a LIGHT surface, so the default light-on-dark
+   smallprint colour disappeared into it completely. */
 .newsletter-form .form-smallprint {
     margin: 0.5rem 0 0;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     line-height: 1.5;
+    color: #3A2730;
+}
+
+.newsletter-form .form-smallprint a {
+    color: #1D0D12;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.newsletter-form .form-smallprint a:hover {
+    color: #0F5C5B;
+}
+
+
+/* ---- narrow phones: reclaim the horizontal room the panel padding ate.
+   Combined with the Turnstile rules above this is what stops the page
+   being pannable sideways. ---- */
+
+@media (max-width: 480px) {
+    .feature-section {
+        padding: 2.5rem 1.1rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .newsletter-form { max-width: 100%; }
+}
+
+
+/* ---- the ANNOUNCEMENT corner tag was sliding under the sticky ticker,
+   which made it clipped and unclickable. Give it its own stacking
+   context below the ticker and drop it inside the banner. ---- */
+
+.announcement-banner.active {
+    margin-top: 0.4rem;
+    isolation: isolate;
+}
+
+.announcement-banner.active::before {
+    top: 0.5rem;
+    z-index: 2;
 }

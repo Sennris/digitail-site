@@ -212,14 +212,13 @@
                 if (tickerEl && trackEl && tickerCfg.enabled !== false
                     && Array.isArray(tickerCfg.items) && tickerCfg.items.length) {
                     trackEl.textContent = '';
-                    // Two copies so the scroll loops without a visible seam.
-                    // The second is hidden from screen readers, which would
-                    // otherwise hear every notice twice.
-                    [false, true].forEach(function (isDuplicate) {
+
+                    // Lay down one copy of the list.
+                    function appendCopy(hideFromScreenReaders) {
                         tickerCfg.items.forEach(function (item) {
                             const cell = document.createElement('span');
                             cell.textContent = item;
-                            if (isDuplicate) cell.setAttribute('aria-hidden', 'true');
+                            if (hideFromScreenReaders) cell.setAttribute('aria-hidden', 'true');
                             trackEl.appendChild(cell);
 
                             const dot = document.createElement('span');
@@ -228,11 +227,27 @@
                             dot.setAttribute('aria-hidden', 'true');
                             trackEl.appendChild(dot);
                         });
-                    });
-                    if (tickerCfg.speed) {
-                        trackEl.style.animationDuration = tickerCfg.speed + 's';
                     }
+
                     tickerEl.hidden = false;
+                    appendCopy(false);
+
+                    // The animation slides the track left by exactly half its
+                    // width, so the second half has to be an identical repeat
+                    // of the first AND the whole thing has to be at least two
+                    // strip-widths long, or the band empties out before it
+                    // loops. A short list on a wide monitor did exactly that.
+                    const oneCopy = trackEl.scrollWidth || 1;
+                    const stripWidth = tickerEl.clientWidth || oneCopy;
+                    const copiesPerHalf = Math.max(1, Math.ceil(stripWidth / oneCopy));
+
+                    for (let i = 1; i < copiesPerHalf; i++) appendCopy(true);
+                    for (let i = 0; i < copiesPerHalf; i++) appendCopy(true);
+
+                    // Keep the reading speed steady no matter how many
+                    // repeats it took to fill the screen.
+                    const baseSpeed = tickerCfg.speed || 32;
+                    trackEl.style.animationDuration = (baseSpeed * copiesPerHalf) + 's';
                 }
 
                 // Community Links (card-grid banners)
@@ -361,7 +376,7 @@
                             alert(document.body.classList.contains('lang-en') ? 
                                 "🦊 You found all 3 hidden paws! Welcome to the deep den..." : 
                                 "🦊 Kua kitea ngā tapuwae e 3! Nau mai ki te rua hōhonu...");
-                            window.open("https://www.youtube.com/results?search_query=laughing+arctic+fox", "_blank"); 
+                            window.location.href = "/foxes.html#deep-den";
                         } else {
                             alert(document.body.classList.contains('lang-en') ? 
                                 `🐾 Paw found! (${currentFound.length}/3) Keep hunting...` : 

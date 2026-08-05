@@ -71,6 +71,14 @@
         if (btn) { btn.disabled = true; btn.innerHTML = '💾 Saving...'; }
 
         try {
+            // Pull whatever is currently typed into the homepage and game
+            // forms into the working copy BEFORE publishing. Without this,
+            // a change you made but did not press the form's own button
+            // under is silently dropped - which is what kept the
+            // announcement banner switched on after it was unticked.
+            if (typeof collectHomepageInfo === 'function') collectHomepageInfo();
+            if (typeof collectGameInfo === 'function') collectGameInfo();
+
             for (const type of TYPES) {
                 await putContent(type, data[type] || []);
             }

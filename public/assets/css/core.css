@@ -61,6 +61,11 @@
 
 * { box-sizing: border-box; }
 
+/* Nothing gets to be wider than the box it sits in. A single fixed-width
+   embed overflowing here is enough to make the whole page pan sideways
+   on a phone, which is what was happening with the Turnstile widget. */
+img, svg, video, iframe, canvas, embed, object { max-width: 100%; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -75,8 +80,8 @@ body {
     font-size: 1.02rem;
 
     /* Faint dot grid. Stops the background reading as an empty void. */
-    background-image: radial-gradient(rgba(185, 204, 204, 0.11) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(rgba(185, 204, 204, 0.22) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
 }
 
 /* Film grain over the whole page. This is most of why it stops looking flat. */
@@ -86,7 +91,7 @@ body::after {
     inset: 0;
     pointer-events: none;
     z-index: 9998;
-    opacity: 0.10;
+    opacity: 0.17;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
@@ -544,9 +549,10 @@ h1, h2, h3, h4 {
     );
 }
 
-/* A paw sitting in the corner, so an empty box still has personality */
+/* A snowflake, NOT a paw. Paws are reserved for the hidden easter eggs -
+   a decorative paw here made the real ones impossible to pick out. */
 .image-placeholder::before {
-    content: '🐾';
+    content: '\2744\FE0F';
     position: absolute;
     bottom: 0.5rem;
     right: 0.7rem;
@@ -629,7 +635,7 @@ footer {
 
 .secret-paw {
     cursor: pointer;
-    opacity: 0.3;
+    opacity: 0.42;
     filter: grayscale(100%);
     font-size: 1.2rem;
     transition: all 0.3s ease;
@@ -941,6 +947,33 @@ textarea:focus-visible {
 }
 .pref-reduce-noise .charity-section::before { display: none; }
 .pref-reduce-noise .hero-mascot { transform: none; }
+
+/* Nothing tilts, jumps or lifts on hover once noise is reduced. This has
+   to be a wide net: the tilt lives on a different class on nearly every
+   page, and testers kept finding ones that were missed. */
+.pref-reduce-noise a:hover,
+.pref-reduce-noise button:hover,
+.pref-reduce-noise .card:hover,
+.pref-reduce-noise .banner:hover,
+.pref-reduce-noise .feature-section:hover,
+.pref-reduce-noise .player-card:hover,
+.pref-reduce-noise .charity-section:hover,
+.pref-reduce-noise .btn-rugged:hover,
+.pref-reduce-noise .btn-massive:hover,
+.pref-reduce-noise .submit-btn:hover,
+.pref-reduce-noise .site-nav a.nav-link:hover,
+.pref-reduce-noise .nav-lang:hover,
+.pref-reduce-noise .secret-paw:hover,
+.pref-reduce-noise .read-more,
+.pref-reduce-noise .site-nav__brand:hover span[aria-hidden] {
+    transform: none !important;
+}
+
+/* The logo fox and the nav buttons are part of the header, not decoration -
+ * they were the two things the reduce-noise setting visibly skipped. */
+.pref-reduce-noise .site-nav__brand span[aria-hidden] { transform: none !important; }
+.pref-reduce-noise .btn-rugged,
+.pref-reduce-noise .nav-lang { transform: none !important; }
 .pref-reduce-noise .announcement-banner.active::before { transform: none; }
 .pref-reduce-noise .hero-section--framed { box-shadow: none; }
 .pref-reduce-noise .stack-drift > * { margin-left: 0 !important; max-width: 100%; }
@@ -1091,6 +1124,8 @@ textarea:focus-visible {
     display: none;
 }
 
+/* Default is for dark surfaces (the unsubscribe card). On a light panel
+   this was arctic willow on arctic willow - invisible. See index.css. */
 .form-smallprint {
     color: var(--arctic-willow, #B9CCCC);
 }
@@ -1109,3 +1144,85 @@ textarea:focus-visible {
     text-underline-offset: 3px;
 }
 .footer-privacy:hover { color: var(--frozen-juniper); }
+
+
+/* ==========================================================================
+   22. FOOTER NAVIGATION
+   ==========================================================================
+   The page links used to live in the sticky header. They now sit here, so
+   the top of every page is just the logo, the language toggle and display
+   options - and nobody reading a devlog is stranded without a way out.
+   ========================================================================== */
+
+.footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem 0.5rem;
+    margin: 0 auto 1.75rem;
+    padding-bottom: 1.5rem;
+    max-width: 40rem;
+    border-bottom: 2px dashed rgba(185, 204, 204, 0.28);
+}
+
+.footer-nav a {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: lowercase;
+    letter-spacing: 0.03em;
+    color: var(--extra-foam);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: all 0.12s ease;
+}
+
+.footer-nav a:hover,
+.footer-nav a:focus-visible {
+    color: var(--long-black);
+    background: var(--frozen-juniper);
+    border-color: var(--long-black);
+    box-shadow: 3px 3px 0 var(--long-black);
+    transform: translate(-1px, -1px);
+}
+
+.footer-nav a[aria-current="page"] {
+    color: var(--frozen-juniper);
+    border-color: var(--frozen-juniper);
+}
+
+.pref-reduce-noise .footer-nav a:hover { transform: none !important; }
+
+@media (max-width: 480px) {
+    .footer-nav { gap: 0.25rem 0.3rem; }
+    .footer-nav a { font-size: 0.78rem; padding: 0.35rem 0.6rem; }
+}
+
+
+/* ==========================================================================
+   23. TOP-OF-PAGE SECTION BREAKS
+   ==========================================================================
+   Ticker, announcement and hero were still reading as one wall of stuff.
+   Each now sits on its own with real air between them, so scrolling past
+   gives the eye a "that was a different thing" moment.
+   ========================================================================== */
+
+.ticker { box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45); }
+
+.hero-section--framed {
+    margin-top: 2.75rem;
+    border-radius: 6px;
+}
+
+/* A short rule that marks where the announcement ends and the page begins */
+.announcement-banner.active {
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4);
+    margin-bottom: 2.25rem;
+}
+
+@media (max-width: 768px) {
+    .hero-section--framed { margin-top: 1.75rem; }
+    .announcement-banner.active { margin-bottom: 1.5rem; }
+}

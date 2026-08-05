@@ -142,7 +142,7 @@ const EasterEggs = {
                         '🦊 You found all 3 hidden paws! Welcome to the deep den...',
                         '🦊 Kua kitea ngā tapuwae e 3! Nau mai ki te rua hōhonu...'
                     ));
-                    window.open('https://www.youtube.com/results?search_query=laughing+arctic+fox', '_blank');
+                    window.location.href = '/foxes.html#deep-den';
                 } else {
                     alert(Lang.pick(
                         `🐾 Paw found! (${current.length}/${this.TOTAL_PAWS}) Keep hunting...`,

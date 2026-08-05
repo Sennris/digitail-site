@@ -28,8 +28,7 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 3px solid var(--frozen-juniper);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
 }
 
@@ -411,3 +410,38 @@ body {
             }
         }
 
+
+/* ---- readability inside admin cards.
+   The admin cards are a light panel, so arctic willow explanatory text
+   was sitting almost invisibly on top of it. Anything using that colour
+   for body copy in here gets a dark ink colour instead. ---- */
+
+.admin-main .card p[style*="arctic-willow"],
+.admin-main .card p[style*="--arctic-willow"],
+.admin-main .card .muted,
+.admin-main .card small {
+    color: #3A2730 !important;
+}
+
+.admin-main .card h3[style*="frozen-juniper"] {
+    color: #0F5C5B !important;
+}
+
+#subs-table,
+#subs-table td,
+#subs-table th {
+    color: #241119;
+}
+
+/* Save-to-site reminder under any form that only updates the draft */
+.save-hint {
+    display: block;
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: #3A2730;
+    background: rgba(93, 204, 202, 0.25);
+    border-left: 4px solid #0F5C5B;
+    padding: 0.5rem 0.7rem;
+    border-radius: 2px;
+}

@@ -69,9 +69,7 @@
                         <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('devlog')">
                             ✨ New Devlog
                         </button>
-                        <div class="upload-area" onclick="uploadJSON('devlogs')">
-                            📂 Load devlogs.json
-                        </div>
+                        
                         <div id="devlogs-list" style="margin-top: 1.5rem;"></div>
                     </div>
                 </div>
@@ -99,9 +97,7 @@
                         <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('fox')">
                             ✨ New Fox
                         </button>
-                        <div class="upload-area" onclick="uploadJSON('foxes')">
-                            📂 Load foxes.json
-                        </div>
+                        
                         <div id="foxes-list" style="margin-top: 1.5rem;"></div>
                     </div>
                 </div>
@@ -129,9 +125,7 @@
                         <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('team')">
                             ✨ New Member
                         </button>
-                        <div class="upload-area" onclick="uploadJSON('team')">
-                            📂 Load team.json
-                        </div>
+                        
                         <div id="team-list" style="margin-top: 1.5rem;"></div>
                     </div>
                 </div>
@@ -149,9 +143,7 @@
                 <div class="sidebar">
                     <div class="card">
                         <h2>Game Info</h2>
-                        <div class="upload-area" onclick="uploadJSON('game')">
-                            📂 Load game.json
-                        </div>
+                        
                     </div>
                 </div>
                 <div class="main-content">
@@ -186,9 +178,7 @@
                         <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('social')">
                             ✨ New Post
                         </button>
-                        <div class="upload-area" onclick="uploadJSON('social')">
-                            📂 Load social.json
-                        </div>
+                        
                         <div id="social-list" style="margin-top: 1.5rem;"></div>
                     </div>
                 </div>
@@ -213,10 +203,7 @@
                 <div class="sidebar">
                     <div class="card">
                         <h2>Homepage</h2>
-                        <div class="upload-area" onclick="uploadJSON('homepage')" style="margin-bottom: 1rem;">
-                            📂 Load homepage.json
-                        </div>
-                        <hr style="border: 1px dashed var(--arctic-willow); margin: 1rem 0;">
+                        
                         <h3 style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--frozen-juniper); margin: 0 0 0.5rem 0;">Community Links</h3>
                         <p style="font-size: 0.8rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">The card banners in the "See what's happening in the den" section.</p>
                         <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('link')">
@@ -275,7 +262,7 @@
 
     </div>
 
-    <input type="file" id="file-input" accept=".json">
+
 
     <script src="admin-script.js"></script>
     <script src="api-adapter.js"></script>
