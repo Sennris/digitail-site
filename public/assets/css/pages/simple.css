@@ -1,0 +1,109 @@
+/* unsubscribe.html and privacy.html - page specific styles.
+   Visual design lives in ../core.css. This file keeps layout and
+   structure only, per the split described in the README. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 5rem 1rem 4rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+body.lang-en .mi { display: none; }
+body.lang-mi .en { display: none; }
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.5rem 2rem;
+    z-index: 1000;
+}
+
+.simple-card {
+    max-width: 700px;
+    width: 100%;
+    padding: 3rem 2.5rem;
+    border-radius: 4px;
+    transform: rotate(-0.4deg);
+}
+
+.simple-card h1 {
+    font-size: clamp(2.2rem, 7vw, 3.5rem);
+    margin: 0 0 1.5rem;
+    line-height: 1.05;
+}
+
+.simple-card h2 {
+    font-size: 1.25rem;
+    margin: 2.25rem 0 0.6rem;
+    line-height: 1.2;
+}
+
+.simple-card p,
+.simple-card li {
+    line-height: 1.65;
+    margin: 0 0 1rem;
+}
+
+.simple-card ul {
+    padding-left: 1.25rem;
+    margin: 0 0 1rem;
+}
+
+.simple-card li {
+    margin-bottom: 0.4rem;
+}
+
+#unsub-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    align-items: flex-start;
+    margin: 2rem 0 1rem;
+}
+
+#unsub-form input[type="email"] {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+}
+
+#unsub-form .cf-turnstile {
+    min-height: 65px;
+}
+
+#unsub-form .form-status {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.form-smallprint {
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.last-updated {
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+    body { padding: 4.5rem 0.75rem 3rem; }
+    .simple-card { padding: 2rem 1.4rem; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .simple-card { transform: none; }
+}

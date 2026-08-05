@@ -779,3 +779,67 @@ npx wrangler d1 execute digitail --remote --command="DELETE FROM settings WHERE 
 ```
 
 Then visit `/admin/setup.html`.
+
+---
+
+## Newsletter (Phase 4)
+
+Signups land in this site's own D1 `subscribers` table first. Buttondown
+only sends. That order is deliberate: the list is the asset, and it
+should not live solely inside someone else's product.
+
+| Route | Who | Does |
+|---|---|---|
+| `POST /api/subscribe` | public | Turnstile check, save to D1, hand to Buttondown |
+| `POST /api/unsubscribe` | public | Turnstile check, mark unsubscribed here and there |
+| `GET /api/subscribers` | admin | list + counts |
+| `GET /api/subscribers/export` | admin | CSV download |
+| `POST /api/subscribers/sync` | admin | pull states from Buttondown, retry failures |
+
+Two secrets are needed. Neither belongs in a file:
+
+```
+npx wrangler secret put TURNSTILE_SECRET
+npx wrangler secret put BUTTONDOWN_API_KEY
+```
+
+`/api/health` reports whether both are set. Signups are refused while
+`TURNSTILE_SECRET` is missing — that is deliberate, see below.
+
+### How confirmation works
+
+Buttondown runs the double opt-in itself: creating a subscriber through
+its API makes it send the confirm-your-email message and hold the person
+as `unactivated` until they click. That click never touches this site,
+so D1 does not hear about it — the **Sync** button in the admin panel is
+what pulls those confirmations back in. Sync also retries anyone whose
+signup reached D1 but not Buttondown.
+
+### Things that were decided on purpose
+
+- **Turnstile fails closed.** A network error, a non-2xx, an unparseable
+  body or a missing secret all count as "not verified". A form that
+  quietly stops being protected when siteverify has a bad afternoon is
+  worse than one that briefly refuses signups.
+- **The visitor's IP is not stored and not sent to Buttondown.**
+  Turnstile has already done the bot check. Keeps the privacy notice
+  short and true.
+- **Unsubscribe answers identically** whether or not the address was on
+  the list, so the page cannot be used to test who is subscribed.
+- **The CSV export prefixes any cell starting with `= + - @`** with a
+  tab. Without it, a subscriber called `=cmd|...` would execute when the
+  file was opened in Excel.
+- **`src/newsletter.js` keeps everything Buttondown-specific in one
+  block** at the bottom of the file. Switching provider means rewriting
+  three methods and changing a secret name; nothing else in the codebase
+  mentions Buttondown.
+
+### Verify
+
+```
+node --experimental-sqlite tools/test_newsletter.mjs
+```
+
+Real SQLite built from the real migrations, with Turnstile and Buttondown
+stubbed so failures that are hard to arrange on purpose — siteverify
+unreachable, Buttondown returning 500 — get tested too.

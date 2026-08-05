@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Leave the Digi Tail Studios mailing list.">
+    <link rel="canonical" href="https://www.digitailstudios.com/unsubscribe">
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#1D0D12">
+    <title>Unsubscribe | Digi Tail Studios</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/simple.css">
+</head>
+<body class="lang-en">
+
+    <div class="top-bar">
+        <button id="lang-toggle-btn" class="btn-rugged"><span class="en">Te Reo Māori</span><span class="mi">English</span></button>
+    </div>
+
+    <main class="simple-card">
+        <h1>
+            <span class="en">Unsubscribe</span>
+            <span class="mi">Wehe Atu</span>
+        </h1>
+
+        <p>
+            <span class="en">Sorry to see you go. Enter the email address you signed up with and we will take you off the list.</span>
+            <span class="mi">He pōuri kia wehe koe. Tāurua te wāhitau īmēra i tuhia ai koe, ka tangohia koe i te rārangi.</span>
+        </p>
+
+        <form id="unsub-form" action="/api/unsubscribe" method="POST">
+            <input type="email" id="unsub-email" name="email" required
+                   placeholder="Email Address / Wāhitau Īmēra"
+                   autocomplete="email">
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAEG1e3La0sGXIWkv" data-action="turnstile-spin-v2"></div>
+            <button type="submit" class="btn-rugged" id="unsub-submit">
+                <span class="en">Unsubscribe</span>
+                <span class="mi">Wehe Atu</span>
+            </button>
+            <p class="form-status" id="unsub-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <p class="form-smallprint">
+            <span class="en">Emails we send also carry an unsubscribe link, which does the same thing in one click. <a href="/privacy.html">How we handle your details</a>.</span>
+            <span class="mi">Kei ia īmēra ka tukuna e mātou tētahi hono wehe atu, he rite tonu te mahi. <a href="/privacy.html">Me pēhea mātou e tiaki ai i ō taipitopito</a>.</span>
+        </p>
+
+        <p>
+            <a href="/index.html" class="manual-link">
+                <span class="en">Back to the Den</span>
+                <span class="mi">Hoki ki te Rua</span>
+            </a>
+        </p>
+    </main>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="/assets/js/pages/unsubscribe.js"></script>
+    <script src="/assets/js/lang-attr.js"></script>
+    <script src="/assets/js/a11y.js"></script>
+</body>
+</html>

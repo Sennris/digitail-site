@@ -1017,3 +1017,31 @@ textarea:focus-visible {
 }
 
 .btn-rugged { min-height: 32px; }
+
+/* ---- newsletter form feedback ------------------------------------
+   Colour and type only. Layout for these lives in pages/index.css
+   and pages/simple.css, per the split described in the README. */
+
+.form-status {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-weight: 700;
+    color: var(--frozen-juniper, #5DCCCA);
+}
+
+.form-status.is-error {
+    color: #FFB4A2;
+}
+
+.form-status:empty {
+    display: none;
+}
+
+.form-smallprint {
+    color: var(--arctic-willow, #B9CCCC);
+}
+
+.form-smallprint a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}

@@ -13,6 +13,10 @@ import {
 } from './auth.js';
 import { WRITERS } from './writers.js';
 import { handleUpload, handleList, handleDelete, serveMedia } from './media.js';
+import {
+    handleSubscribe, handleUnsubscribe, handleSubscriberList,
+    handleSubscriberExport, handleSubscriberSync, newsletterHealth,
+} from './newsletter.js';
 
 const JSON_HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
@@ -312,7 +316,47 @@ async function handleApi(request, env, url) {
                 ? `set (${String(env.SESSION_SECRET).length} chars)`
                 : 'MISSING OR EMPTY',
             mediaBucket: env.MEDIA ? 'bound' : 'not bound',
+            ...newsletterHealth(env),
         }, 200, NO_CACHE);
+    }
+
+    // Public newsletter endpoints. Both refuse anything that has not
+    // passed Turnstile; see src/newsletter.js.
+    if (parts[1] === 'subscribe') {
+        try {
+            return await handleSubscribe(request, env);
+        } catch (e) {
+            return fail(`Signup failed: ${e.message}`, 500);
+        }
+    }
+
+    if (parts[1] === 'unsubscribe') {
+        try {
+            return await handleUnsubscribe(request, env);
+        } catch (e) {
+            return fail(`Unsubscribe failed: ${e.message}`, 500);
+        }
+    }
+
+    if (parts[1] === 'subscribers') {
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        try {
+            if (parts[2] === 'export' && request.method === 'GET') {
+                return await handleSubscriberExport(env);
+            }
+            if (parts[2] === 'sync' && request.method === 'POST') {
+                return await handleSubscriberSync(env);
+            }
+            if (!parts[2] && request.method === 'GET') {
+                return await handleSubscriberList(env);
+            }
+        } catch (e) {
+            return fail(`Subscriber error: ${e.message}`, 500);
+        }
+
+        return fail('Unknown subscriber action', 404);
     }
 
     if (parts[1] === 'auth') {

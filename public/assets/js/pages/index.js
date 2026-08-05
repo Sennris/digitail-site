@@ -36,30 +36,92 @@
             hiddenElements.forEach((el) => observer.observe(el));
         });
 
-        // Newsletter Form
+        // Newsletter signup.
+        //
+        // Posts to this site's own /api/subscribe, which checks the
+        // Turnstile token before saving anything. Errors are shown in the
+        // form rather than in an alert box, and the page only moves on
+        // when the signup actually worked.
         const form = document.getElementById('newsletter-form');
         const emailInput = document.getElementById('email');
         const confirmEmailInput = document.getElementById('confirm-email');
+        const statusBox = document.getElementById('newsletter-status');
+        const submitBtn = form ? form.querySelector('.submit-btn') : null;
+
+        const say = function (en, mi, isError) {
+            if (!statusBox) return;
+            statusBox.innerHTML = '';
+            const enSpan = document.createElement('span');
+            enSpan.className = 'en';
+            enSpan.textContent = en;
+            const miSpan = document.createElement('span');
+            miSpan.className = 'mi';
+            miSpan.textContent = mi;
+            statusBox.appendChild(enSpan);
+            statusBox.appendChild(miSpan);
+            statusBox.classList.toggle('is-error', !!isError);
+        };
 
         if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault(); 
-                if (emailInput.value !== confirmEmailInput.value) {
-                    if (document.body.classList.contains('lang-en')) {
-                        alert("Oops! Those email addresses don't match. Please check them again.");
-                    } else {
-                        alert("Aue! Kāore e ōrite ana aua wāhitau īmēra. Tena koa tirohia anō.");
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (emailInput.value.trim().toLowerCase()
+                    !== confirmEmailInput.value.trim().toLowerCase()) {
+                    say("Those email addresses don't match. Please check them again.",
+                        'Kāore e ōrite ana aua wāhitau īmēra. Tēnā koa tirohia anō.', true);
+                    confirmEmailInput.style.borderColor = 'red';
+                    confirmEmailInput.style.boxShadow = '4px 4px 0px rgba(255,0,0,0.5)';
+                    confirmEmailInput.focus();
+                    return;
+                }
+                confirmEmailInput.style.borderColor = '#1D0D12';
+                confirmEmailInput.style.boxShadow = 'none';
+
+                // Turnstile drops its token into a hidden field it adds itself.
+                const tokenField = form.querySelector('[name="cf-turnstile-response"]');
+                const token = tokenField ? tokenField.value : '';
+                if (!token) {
+                    say('Please wait a moment for the "not a robot" check to finish, then try again.',
+                        'Taria mō te wā poto kia oti te arowhai "ehara i te karetao", kātahi ka ngana anō.', true);
+                    return;
+                }
+
+                if (submitBtn) submitBtn.disabled = true;
+                say('Signing you up...', 'Kei te tuhi i a koe...', false);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('name').value,
+                        email: emailInput.value,
+                        'cf-turnstile-response': token
+                    })
+                })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (result.ok && result.data.ok) {
+                        window.location.href = 'thankyou.html';
+                        return;
                     }
-                    confirmEmailInput.style.borderColor = "red";
-                    confirmEmailInput.style.boxShadow = "4px 4px 0px rgba(255,0,0,0.5)";
-                    return; 
-                } 
-                confirmEmailInput.style.borderColor = "#1D0D12";
-                confirmEmailInput.style.boxShadow = "none";
-                const formData = new FormData(form);
-                fetch(form.action, { method: 'POST', body: formData })
-                .then(response => { window.location.href = "thankyou.html"; })
-                .catch(error => { window.location.href = "thankyou.html"; });
+                    say(result.data.error || 'Something went wrong. Please try again.',
+                        result.data.error || 'I raru tētahi mea. Tēnā koa ngana anō.', true);
+                    if (submitBtn) submitBtn.disabled = false;
+                    // Tokens are single use. Without a reset, a second
+                    // attempt reuses a spent token and is always rejected.
+                    if (window.turnstile) window.turnstile.reset();
+                })
+                .catch(function () {
+                    say('We could not reach the server. Please check your connection and try again.',
+                        'Kāore i taea te toro atu ki te tūmau. Tirohia tō hononga, ka ngana anō.', true);
+                    if (submitBtn) submitBtn.disabled = false;
+                    if (window.turnstile) window.turnstile.reset();
+                });
             });
         }
 

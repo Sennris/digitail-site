@@ -33,6 +33,7 @@
             <button class="tab-button" onclick="switchTab('game', this)">🎮 Game Info</button>
             <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
             <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
+            <button class="tab-button" onclick="switchTab('subscribers', this)">✉️ Subscribers</button>
         </div>
 
         <div id="alert-container"></div>
@@ -224,6 +225,40 @@
             </div>
         </div>
 
+        <!-- SUBSCRIBERS TAB -->
+        <div id="subscribers-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="subs-confirmed">0</div>
+                    <div class="label">Confirmed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="subs-pending">0</div>
+                    <div class="label">Awaiting confirmation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="subs-unsubscribed">0</div>
+                    <div class="label">Unsubscribed</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Mailing list</h2>
+                <p style="font-size: 0.85rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">
+                    This is your copy of the list, held in your own database. People confirm
+                    by clicking a link in the email Buttondown sends, which never touches this
+                    site &mdash; press Sync to pull those confirmations back in. Sync also retries
+                    anyone who failed to reach Buttondown when they signed up.
+                </p>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+                    <button class="btn-rugged" onclick="loadSubscribers()">🔄 Refresh</button>
+                    <button class="btn-rugged" onclick="syncSubscribers()">☁️ Sync with Buttondown</button>
+                    <a class="btn-rugged" href="/api/subscribers/export" download>⬇️ Download CSV</a>
+                </div>
+                <div id="subs-table"></div>
+            </div>
+        </div>
+
     </div>
 
     <input type="file" id="file-input" accept=".json">
@@ -233,5 +268,6 @@
     <script src="media-upload.js"></script>
     <script src="ticker-editor.js"></script>
     <script src="admin-extras.js"></script>
+    <script src="admin-subscribers.js"></script>
 </body>
 </html>

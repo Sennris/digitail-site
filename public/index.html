@@ -268,14 +268,20 @@
                 <span class="mi">Kāore he īmēra urupara hōhā, e oati ana mātou. Tukuna tō īmēra ki raro iho nei kia pānuitia mō ā mātou rātaka nui, me ngā whakahōu rēpokia o te tau.</span>
             </p>
             
-            <form class="newsletter-form" id="newsletter-form" action="https://assets.mailerlite.com/jsonp/2276172/forms/185053949398615683/subscribe" method="POST">
-                <input type="text" name="fields[name]" id="name" placeholder="Preferred Name / Ingoa">
-                <input type="email" name="fields[email]" id="email" placeholder="Email Address / Wāhitau Īmēra" required>
+            <form class="newsletter-form" id="newsletter-form" action="/api/subscribe" method="POST">
+                <input type="text" name="name" id="name" placeholder="Preferred Name / Ingoa">
+                <input type="email" name="email" id="email" placeholder="Email Address / Wāhitau Īmēra" required>
                 <input type="email" id="confirm-email" placeholder="Confirm Email / Whakaū Īmēra" required>
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAEG1e3La0sGXIWkv" data-action="turnstile-spin-v2"></div>
                 <button type="submit" class="submit-btn">
                     <span class="en">Join the Pack</span>
                     <span class="mi">Hono mai ki te Rōpū</span>
                 </button>
+                <p class="form-status" id="newsletter-status" role="status" aria-live="polite"></p>
+                <p class="form-smallprint">
+                    <span class="en">We will email you once to confirm. You can leave any time. <a href="/privacy.html">How we handle your details</a>.</span>
+                    <span class="mi">Ka īmēratia koe kia whakaū. Ka taea te wehe i ngā wā katoa. <a href="/privacy.html">Me pēhea mātou e tiaki ai i ō taipitopito</a>.</span>
+                </p>
             </form>
         </section>
 
@@ -288,6 +294,7 @@
         </p>
     </footer>
 
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="/assets/js/pages/index.js"></script>
     <script src="/assets/js/lang-attr.js"></script>
     <script src="/assets/js/a11y.js"></script>
