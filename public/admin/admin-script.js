@@ -247,15 +247,10 @@ function initializeForms() {
             <div class="form-group">
                 <label>Tags</label>
                 <div class="tag-input-container" id="devlog-tags"></div>
+                <!-- Options are filled from the tag manager by
+                     admin-extras.js. Do not hard-code them here again. -->
                 <select id="devlog-tag-select" onchange="addTag('devlog')">
                     <option value="">+ Add Tag</option>
-                    <option value="Code">Code</option>
-                    <option value="Bug">Bug</option>
-                    <option value="Art">Art</option>
-                    <option value="Audio">Audio</option>
-                    <option value="News">Studio News</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Mechanics">Mechanics</option>
                 </select>
             </div>
             <div class="form-group">
@@ -432,15 +427,9 @@ function initializeForms() {
             <div class="form-group">
                 <label>Tags</label>
                 <div class="tag-input-container" id="social-tags"></div>
+                <!-- Filled from the tag manager, same as the devlog one. -->
                 <select id="social-tag-select" onchange="addTag('social')">
                     <option value="">+ Add Tag</option>
-                    <option value="Behind the Scenes">Behind the Scenes</option>
-                    <option value="Gameplay">Gameplay</option>
-                    <option value="Art">Art</option>
-                    <option value="Update">Update</option>
-                    <option value="Community">Community</option>
-                    <option value="Devlog">Devlog</option>
-                    <option value="Announcement">Announcement</option>
                 </select>
             </div>
             <div class="button-group">
@@ -614,6 +603,22 @@ function initializeForms() {
             <div class="form-group">
                 <label>Trailer URL (YouTube embed URL)</label>
                 <input type="text" id="game-trailer" placeholder="https://www.youtube.com/embed/...">
+            </div>
+            <hr style="border: 1px dashed var(--arctic-willow); margin: 2rem 0;">
+            <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono);">Homepage snippet</h3>
+            <p class="helper-text" style="margin-top:-0.5rem;">The game card on the front page. Leave a field blank to keep what is already written there.</p>
+            <div class="form-group">
+                <label>Key art image</label>
+                <input type="text" id="game-keyart" placeholder="Upload or paste an image URL">
+                <div id="game-keyart-preview"></div>
+            </div>
+            <div class="form-group">
+                <label>Homepage blurb (English)</label>
+                <textarea id="game-blurb-en" rows="3" placeholder="A couple of lines about the game, shown on the front page."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Homepage blurb (Te Reo Māori)</label>
+                <textarea id="game-blurb-mi" rows="3"></textarea>
                 <div class="helper-text">Leave blank to show placeholder</div>
             </div>
             <div class="button-group">
@@ -869,6 +874,16 @@ function populateGameForm(game) {
     document.getElementById('game-tagline-en').value = game.taglineEn || '';
     document.getElementById('game-tagline-mi').value = game.taglineMi || '';
     document.getElementById('game-trailer').value = game.trailerUrl || '';
+    document.getElementById('game-keyart').value = game.keyArt || '';
+    document.getElementById('game-blurb-en').value = game.blurbEn || '';
+    document.getElementById('game-blurb-mi').value = game.blurbMi || '';
+
+    const artPreview = document.getElementById('game-keyart-preview');
+    if (artPreview) {
+        artPreview.innerHTML = game.keyArt
+            ? '<img src="' + game.keyArt + '" class="image-preview" alt="" style="max-width:100%;">'
+            : '';
+    }
 
     formsPopulated.game = true;
     return true;
@@ -1008,7 +1023,10 @@ function collectGameInfo() {
         titleMi: document.getElementById('game-title-mi').value,
         taglineEn: document.getElementById('game-tagline-en').value,
         taglineMi: document.getElementById('game-tagline-mi').value,
-        trailerUrl: document.getElementById('game-trailer').value.trim()
+        trailerUrl: document.getElementById('game-trailer').value.trim(),
+        keyArt: document.getElementById('game-keyart').value.trim(),
+        blurbEn: document.getElementById('game-blurb-en').value,
+        blurbMi: document.getElementById('game-blurb-mi').value
     };
 
     return true;

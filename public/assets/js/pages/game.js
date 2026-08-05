@@ -30,6 +30,16 @@ const langToggleBtn = document.getElementById('lang-toggle-btn');
                     titleEl.querySelector('.mi').innerText = data.titleMi || data.titleEn;
                 }
 
+                // The tagline fields have existed in the admin panel since
+                // Phase 2 and were never displayed anywhere. They are the
+                // line under the title.
+                const tagEn = document.getElementById('game-tagline-en');
+                const tagMi = document.getElementById('game-tagline-mi');
+                if (tagEn && data.taglineEn) tagEn.innerText = data.taglineEn;
+                if (tagMi && (data.taglineMi || data.taglineEn)) {
+                    tagMi.innerText = data.taglineMi || data.taglineEn;
+                }
+
                 // Update page title
                 if (data.titleEn) {
                     document.title = data.titleEn + ' | Digi Tail Studios';

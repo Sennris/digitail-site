@@ -46,23 +46,46 @@
         refreshPickers();
     }
 
+    function allTags() {
+        return (window.data && Array.isArray(data.tags) ? data.tags : []);
+    }
+
+    // Rebuild a dropdown from a list of tags.
+    //
+    // Two things this has to get right:
+    //  - Only touch the DOM when the contents would actually change.
+    //    Rewriting unconditionally from inside a MutationObserver callback
+    //    retriggers the observer and loops forever. A signature string on
+    //    the element is how we tell.
+    //  - Build options with new Option(), not by pasting names into an
+    //    HTML string. Tag names are typed by hand and a stray < or " in
+    //    one would otherwise break the dropdown.
+    function fillSelect(sel, placeholder, tags) {
+        const signature = placeholder + '|' + tags.map((t) => t.name).join('\u0000');
+        if (sel.dataset.tagSignature === signature) return;
+
+        const current = sel.value;
+        sel.textContent = '';
+        sel.appendChild(new Option(placeholder, ''));
+        tags.forEach((t) => sel.appendChild(new Option(t.name, t.name)));
+        sel.dataset.tagSignature = signature;
+
+        // Keep the current choice if it still exists.
+        if (current && tags.some((t) => t.name === current)) sel.value = current;
+    }
+
     function refreshPickers() {
         [['devlog-primary-tag', 'primary'], ['devlog-secondary-tag', 'secondary']].forEach(([id, kind]) => {
             const sel = document.getElementById(id);
-            if (!sel) return;
+            if (sel) fillSelect(sel, '(none)', tagsOfKind(kind));
+        });
 
-            const wanted = '<option value="">(none)</option>'
-                + tagsOfKind(kind).map((t) =>
-                    `<option value="${t.name}">${t.name}</option>`).join('');
-
-            // Only touch the DOM if it would actually change. Rewriting
-            // unconditionally from inside a MutationObserver callback
-            // retriggers the observer and loops forever.
-            if (sel.innerHTML === wanted) return;
-
-            const current = sel.value;
-            sel.innerHTML = wanted;
-            if (current) sel.value = current;
+        // The "+ Add Tag" dropdowns on the devlog and social forms. These
+        // used to have their options typed into the HTML, so tags created
+        // in the tag manager never appeared in them.
+        ['devlog-tag-select', 'social-tag-select'].forEach((id) => {
+            const sel = document.getElementById(id);
+            if (sel) fillSelect(sel, '+ Add Tag', allTags());
         });
     }
 

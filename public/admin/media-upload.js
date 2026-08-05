@@ -17,7 +17,7 @@
 
     // Image fields in the admin panel, by input id.
     const IMAGE_FIELDS = [
-        'devlog-image', 'fox-image', 'team-avatar', 'social-thumbnail',
+        'devlog-image', 'fox-image', 'team-avatar', 'social-thumbnail', 'game-keyart',
         'hp-announce-image', 'hp-mascot-default-img', 'hp-mascot-halloween-img',
         'hp-mascot-christmas-img', 'hp-mascot-newyear-img',
     ];

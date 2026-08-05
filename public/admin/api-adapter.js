@@ -106,7 +106,10 @@
             // Read it straight back. If what you see after saving is not
             // what you meant to save, you find out now rather than on the
             // live site.
-            await loadFromServer();
+            // window.loadFromServer, not the local one: admin-extras.js
+            // wraps it to also refresh the tag manager and the tag
+            // dropdowns. Calling the inner function skips all of that.
+            await (window.loadFromServer || loadFromServer)();
             showAlert('✅ Saved. The live site is updated.', 'success');
         } catch (e) {
             showAlert(`❌ ${e.message}`, 'error');

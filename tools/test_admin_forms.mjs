@@ -51,7 +51,11 @@ const FIELDS = [
     'hp-mascot-default-img', 'hp-mascot-halloween-img',
     'hp-mascot-christmas-img', 'hp-mascot-newyear-img',
     'game-title-en', 'game-title-mi', 'game-tagline-en', 'game-tagline-mi',
-    'game-trailer',
+    'game-trailer', 'game-keyart', 'game-keyart-preview',
+    'game-blurb-en', 'game-blurb-mi',
+    // the two "+ Add Tag" dropdowns, filled from the tag manager
+    'devlog-tag-select', 'social-tag-select',
+    'devlog-primary-tag', 'devlog-secondary-tag',
 ];
 
 const makeEl = () => ({
@@ -157,13 +161,70 @@ console.log('\nAn unfilled form cannot overwrite stored settings:');
 
 console.log('\nGame info survives a round trip:');
 const game = { titleEn: 'Paper Crown', titleMi: 'Karauna Pepa', taglineEn: 'A tagline.',
-               taglineMi: 'He tohu.', trailerUrl: 'https://example.test/embed/x' };
+               taglineMi: 'He tohu.', trailerUrl: 'https://example.test/embed/x',
+               keyArt: '/media/keyart.webp', blurbEn: 'Front page blurb.',
+               blurbMi: 'He kupu whakataki.' };
 setData({ homepage: getData().homepage, game: { ...game } });
 check('populateGameForm reports it filled the form', sandbox.populateGameForm(getData().game) === true);
 check('title reached the form', els.get('game-title-en').value === 'Paper Crown');
 sandbox.collectGameInfo();
 check('title is not blanked by saving', getData().game.titleEn === 'Paper Crown');
 check('trailer is not blanked by saving', getData().game.trailerUrl === 'https://example.test/embed/x');
+check('homepage blurb reached the form', els.get('game-blurb-en').value === 'Front page blurb.');
+check('homepage blurb is not blanked by saving', getData().game.blurbEn === 'Front page blurb.');
+check('key art reached the form', els.get('game-keyart').value === '/media/keyart.webp');
+check('key art is not blanked by saving', getData().game.keyArt === '/media/keyart.webp');
+
+/* ---- the "+ Add Tag" dropdowns must follow the tag manager ---- */
+
+console.log('\nA tag you create shows up in the devlog dropdown:');
+{
+    // fillSelect lives inside an IIFE in admin-extras.js, so exercise it the
+    // way the page does: set the tag list, then run the module.
+    const selects = new Map([
+        ['devlog-tag-select', makeEl()],
+        ['social-tag-select', makeEl()],
+        ['devlog-primary-tag', makeEl()],
+        ['devlog-secondary-tag', makeEl()],
+        ['devlog-tags', makeEl()],
+    ]);
+    for (const [id, el] of selects) {
+        el.children = [];
+        el.appendChild = function (o) { this.children.push(o); };
+        el.parentElement = { insertBefore() {} };
+        els.set(id, el);
+    }
+
+    setData({
+        tags: [
+            { id: 1, name: 'Paper Crown', kind: 'primary' },
+            { id: 2, name: 'Shader Wrangling', kind: 'secondary' },
+        ],
+        devlogs: [],
+    });
+
+    sandbox.Option = function (label, value) { return { label, value }; };
+    sandbox.MutationObserver = class { observe() {} disconnect() {} };
+    sandbox.requestAnimationFrame = (fn) => fn();
+    sandbox.document.documentElement = {};
+
+    vm.runInContext(readFileSync('public/admin/admin-extras.js', 'utf8'), sandbox,
+        { filename: 'admin-extras.js' });
+
+    const devlogSel = els.get('devlog-tag-select');
+    const names = (devlogSel.children || []).map((o) => o.value);
+    check('the new secondary tag is an option', names.includes('Shader Wrangling'),
+        `got [${names.join(', ')}]`);
+    check('the new primary tag is an option too', names.includes('Paper Crown'));
+    check('the placeholder is still first',
+        devlogSel.children[0] && devlogSel.children[0].value === '');
+
+    const primary = els.get('devlog-primary-tag');
+    const pNames = (primary.children || []).map((o) => o.value);
+    check('primary picker only offers primary tags',
+        pNames.includes('Paper Crown') && !pNames.includes('Shader Wrangling'),
+        `got [${pNames.join(', ')}]`);
+}
 
 console.log(failures === 0
     ? '\nAll checks passed. The admin shows what is stored, and saving keeps it.\n'

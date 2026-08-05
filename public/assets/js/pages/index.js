@@ -287,6 +287,41 @@
             })
             .catch(error => console.error('Error fetching homepage data:', error));
 
+        // --- FETCH THE GAME SETTINGS FOR THE HOMEPAGE SNIPPET ---
+        //
+        // This card used to be typed into index.html, so editing the game in
+        // the admin panel changed game.html and left the homepage showing the
+        // old name and blurb. Anything left blank in the admin keeps whatever
+        // is already written in the page, so a half-filled form never wipes
+        // the homepage.
+        fetch('/api/content/game')
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (game) {
+                if (!game) return;
+
+                const setText = function (id, value) {
+                    const el = document.getElementById(id);
+                    if (el && value) el.textContent = value;
+                };
+
+                setText('home-game-name', game.titleEn);
+                setText('home-game-title', game.titleEn);
+                setText('home-game-blurb-en', game.blurbEn);
+                setText('home-game-blurb-mi', game.blurbMi || game.blurbEn);
+
+                if (game.keyArt) {
+                    const art = document.getElementById('home-game-art');
+                    if (art) {
+                        art.textContent = '';
+                        const img = document.createElement('img');
+                        img.src = game.keyArt;
+                        img.alt = game.titleEn || 'Key art';
+                        art.appendChild(img);
+                    }
+                }
+            })
+            .catch(function (error) { console.error('Error fetching game data:', error); });
+
         // --- FETCH LATEST DEVLOG FOR HOMEPAGE ---
         fetch('/api/content/devlogs')
             .then(response => response.json())
