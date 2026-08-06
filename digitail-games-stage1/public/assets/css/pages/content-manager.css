@@ -1,0 +1,636 @@
+/* content-manager.html - page specific styles.
+   Shared design system lives in ../core.css */
+
+:root {
+    --font-display: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --long-black: #1D0D12;
+    --extra-foam: #DAD2CA;
+    --frozen-juniper: #5DCCCA;
+    --arctic-willow: #B9CCCC;
+    --flat-white: #E5DABF;
+}
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    background-color: var(--long-black);
+    color: var(--extra-foam);
+    line-height: 1.6;
+}
+
+.top-bar {
+    background-color: rgba(185, 204, 204, 0.1);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--frozen-juniper);
+    position: relative;
+    z-index: 100;
+}
+
+.top-bar h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    margin: 0;
+    color: var(--frozen-juniper);
+    text-transform: uppercase;
+}
+
+.btn-rugged {
+    background-color: var(--frozen-juniper);
+    border: 3px solid var(--long-black);
+    color: var(--long-black);
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--long-black);
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-rugged.btn-danger {
+    background-color: #E74C3C;
+    color: white;
+}
+
+.btn-rugged.btn-danger:hover {
+    background-color: #C0392B;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Sidebar shell: sections grouped down the left, work area on the
+   right. Collapses to horizontal scrolling rows on narrow screens. */
+.admin-shell {
+    display: grid;
+    grid-template-columns: 215px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.admin-side {
+    position: sticky;
+    top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+.side-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.side-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--frozen-juniper);
+    border-bottom: 2px dashed rgba(185, 204, 204, 0.3);
+    padding-bottom: 0.3rem;
+}
+
+.admin-side .tab-button {
+    width: 100%;
+    text-align: left;
+}
+
+@media (max-width: 900px) {
+    .admin-shell { display: block; }
+    .admin-side {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .side-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .side-label {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .admin-side .tab-button {
+        width: auto;
+        text-align: center;
+    }
+}
+
+.tab-button {
+    background: rgba(185, 204, 204, 0.1);
+    border: 2px solid rgba(185, 204, 204, 0.3);
+    color: var(--arctic-willow);
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.tab-button:hover {
+    background: rgba(185, 204, 204, 0.2);
+    border-color: var(--frozen-juniper);
+}
+
+.tab-button.active {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border-color: var(--frozen-juniper);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.main-grid {
+    grid-template-columns: 1fr;
+}
+
+.sidebar {
+    position: static;
+}
+
+.card {
+    background: rgba(185, 204, 204, 0.1);
+    border: 3px solid rgba(185, 204, 204, 0.3);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin: 0 0 1rem 0;
+    color: var(--frozen-juniper);
+    text-transform: uppercase;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--frozen-juniper);
+}
+
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: rgba(218, 210, 202, 0.1);
+    border: 2px solid var(--arctic-willow);
+    border-radius: 4px;
+    color: var(--extra-foam);
+    font-family: var(--font-body);
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    min-height: 150px;
+    font-family: var(--font-mono);
+    resize: vertical;
+}
+
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--frozen-juniper);
+    box-shadow: 0 0 0 3px rgba(93, 204, 202, 0.2);
+}
+
+.tag-input-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.tag-badge {
+    background-color: var(--frozen-juniper);
+    color: var(--long-black);
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tag-badge button {
+    background: none;
+    border: none;
+    color: var(--long-black);
+    cursor: pointer;
+    font-weight: 900;
+    padding: 0;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.list-item {
+    background: rgba(185, 204, 204, 0.05);
+    border: 2px solid rgba(185, 204, 204, 0.2);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.list-item:hover {
+    background: rgba(185, 204, 204, 0.15);
+    border-color: var(--frozen-juniper);
+    transform: translateX(5px);
+}
+
+.list-item.active {
+    background: rgba(93, 204, 202, 0.2);
+    border-color: var(--frozen-juniper);
+    box-shadow: 4px 4px 0px rgba(93, 204, 202, 0.3);
+}
+
+.list-item h3 {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--frozen-juniper);
+}
+
+.list-item p {
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--extra-foam);
+    opacity: 0.7;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.alert-success {
+    background-color: rgba(46, 204, 113, 0.2);
+    border: 2px solid #2ecc71;
+    color: #2ecc71;
+}
+
+.alert-error {
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.upload-area {
+    border: 3px dashed var(--arctic-willow);
+    border-radius: 4px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(185, 204, 204, 0.05);
+}
+
+.upload-area:hover {
+    border-color: var(--frozen-juniper);
+    background: rgba(185, 204, 204, 0.1);
+}
+
+.upload-area.drag-over {
+    background: rgba(93, 204, 202, 0.2);
+    border-color: var(--frozen-juniper);
+}
+
+.helper-text {
+    font-size: 0.85rem;
+    color: var(--arctic-willow);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    border: 2px solid var(--arctic-willow);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--arctic-willow);
+}
+
+.empty-state h3 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--frozen-juniper);
+}
+
+#file-input {
+    display: none;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(93, 204, 202, 0.1);
+    border: 2px solid var(--frozen-juniper);
+    border-radius: 4px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-card .number {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--frozen-juniper);
+    margin: 0;
+}
+
+.stat-card .label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--extra-foam);
+    text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+            }
+        }
+
+
+/* ---- readability inside admin cards.
+
+   core.css cycles card colours by position - .card:nth-child(3n+2) and
+   (3n+3) - and those beat a plain .card rule. So admin cards came out
+   light or dark depending purely on where they sat in the page, while
+   the text colour did not change to match. Some text ended up light on
+   light, some dark on dark.
+
+   The admin is a dark panel. Every card in it is pinned to that, and
+   the text is pinned to match. ---- */
+
+body .admin-main .card,
+body .admin-main .card:nth-child(3n+2),
+body .admin-main .card:nth-child(3n+3),
+body .top-bar,
+body .admin-side .card {
+    background: rgba(185, 204, 204, 0.1);
+    color: var(--extra-foam);
+    transform: none;
+}
+
+body .admin-main .card p,
+body .admin-main .card li,
+body .admin-main .card td,
+body .admin-main .card th,
+body .admin-main .card label {
+    color: var(--extra-foam);
+}
+
+body .admin-main .card .helper-text,
+body .admin-main .card small {
+    color: var(--arctic-willow);
+}
+
+#subs-table,
+#subs-table td,
+#subs-table th {
+    color: var(--extra-foam);
+}
+
+/* Save-to-site reminder under any form that only updates the draft */
+.save-hint {
+    display: block;
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: #3A2730;
+    background: rgba(93, 204, 202, 0.25);
+    border-left: 4px solid #0F5C5B;
+    padding: 0.5rem 0.7rem;
+    border-radius: 2px;
+}
+
+
+/* ==========================================================================
+   HOMEPAGE SUBTABS
+   ==========================================================================
+   The Homepage tab was five unrelated jobs in one scroll: hero copy, the
+   announcement banner, mascot images, the ticker and the community links.
+   Now one at a time.
+
+   Everything is HIDDEN rather than removed, so every field is still in the
+   page when you press Save to site regardless of which subtab is open.
+   ========================================================================== */
+
+.subtab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 2px dashed rgba(185, 204, 204, 0.3);
+}
+
+.subtab {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: transparent;
+    color: var(--extra-foam);
+    border: 2px solid rgba(185, 204, 204, 0.35);
+    border-radius: 4px;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.subtab:hover,
+.subtab:focus-visible {
+    border-color: var(--frozen-juniper);
+    color: var(--frozen-juniper);
+}
+
+.subtab.active {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border-color: var(--long-black);
+    box-shadow: 3px 3px 0 var(--long-black);
+}
+
+/* Sections of the settings form */
+#homepage-tab .hp-sec { display: none; }
+#homepage-tab[data-sub="hero"]     .hp-sec[data-sec="hero"],
+#homepage-tab[data-sub="announce"] .hp-sec[data-sec="announce"],
+#homepage-tab[data-sub="mascot"]   .hp-sec[data-sec="mascot"] { display: block; }
+
+/* Whole panels that belong to one subtab only */
+#homepage-tab #hp-ticker-slot,
+#homepage-tab #hp-links-panel,
+#homepage-tab #hp-links-stats { display: none; }
+
+#homepage-tab[data-sub="ticker"] #hp-ticker-slot { display: block; }
+#homepage-tab[data-sub="links"]  #hp-links-panel,
+#homepage-tab[data-sub="links"]  #hp-links-stats { display: block; }
+
+/* The settings form card is only meaningful on the three form subtabs */
+#homepage-tab[data-sub="ticker"] #homepage-editor,
+#homepage-tab[data-sub="links"]  #homepage-editor { display: none; }
+
+@media (max-width: 600px) {
+    .subtab { font-size: 0.75rem; padding: 0.4rem 0.65rem; }
+}
+
+/* ============================================================
+   Games tab
+   ============================================================
+   Everything here takes its ink from the card it sits in
+   (color: inherit / currentColor) rather than naming a colour.
+   core.css cycles card backgrounds with :nth-child, so a fixed
+   text colour comes out light-on-light or dark-on-dark purely
+   by DOM position. That caused the unreadable admin text bug. */
+
+.game-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border: 2px dashed currentColor;
+    border-radius: 2px;
+    margin-bottom: 0.5rem;
+    color: inherit;
+}
+
+.game-row.is-selected {
+    background: rgba(93, 204, 202, 0.30);
+    border-style: solid;
+}
+
+.game-row-name {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.game-row-flags {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    opacity: 0.75;
+}
+
+.game-row-tools {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.2rem;
+}
+
+.game-row-tools button {
+    background: none;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    color: inherit;
+    font-size: 0.7rem;
+    line-height: 1;
+    padding: 0.2rem 0.35rem;
+    cursor: pointer;
+}
+
+.game-row-tools button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.feature-row {
+    border: 2px dashed currentColor;
+    border-radius: 2px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: inherit;
+}
+
+.feature-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.game-divider {
+    border: 0;
+    border-top: 2px dashed currentColor;
+    opacity: 0.5;
+    margin: 2rem 0;
+}
+
+.game-subhead {
+    font-family: var(--font-mono);
+    color: inherit;
+}
+
+@media (max-width: 600px) {
+    .game-row { flex-wrap: wrap; }
+    .game-row-tools { width: 100%; justify-content: flex-end; }
+}
