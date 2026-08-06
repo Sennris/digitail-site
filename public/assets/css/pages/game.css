@@ -319,3 +319,27 @@ footer {
             .screenshot-card, .game-hero, .cta-section { transform: rotate(0deg) !important; }
         }
 
+
+/* Status label under the tagline, and the holding message that stands in
+   for the page sections while a game has none yet. */
+.game-status {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.game-note {
+    max-width: 46ch;
+    margin: 4rem auto;
+    text-align: center;
+}
+
+/* Screenshots dropped into a feature section fill the card the same way
+   the placeholder does. */
+.screenshot-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

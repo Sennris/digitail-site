@@ -125,11 +125,84 @@ async function getSetting(db, key) {
     try { return JSON.parse(row.value); } catch { return null; }
 }
 
+// Games are a list as of migration 0009. Before that there was one game,
+// stored as a settings blob under the key 'game'.
+//
+// Two things keep the site working either side of that migration:
+//   - a missing `games` table returns null here, which the pages treat as
+//     "use what is already in the HTML"
+//   - the singular `game` endpoint still answers, from the featured row if
+//     the table is there and from the old settings blob if it is not. The
+//     front page card reads that endpoint and needed no change.
+//
+// opts.includeUnpublished is only ever true for a logged-in admin. An
+// unpublished game is invisible to the public API, titles included, so an
+// unannounced project cannot be read out of it.
+async function getGames(db, opts = {}) {
+    let rows;
+    try {
+        ({ results: rows } = await db.prepare(
+            'SELECT * FROM games ORDER BY position, id').all());
+    } catch {
+        return null;   // migration 0009 has not been run yet
+    }
+
+    let featureRows = [];
+    try {
+        ({ results: featureRows } = await db.prepare(
+            'SELECT * FROM game_features ORDER BY game_id, position, id').all());
+    } catch {
+        featureRows = [];
+    }
+
+    const featuresByGame = new Map();
+    for (const f of featureRows) {
+        if (!featuresByGame.has(f.game_id)) featuresByGame.set(f.game_id, []);
+        featuresByGame.get(f.game_id).push({
+            taglineEn: f.tagline_en, taglineMi: f.tagline_mi,
+            textEn: f.text_en, textMi: f.text_mi, image: f.image,
+        });
+    }
+
+    return rows
+        .filter((r) => opts.includeUnpublished || Boolean(r.published))
+        .map((r) => ({
+            id: r.id,
+            slug: r.slug || String(r.id),
+            titleEn: r.title_en, titleMi: r.title_mi,
+            taglineEn: r.tagline_en, taglineMi: r.tagline_mi,
+            blurbEn: r.blurb_en, blurbMi: r.blurb_mi,
+            trailerUrl: r.trailer_url, keyArt: r.key_art,
+            statusEn: r.status_en || '', statusMi: r.status_mi || '',
+            ctaLabelEn: r.cta_label_en || '', ctaLabelMi: r.cta_label_mi || '',
+            ctaUrl: r.cta_url || '',
+            noteEn: r.note_en || '', noteMi: r.note_mi || '',
+            featured: Boolean(r.featured),
+            published: Boolean(r.published),
+            features: featuresByGame.get(r.id) || [],
+        }));
+}
+
+// The flat shape the front page card has always fetched.
+async function getFeaturedGame(db) {
+    const games = await getGames(db);
+    if (games && games.length) {
+        const pick = games.find((g) => g.featured) || games[0];
+        return {
+            titleEn: pick.titleEn, titleMi: pick.titleMi,
+            taglineEn: pick.taglineEn, taglineMi: pick.taglineMi,
+            trailerUrl: pick.trailerUrl, keyArt: pick.keyArt,
+            blurbEn: pick.blurbEn, blurbMi: pick.blurbMi,
+        };
+    }
+    return getSetting(db, 'game');
+}
+
 const READERS = {
     devlogs: getDevlogs, foxes: getFoxes, team: getTeam,
-    social: getSocial, tags: getTags,
+    social: getSocial, tags: getTags, games: getGames,
     homepage: (db) => getSetting(db, 'homepage'),
-    game: (db) => getSetting(db, 'game'),
+    game: (db) => getFeaturedGame(db),
 };
 
 
@@ -424,7 +497,12 @@ async function handleApi(request, env, url) {
             const reader = READERS[type];
             if (!reader) return fail(`Unknown content type: ${type}`, 404);
             try {
-                const data = await reader(env.DB);
+                // The admin panel has to see unpublished games or it cannot
+                // edit them. Everyone else gets the published ones only.
+                const opts = type === 'games'
+                    ? { includeUnpublished: !!(await requireAuth(request, env)) }
+                    : {};
+                const data = await reader(env.DB, opts);
                 if (data === null) return fail(`No data stored for ${type}`, 404);
                 // NO_CACHE on purpose. A cached copy of this is a published
                 // change that has not appeared yet, on the site or in the

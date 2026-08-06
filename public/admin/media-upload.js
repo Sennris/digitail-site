@@ -237,6 +237,10 @@
             const el = document.getElementById(id);
             if (el) enhance(el);
         });
+
+        // Game page sections are added and removed as she edits, so their
+        // image fields cannot be listed by id ahead of time.
+        document.querySelectorAll('[id^="game-feature-image-"]').forEach(enhance);
     }
 
     // One pass per frame. Without this, scan() runs on every single DOM

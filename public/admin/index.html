@@ -31,7 +31,7 @@
             <div class="side-group">
                 <div class="side-label">Content</div>
                 <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
-                <button class="tab-button" onclick="switchTab('game', this)">🎮 Game Info</button>
+                <button class="tab-button" onclick="switchTab('games', this)">🎮 Games</button>
                 <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
             </div>
             <div class="side-group">
@@ -138,18 +138,20 @@
         </div>
 
         <!-- GAME TAB -->
-        <div id="game-tab" class="tab-content">
+        <div id="games-tab" class="tab-content">
             <div class="main-grid">
                 <div class="sidebar">
                     <div class="card">
-                        <h2>Game Info</h2>
-                        
+                        <h2>Games</h2>
+                        <p class="helper-text">Every project the studio has on the go. Hidden games stay off the public site until you tick them live.</p>
+                        <div id="games-list-panel"></div>
+                        <div class="button-group">
+                            <button type="button" class="btn-rugged" id="game-add">+ Add a game</button>
+                        </div>
                     </div>
                 </div>
-                <div class="main-content">
-                    <div class="card" id="game-editor">
-                        <!-- Game info form will be populated by JS -->
-                    </div>
+                <div class="main-content" id="games-editor">
+                    <!-- Filled by admin-games.js -->
                 </div>
             </div>
         </div>
@@ -278,6 +280,7 @@
     <script src="media-upload.js"></script>
     <script src="ticker-editor.js"></script>
     <script src="admin-extras.js"></script>
+    <script src="admin-games.js"></script>
     <script src="admin-subscribers.js"></script>
     <script src="session-guard.js"></script>
 </body>

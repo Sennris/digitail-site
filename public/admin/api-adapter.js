@@ -13,13 +13,15 @@
 (function () {
     'use strict';
 
-    const TYPES = ['devlogs', 'foxes', 'team', 'social', 'tags'];
+    const TYPES = ['devlogs', 'foxes', 'team', 'social', 'tags', 'games'];
 
     /* ---------- load ---------- */
 
     // Never let a cached copy answer here. The admin has to show what is
     // actually stored, or you end up editing a stale version of the site.
     const FRESH = { cache: 'no-store' };
+
+    const loadedOk = { games: false };
 
     async function loadFromServer() {
         const results = await Promise.all([
@@ -33,6 +35,12 @@
         ]);
 
         TYPES.forEach((t, i) => { data[t] = results[i] || []; });
+
+        // Games only publish if they actually arrived. A failed fetch hands
+        // back an empty array, and saving that would delete every game -
+        // the same shape of accident that once published blank hero
+        // taglines over real ones.
+        loadedOk.games = Array.isArray(results[TYPES.indexOf('games')]);
 
         const homepage = results[TYPES.length];
         const game = results[TYPES.length + 1];
@@ -93,6 +101,10 @@
             if (typeof collectGameInfo === 'function') collectGameInfo();
 
             for (const type of TYPES) {
+                if (type === 'games' && !loadedOk.games) {
+                    console.warn('[admin] games did not load; leaving them alone');
+                    continue;
+                }
                 await putContent(type, data[type] || []);
             }
 
@@ -101,7 +113,10 @@
             homepage.communityLinks = data.links || [];
             await putContent('homepage', homepage);
 
-            if (data.game) await putContent('game', data.game);
+            // The 'game' blob is no longer written from here. putGames on the
+            // server keeps it in step with whichever game is featured, so
+            // publishing a separate copy from the browser could only ever put
+            // it back out of date.
 
             // Read it straight back. If what you see after saving is not
             // what you meant to save, you find out now rather than on the

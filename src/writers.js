@@ -185,6 +185,94 @@ export async function putTags(db, items) {
     throw lastError;
 }
 
+/**
+ * Games, as of migration 0009.
+ *
+ * Same delete-then-insert shape as the others: the admin holds the whole
+ * list and saves the lot.
+ *
+ * Two extra jobs on top of that:
+ *
+ *   1. The old `game` settings blob is kept in step with whichever game is
+ *      featured. Nothing reads it as the source of truth any more, but it
+ *      is what src/index.js falls back to if this table is ever missing,
+ *      so leaving it to go stale would turn a deploy ordering mistake into
+ *      wrong content on the front page.
+ *
+ *   2. If the Worker is deployed before the migration is run, the tables do
+ *      not exist yet. Rather than losing the save, the featured game is
+ *      written to the settings blob and a message says what to run. Same
+ *      approach as putDevlogs and putTags.
+ */
+export async function putGames(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of games');
+
+    const featured = items.find((g) => g.featured) || items[0] || null;
+    const mirror = featured ? {
+        titleEn: s(featured.titleEn), titleMi: s(featured.titleMi),
+        taglineEn: s(featured.taglineEn), taglineMi: s(featured.taglineMi),
+        trailerUrl: s(featured.trailerUrl), keyArt: s(featured.keyArt),
+        blurbEn: s(featured.blurbEn), blurbMi: s(featured.blurbMi),
+    } : null;
+
+    const stmts = [
+        db.prepare('DELETE FROM game_features'),
+        db.prepare('DELETE FROM games'),
+    ];
+
+    items.forEach((g, gi) => {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO games (id, slug, title_en, title_mi, tagline_en, tagline_mi,
+                 blurb_en, blurb_mi, trailer_url, key_art, status_en, status_mi,
+                 cta_label_en, cta_label_mi, cta_url, note_en, note_mi,
+                 featured, published, position, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
+            ).bind(
+                n(g.id) || gi + 1, s(g.slug),
+                s(g.titleEn), s(g.titleMi), s(g.taglineEn), s(g.taglineMi),
+                s(g.blurbEn), s(g.blurbMi), s(g.trailerUrl), s(g.keyArt),
+                s(g.statusEn), s(g.statusMi),
+                s(g.ctaLabelEn), s(g.ctaLabelMi), s(g.ctaUrl),
+                s(g.noteEn), s(g.noteMi),
+                // Exactly one featured game. Whichever comes first wins, so
+                // ticking a new one in the admin cannot leave two set.
+                featured && g === featured ? 1 : 0,
+                g.published === false ? 0 : 1,
+                gi
+            )
+        );
+
+        (g.features || []).forEach((f, fi) => {
+            stmts.push(
+                db.prepare(
+                    `INSERT INTO game_features (game_id, position, tagline_en, tagline_mi,
+                     text_en, text_mi, image) VALUES (?,?,?,?,?,?,?)`
+                ).bind(
+                    n(g.id) || gi + 1, fi,
+                    s(f.taglineEn), s(f.taglineMi), s(f.textEn), s(f.textMi), s(f.image)
+                )
+            );
+        });
+    });
+
+    try {
+        await db.batch(stmts);
+    } catch (e) {
+        if (!/no such table: (games|game_features)/i.test(e.message)) throw e;
+        if (mirror) await putSetting(db, 'game', mirror);
+        throw new Error(
+            'The games table does not exist yet, so only the featured game was ' +
+            'saved. Run: npx wrangler d1 execute digitail --remote ' +
+            '--file=./migrations/0009_games.sql'
+        );
+    }
+
+    if (mirror) await putSetting(db, 'game', mirror);
+    return items.length;
+}
+
+
 export async function putSetting(db, key, value) {
     if (value === null || typeof value !== 'object') {
         throw new Error(`Expected an object for ${key}`);
@@ -206,6 +294,9 @@ export const WRITERS = {
     team:     (db, body) => putTeam(db, body),
     social:   (db, body) => putSocial(db, body),
     tags:     (db, body) => putTags(db, body),
+    games:    (db, body) => putGames(db, body),
     homepage: (db, body) => putSetting(db, 'homepage', body),
+    // Kept so the old endpoint still answers, but the admin no longer writes
+    // to it. putGames owns this blob now - see the note there.
     game:     (db, body) => putSetting(db, 'game', body),
 };

@@ -581,7 +581,11 @@ function initializeForms() {
     }
 
         // Game Form
-    document.getElementById('game-editor').innerHTML = `
+    // The Games tab replaced this form. The element is gone from the page,
+    // so this must not assume it is there - an unguarded innerHTML here
+    // threw and stopped everything after it from running.
+    const gameEditorMount = document.getElementById('game-editor');
+    if (gameEditorMount) gameEditorMount.innerHTML = `
         <h2>Game Information</h2>
         <form id="game-form" onsubmit="saveGameInfo(event)">
             <div class="form-group">
