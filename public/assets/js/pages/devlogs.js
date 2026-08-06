@@ -19,7 +19,7 @@
 
         // 2. FETCH JSON AND RENDER CARDS
         const grid = document.getElementById('devlog-grid');
-        const filterBtns = document.querySelectorAll('.filter-group .btn-rugged');
+        const filterGroup = document.querySelector('.filter-group');
         const sortSelect = document.getElementById('sort-select');
         let cards = []; 
         let currentFilter = 'all';
@@ -36,8 +36,11 @@
                     const card = document.createElement('div');
                     card.className = 'card devlog-card';
                     
+                    // Pipe-delimited and matched exactly. A comma-joined
+                    // string matched by substring meant a filter for "art"
+                    // also caught "Smart Objects".
                     const tagsString = [log.primaryTag, log.secondaryTag, ...(log.tags || [])]
-                        .filter(Boolean).map(t => t.toLowerCase()).join(', ');
+                        .filter(Boolean).map(t => t.toLowerCase()).join('|');
                     card.setAttribute('data-tags', tagsString);
                     card.setAttribute('data-date', log.sortDate);
 
@@ -102,7 +105,7 @@
 
             grid.innerHTML = ''; 
             cards.forEach(card => {
-                const tags = card.getAttribute('data-tags');
+                const tags = (card.getAttribute('data-tags') || '').split('|').filter(Boolean);
                 if (activeFilter === 'all' || tags.includes(activeFilter)) {
                     card.style.display = 'flex'; 
                 } else {
@@ -112,14 +115,63 @@
             });
         }
 
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                currentFilter = e.currentTarget.getAttribute('data-filter');
+        // Delegated, so it keeps working after the buttons are rebuilt from
+        // the tag list below.
+        if (filterGroup) {
+            filterGroup.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-rugged');
+                if (!btn || !filterGroup.contains(btn)) return;
+                filterGroup.querySelectorAll('.btn-rugged')
+                    .forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
                 updateGrid(currentFilter, sortSelect.value);
             });
-        });
+        }
+
+        // --- FILTER BUTTONS COME FROM THE TAG MANAGER ---
+        //
+        // These used to be typed into devlogs.html, so adding a tag in the
+        // admin panel could never add a button. Now the row is rebuilt from
+        // the tags marked as filter buttons, in the order set there.
+        //
+        // If the request fails, or nothing is marked as a filter, the buttons
+        // already in the page are left exactly as they are - an empty filter
+        // row would be worse than a slightly stale one.
+        fetch('/api/content/tags')
+            .then(response => (response.ok ? response.json() : null))
+            .then(tags => {
+                if (!filterGroup || !Array.isArray(tags)) return;
+
+                const shown = tags.filter(t => t && t.name && t.filter !== false);
+                if (!shown.length) return;
+
+                filterGroup.textContent = '';
+
+                const addButton = (value, en, mi, isActive) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-rugged' + (isActive ? ' active' : '');
+                    btn.setAttribute('data-filter', value);
+
+                    const enSpan = document.createElement('span');
+                    enSpan.className = 'en';
+                    enSpan.textContent = en;
+
+                    const miSpan = document.createElement('span');
+                    miSpan.className = 'mi';
+                    miSpan.textContent = mi || en;
+
+                    btn.append(enSpan, miSpan);
+                    filterGroup.appendChild(btn);
+                };
+
+                addButton('all', 'All Logs', 'Katoa', true);
+                shown.forEach(t => addButton(t.name.toLowerCase(), t.name, t.nameMi));
+
+                currentFilter = 'all';
+                updateGrid(currentFilter, sortSelect.value);
+            })
+            .catch(error => console.error('Error loading filter tags:', error));
 
         sortSelect.addEventListener('change', (e) => {
             updateGrid(currentFilter, e.target.value);

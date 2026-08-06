@@ -381,6 +381,60 @@ console.log('\nThe tag manager shows tags that load after it is built:');
     check('and the empty-state message is gone', !html.includes('None yet.'));
 }
 
+/* ---- tags carry the fields the devlogs filter row needs ---- */
+
+console.log('\nTag display settings round-trip through the writer:');
+{
+    const { putTags } = await import('../src/writers.js');
+
+    // A fake D1 that just records the statements it is handed.
+    const recorded = [];
+    const fakeDb = {
+        prepare: (sql) => ({ sql, bind: (...args) => ({ sql, args }) }),
+        batch: async (stmts) => { recorded.push(...stmts); },
+    };
+
+    await putTags(fakeDb, [
+        { id: 1, name: 'Paper Crown', kind: 'primary', color: '#5DCCCA',
+          nameMi: 'Karauna Pepa', filter: true },
+        { id: 2, name: 'Bug', kind: 'secondary', color: '#E74C3C', filter: false },
+    ]);
+
+    const inserts = recorded.filter((r) => r.sql && r.sql.startsWith('INSERT'));
+    check('the widest column set is tried first',
+        inserts.length === 2 && inserts[0].sql.includes('name_mi')
+            && inserts[0].sql.includes('show_in_filter'),
+        inserts[0] ? inserts[0].sql.slice(0, 60) : 'no inserts');
+    check('the te reo label is stored', inserts[0] && inserts[0].args.includes('Karauna Pepa'));
+    check('a tag with the filter box ticked stores 1', inserts[0] && inserts[0].args[6] === 1);
+    check('a tag with it unticked stores 0', inserts[1] && inserts[1].args[6] === 0);
+    check('position follows the array order',
+        inserts[0] && inserts[0].args[7] === 0 && inserts[1].args[7] === 1);
+}
+
+console.log('\nAn older database without the new columns still saves:');
+{
+    const { putTags } = await import('../src/writers.js');
+    let attempt = 0;
+    const used = [];
+    const oldDb = {
+        prepare: (sql) => ({ sql, bind: (...args) => ({ sql, args }) }),
+        batch: async (stmts) => {
+            attempt++;
+            const insert = stmts.find((x) => x.sql && x.sql.startsWith('INSERT'));
+            if (insert && insert.sql.includes('name_mi')) {
+                throw new Error('no column named name_mi');
+            }
+            used.push(insert && insert.sql);
+        },
+    };
+    await putTags(oldDb, [{ id: 1, name: 'Code', kind: 'secondary' }]);
+    check('it falls back rather than throwing', attempt === 2);
+    check('and the fallback still stores the tag',
+        Boolean(used[0]) && used[0].includes('kind') && !used[0].includes('name_mi'),
+        used[0] || 'nothing written');
+}
+
 console.log(failures === 0
     ? '\nAll checks passed. The admin shows what is stored, and saving keeps it.\n'
     : `\n${failures} check(s) failed.\n`);

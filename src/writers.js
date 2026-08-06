@@ -138,29 +138,52 @@ export async function putSocial(db, items) {
 export async function putTags(db, items) {
     if (!Array.isArray(items)) throw new Error('Expected an array of tags');
 
-    const build = (withKind) => {
+    // Widest schema first, then progressively older ones. A Worker deployed
+    // before its migration has run must not lose the tags entirely.
+    const SHAPES = [
+        {
+            missing: /no column named (name_mi|show_in_filter|position)/i,
+            sql: 'INSERT INTO tags (id, name, color, category, kind, name_mi, show_in_filter, position) VALUES (?,?,?,?,?,?,?,?)',
+            bind: (t, i) => [
+                n(t.id), s(t.name), s(t.color) || '#5DCCCA', s(t.category) || 'general',
+                s(t.kind) || 'secondary', s(t.nameMi) || null,
+                t.filter === false ? 0 : 1, i,
+            ],
+        },
+        {
+            missing: /no column named kind/i,
+            sql: 'INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)',
+            bind: (t) => [n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general', s(t.kind) || 'secondary'],
+        },
+        {
+            missing: null,
+            sql: 'INSERT INTO tags (id, name, color, category) VALUES (?,?,?,?)',
+            bind: (t) => [n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general'],
+        },
+    ];
+
+    const build = (shape) => {
         const stmts = [db.prepare('DELETE FROM tags')];
-        for (const t of items) {
-            stmts.push(withKind
-                ? db.prepare('INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)')
-                    .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
-                          s(t.category) || 'general', s(t.kind) || 'secondary')
-                : db.prepare('INSERT INTO tags (id, name, color, category) VALUES (?,?,?,?)')
-                    .bind(n(t.id), s(t.name), s(t.color) || '#5DCCCA',
-                          s(t.category) || 'general'));
-        }
+        items.forEach((t, i) => {
+            stmts.push(db.prepare(shape.sql).bind(...shape.bind(t, i)));
+        });
         return stmts;
     };
 
-    try {
-        await db.batch(build(true));
-    } catch (e) {
-        if (!/no column named kind/i.test(e.message)) throw e;
-        await db.batch(build(false));
+    let lastError = null;
+    for (const shape of SHAPES) {
+        try {
+            await db.batch(build(shape));
+            return { ok: true, count: items.length };
+        } catch (e) {
+            lastError = e;
+            if (!shape.missing || !shape.missing.test(e.message)) throw e;
+        }
     }
-    return items.length;
+    throw lastError;
 }
-
 
 export async function putSetting(db, key, value) {
     if (value === null || typeof value !== 'object') {

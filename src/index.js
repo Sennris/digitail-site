@@ -98,10 +98,24 @@ async function getSocial(db) {
 }
 
 async function getTags(db) {
-    const { results } = await db.prepare('SELECT * FROM tags ORDER BY id').all();
+    // ORDER BY position needs migration 0008. Fall back so the site keeps
+    // working if the code is deployed before the migration is applied.
+    let results;
+    try {
+        ({ results } = await db.prepare(
+            'SELECT * FROM tags ORDER BY position, id').all());
+    } catch {
+        ({ results } = await db.prepare('SELECT * FROM tags ORDER BY id').all());
+    }
+
     return results.map((r) => ({
         id: r.id, name: r.name, color: r.color,
         category: r.category, kind: r.kind || 'secondary',
+        nameMi: r.name_mi || '',
+        // Missing column, or a NULL in it, both mean "yes, show it" - that
+        // is what keeps existing tags visible as filters after 0008 runs.
+        filter: r.show_in_filter === undefined || r.show_in_filter === null
+            ? true : Boolean(r.show_in_filter),
     }));
 }
 

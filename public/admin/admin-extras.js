@@ -99,19 +99,55 @@
 
     /* ================= 2. tag management ================= */
 
+    // Tag names are typed by hand, so anything going into an attribute has
+    // to be escaped or a stray quote breaks the whole row.
+    function esc(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     function tagListHTML(kind) {
         const tags = tagsOfKind(kind);
         if (!tags.length) return '<p style="opacity:0.6; font-family:monospace;">None yet.</p>';
-        return tags.map((t) => `
-            <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
-                <input type="color" value="${t.color || '#5DCCCA'}"
-                       data-tag-color="${t.id}" style="width:44px; height:34px; padding:2px;">
-                <input type="text" value="${t.name}" data-tag-name="${t.id}"
-                       style="flex:1; font-family:monospace;">
-                <button type="button" class="btn-rugged" data-tag-delete="${t.id}"
-                        style="font-size:0.75rem; padding:0.3rem 0.6rem; background:#E74C3C;">
-                    Remove
-                </button>
+
+        const rowStyle = 'border:1px solid rgba(185,204,204,0.25); border-radius:4px;'
+            + 'padding:0.6rem; margin-bottom:0.6rem;';
+        const line = 'display:flex; gap:0.5rem; align-items:center;';
+        const arrow = 'font-size:0.75rem; padding:0.2rem 0.5rem; line-height:1;';
+
+        return tags.map((t, i) => `
+            <div style="${rowStyle}">
+                <div style="${line}">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <button type="button" class="btn-rugged" data-tag-up="${t.id}"
+                                title="Move up" ${i === 0 ? 'disabled' : ''}
+                                style="${arrow}">&#9650;</button>
+                        <button type="button" class="btn-rugged" data-tag-down="${t.id}"
+                                title="Move down" ${i === tags.length - 1 ? 'disabled' : ''}
+                                style="${arrow}">&#9660;</button>
+                    </div>
+                    <input type="color" value="${esc(t.color || '#5DCCCA')}"
+                           data-tag-color="${t.id}" style="width:44px; height:34px; padding:2px;">
+                    <input type="text" value="${esc(t.name)}" data-tag-name="${t.id}"
+                           style="flex:1; font-family:monospace;" aria-label="Tag name">
+                    <button type="button" class="btn-rugged" data-tag-delete="${t.id}"
+                            style="font-size:0.75rem; padding:0.3rem 0.6rem; background:#E74C3C;">
+                        Remove
+                    </button>
+                </div>
+                <div style="${line} margin-top:0.5rem;">
+                    <input type="text" value="${esc(t.nameMi || '')}" data-tag-name-mi="${t.id}"
+                           placeholder="Te reo label (optional)"
+                           style="flex:1; font-family:monospace; font-size:0.85rem;"
+                           aria-label="Te reo label">
+                    <label style="font-family:var(--font-mono); font-size:0.75rem;
+                                  display:flex; align-items:center; gap:0.35rem; white-space:nowrap;">
+                        <input type="checkbox" data-tag-filter="${t.id}"
+                               style="width:auto;" ${t.filter === false ? '' : 'checked'}>
+                        Filter button
+                    </label>
+                </div>
             </div>`).join('');
     }
 
@@ -140,8 +176,11 @@
         // from mountAll(), which the MutationObserver drives - rewriting
         // innerHTML unconditionally from there retriggers the observer and
         // loops forever.
+        // Order matters here: the array order IS the filter button order, so
+        // a reorder has to change the signature or the redraw gets skipped.
         const signature = allTags()
-            .map((t) => [t.id, t.kind, t.name, t.color].join('\u001f')).join('\u0000');
+            .map((t) => [t.id, t.kind, t.name, t.nameMi, t.color, t.filter !== false]
+                .join('\u001f')).join('\u0000');
         if (panel.dataset.tagSignature === signature) return;
         panel.dataset.tagSignature = signature;
 
@@ -150,6 +189,8 @@
             <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.75; margin:0 0 1.25rem;">
                 Every devlog gets one <strong>primary</strong> tag (which game it's about,
                 or studio news) and one <strong>secondary</strong> tag (what kind of update it is).
+                <br>Tick <strong>Filter button</strong> to give a tag its own button on the
+                devlogs page, and use the arrows to set the order those buttons appear in.
             </p>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
@@ -237,6 +278,49 @@
                 const tag = data.tags.find((t) => t.id === Number(input.dataset.tagColor));
                 if (tag) tag.color = input.value;
             });
+        });
+
+        panel.querySelectorAll('[data-tag-name-mi]').forEach((input) => {
+            input.addEventListener('input', () => {
+                const tag = data.tags.find((t) => t.id === Number(input.dataset.tagNameMi));
+                if (tag) tag.nameMi = input.value;
+            });
+        });
+
+        panel.querySelectorAll('[data-tag-filter]').forEach((box) => {
+            box.addEventListener('change', () => {
+                const tag = data.tags.find((t) => t.id === Number(box.dataset.tagFilter));
+                if (tag) tag.filter = box.checked;
+            });
+        });
+
+        // Reordering. The order of data.tags is the order the filter buttons
+        // appear in, so moving a tag means swapping it with its neighbour of
+        // the SAME kind - the two lists are shown separately but live in one
+        // array, so stepping one index would jump across into the other list.
+        function move(id, direction) {
+            const tag = data.tags.find((t) => t.id === id);
+            if (!tag) return;
+            const kind = tag.kind || 'secondary';
+            const sameKind = data.tags.filter((t) => (t.kind || 'secondary') === kind);
+            const at = sameKind.indexOf(tag);
+            const swapWith = sameKind[at + direction];
+            if (!swapWith) return;
+
+            const a = data.tags.indexOf(tag);
+            const b = data.tags.indexOf(swapWith);
+            data.tags[a] = swapWith;
+            data.tags[b] = tag;
+
+            renderTagManager();
+            refreshPickers();
+        }
+
+        panel.querySelectorAll('[data-tag-up]').forEach((btn) => {
+            btn.addEventListener('click', () => move(Number(btn.dataset.tagUp), -1));
+        });
+        panel.querySelectorAll('[data-tag-down]').forEach((btn) => {
+            btn.addEventListener('click', () => move(Number(btn.dataset.tagDown), 1));
         });
     }
 
