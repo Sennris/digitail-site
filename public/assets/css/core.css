@@ -1147,11 +1147,19 @@ textarea:focus-visible {
 
 
 /* ==========================================================================
-   22. FOOTER NAVIGATION
+   22. FOOTER NAVIGATION (currently unused)
    ==========================================================================
-   The page links used to live in the sticky header. They now sit here, so
-   the top of every page is just the logo, the language toggle and display
-   options - and nobody reading a devlog is stranded without a way out.
+   The page links were moved down here for a while, then moved back into the
+   sticky header. This is kept on purpose: nothing in the pages uses
+   .footer-nav right now, so it costs a few hundred bytes and does nothing,
+   but if the links ever move back down it is a markup change only.
+
+   To bring it back, add this above the <p> inside <footer> on each page:
+
+       <nav class="footer-nav" aria-label="Pages">
+           <a href="/index.html">home</a>
+           ... one per page, aria-current="page" on the current one ...
+       </nav>
    ========================================================================== */
 
 .footer-nav {
