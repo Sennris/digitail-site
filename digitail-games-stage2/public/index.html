@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An indie game studio in Otautahi Christchurch, Aotearoa New Zealand. Honest devlogs, a game in the works, and a community that gives a fox.">
+    <link rel="canonical" href="https://www.digitailstudios.com/">
+
+    <!-- Link previews: Discord, Bluesky, Slack, Mastodon, etc -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Digi Tail Studios">
+    <meta property="og:locale" content="en_NZ">
+    <meta property="og:locale:alternate" content="mi_NZ">
+    <meta property="og:url" content="https://www.digitailstudios.com/">
+    <meta property="og:title" content="Digi Tail Studios | Indie Game Development from Aotearoa">
+    <meta property="og:description" content="An indie game studio in Otautahi Christchurch, Aotearoa New Zealand. Honest devlogs, a game in the works, and a community that gives a fox.">
+    <meta property="og:image" content="https://www.digitailstudios.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Digi Tail Studios: indie game development from Aotearoa">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Digi Tail Studios | Indie Game Development from Aotearoa">
+    <meta name="twitter:description" content="An indie game studio in Otautahi Christchurch, Aotearoa New Zealand. Honest devlogs, a game in the works, and a community that gives a fox.">
+    <meta name="twitter:image" content="https://www.digitailstudios.com/og-image.png">
+
+    <meta name="theme-color" content="#1D0D12">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Digi Tail Studios",
+      "url": "https://www.digitailstudios.com/",
+      "logo": "https://www.digitailstudios.com/og-image.png",
+      "description": "Indie game development studio based in Otautahi Christchurch, Aotearoa New Zealand.",
+      "email": "hello@digitailstudios.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Christchurch",
+        "addressRegion": "Canterbury",
+        "addressCountry": "NZ"
+      }
+    }
+    </script>
+    <title>Digi Tail Studios</title>
+    
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/index.css">
+</head>
+<body class="lang-en">
+
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main">
+        <a class="site-nav__brand" href="index.html"><span aria-hidden="true">🦊</span> Digi Tail</a>
+        <a class="nav-link" href="index.html" aria-current="page">home</a>
+        <a class="nav-link" href="games.html">games</a>
+        <a class="nav-link" href="devlogs.html">devlogs</a>
+        <a class="nav-link" href="foxes.html">foxes</a>
+        <a class="nav-link" href="social.html">social</a>
+        <a class="nav-link" href="about.html">about</a>
+        <button id="lang-toggle-btn" class="btn-rugged nav-lang"><span class="en">Te Reo Māori</span><span class="mi">English</span>
+        </button>
+    </nav>
+
+    <div class="ticker" id="site-ticker" hidden>
+        <div class="ticker__track" id="ticker-track"></div>
+    </div>
+ 
+
+    <div id="announcement-banner" class="announcement-banner"></div>
+
+    <header class="hero-section hero-section--framed fade-in-section is-visible">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <h1 id="hero-title">Digi Tail Studios</h1>
+                <p>
+                    <span class="en" id="hero-tagline-en">// Real games. Real people. Really messy desks.</span>
+                    <span class="mi" id="hero-tagline-mi">// Hapori Tuatahi. Ngākau Nui Tonu.</span>
+                </p>
+            </div>
+            <div class="hero-mascot" id="hero-mascot">
+                <!-- Mascot image loaded from homepage.json -->
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container">
+
+        <a href="about.html" class="feature-section fade-in-section" style="display: block; text-decoration: none;">
+            <h2 class="feature-tagline">
+                <span class="en">A sanctuary for the tired, the creative, and the caffeinated.</span>
+                <span class="mi">He wāhi haumaru mō te hunga ngenge, te hunga auaha, me te hunga inu kawhe.</span>
+            </h2>
+            <p class="feature-text">
+                <span class="en">We’re Digi Tails, an indie studio building worlds that look like a dream and play like a <em>(well-balanced)</em> fever dream. We lean into the mischief of a fox and the warmth of the flat white. We aren't interested in being the biggest studio, just the one that cares the most about its community and its code.</span>
+                <span class="mi">Ko Digi Tails mātou, he whare hanga kēmu motuhake e hanga ana i ngā ao e rite ana ki te moemoeā. Ka whirinaki mātou ki te haututū o te rēpokia me te mahana o te kawhe. Kāore mātou e hiahia ana kia noho ko mātou te whare nui rawa, engari ko te whare e tino manaaki ana i tana hapori me tana waehere.</span>
+            </p>
+            
+            <span class="read-more" style="margin-top: 2rem;">
+                <span class="en">Meet the Pack →</span>
+                <span class="mi">Tūtaki ki te Rōpū →</span>
+            </span>
+        </a>
+
+        <section class="alternating-row">
+            <div class="text-side">
+                <div class="tagline">
+                    <span class="en">Currently Brewing:</span><span class="mi">E Whakawhanakehia Ana:</span> <br>
+                    <span class="accent-text" id="home-game-name">Project Paper Crown</span>
+                </div>
+                <p class="sub-text">
+                    <span class="en">We are currently hard at work on our debut title. It’s a mix of cozy exploration, chilling environments, and slightly chaotic problem-solving. Think of it as a warm cup of coffee on a freezing tundra.</span>
+                    <span class="mi">E whakapau kaha ana mātou ki tā mātou kēmu tuatahi. He āhuatanga torotoro haumaru, he wāhi makariri, he whakaoti rapanga ngahau hoki. Pērā i te inu kawhe mahana i te wā hukapapa.</span>
+                </p>
+            </div>
+            <div class="card-side">
+                <a href="game.html" class="card fade-in-section" style="display: block; text-decoration: none;">
+                    <div class="image-placeholder" id="home-game-art">
+                        <span class="en">[Game Key Art / Screenshot]</span>
+                        <span class="mi">[Tuhia te Pikitia Kēmu ki Konei]</span>
+                    </div>
+                    <h3 id="home-game-title">Project Paper Crown</h3>
+                    <p>
+                        <span class="en" id="home-game-blurb-en">Explore the frozen wilds, rebuild a fractured community, and try not to let your equipment catch on fire in the snow. A cozy-yet-unhinged adventure.</span>
+                        <span class="mi" id="home-game-blurb-mi">Tūhuratia te ngahere hukapapa, hangaia anō tētahi hapori kua pakaru, ā, kia tūpato kei ngiha ō taputapu i te hukarere. He haerenga haumaru engari he mīharo.</span>
+                    </p>
+                    <span class="read-more">
+                        <span class="en">Explore Game →</span>
+                        <span class="mi">Tirohia Kēmu →</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="alternating-row">
+            <div class="text-side">
+                <div class="statement">
+                    <span class="en">See what's happening<br>in the <em>den</em>.<br>Join a community that<br>actually gives a <em>fox</em>.</span>
+                    <span class="mi">Tirohia ngā mahi<br>i te <em>rua</em>.<br>Hono mai ki tētahi hapori<br>e <em>aroha pono</em> ana.</span>
+                </div>
+            </div>
+            
+            <div class="card-grid stagger stack-drift" id="community-links-grid">
+                <!-- Community link banners loaded dynamically from homepage.json -->
+                <div class="banner fade-in-section" style="transition-delay: 0.1s;">
+                    <h4><span class="en">Loading...</span><span class="mi">E uta ana...</span></h4>
+                    <p><span class="en">Fetching community links...</span><span class="mi">E tiki ana i ngā hononga hapori...</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="alternating-row">
+            <div class="text-side">
+                <div class="tagline">
+                    <span class="en">Turning</span><span class="mi">Te huri i te</span> <br>
+                    <span class="accent-text"><span class="en">"oops, it broke"</span><span class="mi">"auē, kua pakaru"</span></span> <br>
+                    <span class="en">into</span><span class="mi">ki te</span> <br>
+                    <span class="accent-text"><span class="en">"wow, it’s a feature."</span><span class="mi">"anana, he āhuatanga hou."</span></span>
+                </div>
+                <p class="sub-text">
+                    <span class="en">Making games is a beautiful disaster of broken code and late nights. We believe the process is just as important as the product. This is our digital scrapheap where we document the wins, the fails, and the "how did that even happen?" moments.</span>
+                    <span class="mi">Ko te hanga kēmu he aituā ātaahua o te waehere pakaru me ngā pō roa. Koinei tō mātou wāhi putunga matihiko e tuhi ana i ngā wikitoria, ngā hinganga, me ngā wā "i pēhea ai tēnei?"</span>
+                </p>
+            </div>
+            <div class="card-side">
+                <a href="devlogs.html" class="card fade-in-section" style="display: block; text-decoration: none;">
+                    <span class="pre-title">
+                        <span class="en">Latest Dev Log</span>
+                        <span class="mi">Rātaka Whakawhanake Hou</span>
+                    </span>
+                    <h3>
+                        <span class="en" id="home-log-title-en">Loading...</span>
+                        <span class="mi" id="home-log-title-mi">E uta ana...</span>
+                    </h3>
+                    <p>
+                        <span class="en" id="home-log-desc-en">Fetching the latest chaos from the server...</span>
+                        <span class="mi" id="home-log-desc-mi">E tiki ana i ngā kōrero hōu...</span>
+                    </p>
+                    <span class="read-more">
+                        <span class="en">Read Log →</span>
+                        <span class="mi">Pānuihia Rātaka →</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="alternating-row">
+            <div class="text-side">
+                <div class="tagline">
+                    <span class="en">Studio Mascot, Made Real.</span>
+                    <span class="mi">Tā Mātou Mōkai, Kua Pono.</span>
+                </div>
+                <p class="sub-text">
+                    <span class="en">Because the Arctic Fox is the face of our studio, we are committed to giving back. Every year, Digi Tail Studios officially "adopts" a wild Arctic Fox through conservation charities. Meet our current studio companion!</span>
+                    <span class="mi">I te mea ko te Rēpokia Ākitiki te kanohi o tō mātou whare, e ū ana mātou ki te whakahoki koha. I ia tau, ka "whāngai" a Digi Tail Studios i tētahi Rēpokia Ākitiki mā ngā rōpū tiaki taiao.</span>
+                </p>
+            </div>
+            <div class="card-side">
+                <a href="foxes.html" class="card fade-in-section" style="display: block; text-decoration: none;">
+                    <div class="image-placeholder" id="home-fox-image">
+                        <span class="en">[ Adopted Fox Image ]</span>
+                        <span class="mi">[ Tuhia te Pikitia Rēpokia ki Konei ]</span>
+                    </div>
+                    <h3>
+                        <span class="en" id="home-fox-title-en">Loading...</span>
+                        <span class="mi" id="home-fox-title-mi">E uta ana...</span>
+                    </h3>
+                    <p>
+                        <span class="en" id="home-fox-desc-en">Fetching the latest fox from the server...</span>
+                        <span class="mi" id="home-fox-desc-mi">E tiki ana i ngā kōrero hōu...</span>
+                    </p>
+                    <span class="read-more">
+                        <span class="en">Meet the Foxes →</span>
+                        <span class="mi">Tūtaki ki ngā Rēpokia →</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        
+        <section class="alternating-row">
+            <div class="text-side">
+                <div class="tagline">
+                    <span class="en">What we've been<br>up to lately.</span>
+                    <span class="mi">Ngā mahi o<br>ēnei rā.</span>
+                </div>
+                <p class="sub-text">
+                    <span class="en">Follow us across the internet. Here's a peek at our latest posts, behind-the-scenes moments, and studio shenanigans.</span>
+                    <span class="mi">Whai mai i a mātou i te ipurangi. Anei he titiro ki ā mātou tuhinga hou, ngā wā i muri i te ārai, me ngā mahi ngahau o te whare.</span>
+                </p>
+            </div>
+            <div class="card-side">
+                <a href="social.html" class="card fade-in-section" style="display: block; text-decoration: none;">
+                    <span class="pre-title">
+                        <span class="en">Latest Social Post</span>
+                        <span class="mi">Tuhinga Pāpāho Hou</span>
+                    </span>
+                    <div class="image-placeholder" id="home-social-image" style="height: 180px;">
+                        <span class="en">[ Social Post Image ]</span>
+                        <span class="mi">[ Pikitia Pāpāho ]</span>
+                    </div>
+                    <h3>
+                        <span class="en" id="home-social-title-en">Loading...</span>
+                        <span class="mi" id="home-social-title-mi">E uta ana...</span>
+                    </h3>
+                    <p>
+                        <span class="en" id="home-social-desc-en">Fetching the latest from our socials...</span>
+                        <span class="mi" id="home-social-desc-mi">E tiki ana i ngā kōrero hou...</span>
+                    </p>
+                    <span class="read-more">
+                        <span class="en">View All Posts →</span>
+                        <span class="mi">Tirohia Ngā Tuhinga Katoa →</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="feature-section fade-in-section">
+            <h2 class="feature-tagline">
+                <span class="en">Stay in the Loop.</span>
+                <span class="mi">Noho Mōhio Mai.</span>
+            </h2>
+            <p class="feature-text">
+                <span class="en">No corporate spam, we promise. Drop your email below to get notified about our biggest dev logs, exclusive playtests, and yearly fox updates.</span>
+                <span class="mi">Kāore he īmēra urupara hōhā, e oati ana mātou. Tukuna tō īmēra ki raro iho nei kia pānuitia mō ā mātou rātaka nui, me ngā whakahōu rēpokia o te tau.</span>
+            </p>
+            
+            <form class="newsletter-form" id="newsletter-form" action="/api/subscribe" method="POST">
+                <input type="text" name="name" id="name" placeholder="Preferred Name / Ingoa">
+                <input type="email" name="email" id="email" placeholder="Email Address / Wāhitau Īmēra" required>
+                <input type="email" id="confirm-email" placeholder="Confirm Email / Whakaū Īmēra" required>
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAEG1e3La0sGXIWkv" data-action="turnstile-spin-v2"></div>
+                <button type="submit" class="submit-btn">
+                    <span class="en">Join the Pack</span>
+                    <span class="mi">Hono mai ki te Rōpū</span>
+                </button>
+                <p class="form-status" id="newsletter-status" role="status" aria-live="polite"></p>
+                <p class="form-smallprint">
+                    <span class="en">We will email you once to confirm. You can leave any time. <a href="/privacy.html">How we handle your details</a>.</span>
+                    <span class="mi">Ka īmēratia koe kia whakaū. Ka taea te wehe i ngā wā katoa. <a href="/privacy.html">Me pēhea mātou e tiaki ai i ō taipitopito</a>.</span>
+                </p>
+            </form>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Digi Tail Studios. <button type="button" class="secret-paw" id="paw-1" aria-label="Hidden paw. Find all three."><span aria-hidden="true">🐾</span></button> 
+            <span class="en">Stay wild.</span>
+            <span class="mi">Kia mohoao tonu.</span>
+            <span class="en"> · <a href="/privacy.html" class="footer-privacy">Privacy</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Studio login</a></span><span class="mi"> · <a href="/privacy.html" class="footer-privacy">Tūmataiti</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Takiuru</a></span>
+        </p>
+    </footer>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="/assets/js/pages/index.js"></script>
+    <script src="/assets/js/lang-attr.js"></script>
+    <script src="/assets/js/a11y.js"></script>
+    <script src="/assets/js/card-click.js"></script>
+</body>
+</html>

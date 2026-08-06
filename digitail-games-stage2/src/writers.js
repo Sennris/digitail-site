@@ -1,0 +1,312 @@
+/**
+ * Write handlers.
+ *
+ * The admin panel holds each content type as a whole array in memory and
+ * saves the lot. So the API mirrors that: PUT the full collection, and
+ * the server replaces it inside a batch (all or nothing). For a site with
+ * twenty devlogs this is simple and safe. If the devlog count ever gets
+ * into the thousands, this is the piece to revisit.
+ */
+
+const s = (v) => (v === undefined || v === null ? '' : String(v));
+const n = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
+
+function devlogStatements(db, items, withNewTags) {
+    const stmts = [
+        db.prepare('DELETE FROM devlog_tags'),
+        db.prepare('DELETE FROM devlogs'),
+    ];
+
+    for (const d of items) {
+        stmts.push(withNewTags
+            ? db.prepare(
+                `INSERT INTO devlogs (id, sort_date, display_date, title_en, title_mi,
+                 snippet_en, snippet_mi, content_en, content_mi, image,
+                 primary_tag, secondary_tag, published, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
+              ).bind(
+                n(d.id), s(d.sortDate), s(d.displayDate), s(d.titleEn), s(d.titleMi),
+                s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image),
+                s(d.primaryTag), s(d.secondaryTag)
+              )
+            : db.prepare(
+                `INSERT INTO devlogs (id, sort_date, display_date, title_en, title_mi,
+                 snippet_en, snippet_mi, content_en, content_mi, image, published, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,1,datetime('now'))`
+              ).bind(
+                n(d.id), s(d.sortDate), s(d.displayDate), s(d.titleEn), s(d.titleMi),
+                s(d.snippetEn), s(d.snippetMi), s(d.contentEn), s(d.contentMi), s(d.image)
+              )
+        );
+        (d.tags || []).forEach((tag, i) => {
+            stmts.push(
+                db.prepare('INSERT INTO devlog_tags (devlog_id, tag_name, position) VALUES (?,?,?)')
+                  .bind(n(d.id), s(tag), i)
+            );
+        });
+    }
+    return stmts;
+}
+
+export async function putDevlogs(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of devlogs');
+
+    try {
+        await db.batch(devlogStatements(db, items, true));
+    } catch (e) {
+        // If migration 0005 hasn't been run yet, primary_tag doesn't exist.
+        // Saving everything else still has to work, so fall back rather than
+        // blocking the whole save.
+        if (!/no column named (primary|secondary)_tag/i.test(e.message)) throw e;
+        await db.batch(devlogStatements(db, items, false));
+        throw new Error(
+            'Saved, but the two-tag columns are missing. Run: ' +
+            'npx wrangler d1 execute digitail --remote --file=./migrations/0005_tags_and_users.sql'
+        );
+    }
+    return items.length;
+}
+
+
+export async function putFoxes(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of foxes');
+    const stmts = [db.prepare('DELETE FROM foxes')];
+    for (const f of items) {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO foxes (id, name_en, name_mi, year, package_en, package_mi,
+                 desc_en, desc_mi, bio_en, bio_mi, image) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+            ).bind(
+                n(f.id), s(f.nameEn), s(f.nameMi), n(f.year), s(f.packageEn), s(f.packageMi),
+                s(f.descEn), s(f.descMi), s(f.bioEn), s(f.bioMi), s(f.image)
+            )
+        );
+    }
+    await db.batch(stmts);
+    return items.length;
+}
+
+
+export async function putTeam(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of team members');
+    const stmts = [db.prepare('DELETE FROM team')];
+    items.forEach((t, i) => {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO team (id, name_en, name_mi, role_en, role_mi,
+                 bio_en, bio_mi, avatar, sort_order) VALUES (?,?,?,?,?,?,?,?,?)`
+            ).bind(
+                n(t.id), s(t.nameEn), s(t.nameMi), s(t.roleEn), s(t.roleMi),
+                s(t.bioEn), s(t.bioMi), s(t.avatar), i
+            )
+        );
+    });
+    await db.batch(stmts);
+    return items.length;
+}
+
+
+export async function putSocial(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of social posts');
+    const stmts = [
+        db.prepare('DELETE FROM social_tags'),
+        db.prepare('DELETE FROM social_posts'),
+    ];
+    for (const p of items) {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO social_posts (id, platform, title, date, url, thumbnail, description)
+                 VALUES (?,?,?,?,?,?,?)`
+            ).bind(
+                n(p.id), s(p.platform), s(p.title), s(p.date),
+                s(p.url), s(p.thumbnail), s(p.description)
+            )
+        );
+        (p.tags || []).forEach((tag, i) => {
+            stmts.push(
+                db.prepare('INSERT INTO social_tags (post_id, tag_name, position) VALUES (?,?,?)')
+                  .bind(n(p.id), s(tag), i)
+            );
+        });
+    }
+    await db.batch(stmts);
+    return items.length;
+}
+
+
+export async function putTags(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of tags');
+
+    // Widest schema first, then progressively older ones. A Worker deployed
+    // before its migration has run must not lose the tags entirely.
+    const SHAPES = [
+        {
+            missing: /no column named (name_mi|show_in_filter|position)/i,
+            sql: 'INSERT INTO tags (id, name, color, category, kind, name_mi, show_in_filter, position) VALUES (?,?,?,?,?,?,?,?)',
+            bind: (t, i) => [
+                n(t.id), s(t.name), s(t.color) || '#5DCCCA', s(t.category) || 'general',
+                s(t.kind) || 'secondary', s(t.nameMi) || null,
+                t.filter === false ? 0 : 1, i,
+            ],
+        },
+        {
+            missing: /no column named kind/i,
+            sql: 'INSERT INTO tags (id, name, color, category, kind) VALUES (?,?,?,?,?)',
+            bind: (t) => [n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general', s(t.kind) || 'secondary'],
+        },
+        {
+            missing: null,
+            sql: 'INSERT INTO tags (id, name, color, category) VALUES (?,?,?,?)',
+            bind: (t) => [n(t.id), s(t.name), s(t.color) || '#5DCCCA',
+                          s(t.category) || 'general'],
+        },
+    ];
+
+    const build = (shape) => {
+        const stmts = [db.prepare('DELETE FROM tags')];
+        items.forEach((t, i) => {
+            stmts.push(db.prepare(shape.sql).bind(...shape.bind(t, i)));
+        });
+        return stmts;
+    };
+
+    let lastError = null;
+    for (const shape of SHAPES) {
+        try {
+            await db.batch(build(shape));
+            return { ok: true, count: items.length };
+        } catch (e) {
+            lastError = e;
+            if (!shape.missing || !shape.missing.test(e.message)) throw e;
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Games, as of migration 0009.
+ *
+ * Same delete-then-insert shape as the others: the admin holds the whole
+ * list and saves the lot.
+ *
+ * Two extra jobs on top of that:
+ *
+ *   1. The old `game` settings blob is kept in step with whichever game is
+ *      featured. Nothing reads it as the source of truth any more, but it
+ *      is what src/index.js falls back to if this table is ever missing,
+ *      so leaving it to go stale would turn a deploy ordering mistake into
+ *      wrong content on the front page.
+ *
+ *   2. If the Worker is deployed before the migration is run, the tables do
+ *      not exist yet. Rather than losing the save, the featured game is
+ *      written to the settings blob and a message says what to run. Same
+ *      approach as putDevlogs and putTags.
+ */
+export async function putGames(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of games');
+
+    const featured = items.find((g) => g.featured) || items[0] || null;
+    const mirror = featured ? {
+        titleEn: s(featured.titleEn), titleMi: s(featured.titleMi),
+        taglineEn: s(featured.taglineEn), taglineMi: s(featured.taglineMi),
+        trailerUrl: s(featured.trailerUrl), keyArt: s(featured.keyArt),
+        blurbEn: s(featured.blurbEn), blurbMi: s(featured.blurbMi),
+    } : null;
+
+    const stmts = [
+        db.prepare('DELETE FROM game_features'),
+        db.prepare('DELETE FROM games'),
+    ];
+
+    items.forEach((g, gi) => {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO games (id, slug, title_en, title_mi, tagline_en, tagline_mi,
+                 blurb_en, blurb_mi, trailer_url, key_art, status_en, status_mi,
+                 cta_label_en, cta_label_mi, cta_url,
+                 cta_heading_en, cta_heading_mi, cta_body_en, cta_body_mi,
+                 note_en, note_mi,
+                 featured, published, position, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
+            ).bind(
+                n(g.id) || gi + 1, s(g.slug),
+                s(g.titleEn), s(g.titleMi), s(g.taglineEn), s(g.taglineMi),
+                s(g.blurbEn), s(g.blurbMi), s(g.trailerUrl), s(g.keyArt),
+                s(g.statusEn), s(g.statusMi),
+                s(g.ctaLabelEn), s(g.ctaLabelMi), s(g.ctaUrl),
+                s(g.ctaHeadingEn), s(g.ctaHeadingMi), s(g.ctaBodyEn), s(g.ctaBodyMi),
+                s(g.noteEn), s(g.noteMi),
+                // Exactly one featured game. Whichever comes first wins, so
+                // ticking a new one in the admin cannot leave two set.
+                featured && g === featured ? 1 : 0,
+                g.published === false ? 0 : 1,
+                gi
+            )
+        );
+
+        (g.features || []).forEach((f, fi) => {
+            stmts.push(
+                db.prepare(
+                    `INSERT INTO game_features (game_id, position, tagline_en, tagline_mi,
+                     text_en, text_mi, image) VALUES (?,?,?,?,?,?,?)`
+                ).bind(
+                    n(g.id) || gi + 1, fi,
+                    s(f.taglineEn), s(f.taglineMi), s(f.textEn), s(f.textMi), s(f.image)
+                )
+            );
+        });
+    });
+
+    try {
+        await db.batch(stmts);
+    } catch (e) {
+        if (/no column named cta_(heading|body)_(en|mi)/i.test(e.message)) {
+            throw new Error(
+                'Saved nothing: the call to action columns are missing. Run ' +
+                'migration 0010_game_cta.sql, then save again.'
+            );
+        }
+        if (!/no such table: (games|game_features)/i.test(e.message)) throw e;
+        if (mirror) await putSetting(db, 'game', mirror);
+        throw new Error(
+            'The games table does not exist yet, so only the featured game was ' +
+            'saved. Run: npx wrangler d1 execute digitail --remote ' +
+            '--file=./migrations/0009_games.sql'
+        );
+    }
+
+    if (mirror) await putSetting(db, 'game', mirror);
+    return items.length;
+}
+
+
+export async function putSetting(db, key, value) {
+    if (value === null || typeof value !== 'object') {
+        throw new Error(`Expected an object for ${key}`);
+    }
+    await db
+        .prepare(`INSERT INTO settings (key, value, updated_at)
+                  VALUES (?, ?, datetime('now'))
+                  ON CONFLICT(key) DO UPDATE SET value = excluded.value,
+                                                 updated_at = excluded.updated_at`)
+        .bind(key, JSON.stringify(value))
+        .run();
+    return 1;
+}
+
+
+export const WRITERS = {
+    devlogs:  (db, body) => putDevlogs(db, body),
+    foxes:    (db, body) => putFoxes(db, body),
+    team:     (db, body) => putTeam(db, body),
+    social:   (db, body) => putSocial(db, body),
+    tags:      (db, body) => putTags(db, body),
+    games:     (db, body) => putGames(db, body),
+    gamesPage: (db, body) => putSetting(db, 'gamesPage', body),
+    homepage: (db, body) => putSetting(db, 'homepage', body),
+    // Kept so the old endpoint still answers, but the admin no longer writes
+    // to it. putGames owns this blob now - see the note there.
+    game:     (db, body) => putSetting(db, 'game', body),
+};

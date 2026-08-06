@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Manager | Digi Tail Studios</title>
+    
+        <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/content-manager.css">
+</head>
+<body>
+    <div class="top-bar">
+        <h1>🦊 Content Manager</h1>
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn-rugged" id="save-all-btn" onclick="saveAllToServer()">
+                💾 Save to site
+            </button>
+            <button class="btn-rugged" onclick="fetch('/api/auth/logout',{method:'POST'}).then(()=>location.href='/admin/login.html')">
+                Sign out
+            </button>
+            <a href="/" class="btn-rugged">
+                ← Back to Site
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="admin-shell">
+        <nav class="admin-side" aria-label="Admin sections">
+            <div class="side-group">
+                <div class="side-label">Content</div>
+                <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
+                <button class="tab-button" onclick="switchTab('games', this)">🎮 Games</button>
+                <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
+            </div>
+            <div class="side-group">
+                <div class="side-label">Studio</div>
+                <button class="tab-button" onclick="switchTab('team', this)">👥 Team</button>
+                <button class="tab-button" onclick="switchTab('foxes', this)">🦊 Foxes</button>
+                <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
+            </div>
+            <div class="side-group">
+                <div class="side-label">Audience</div>
+                <button class="tab-button" onclick="switchTab('subscribers', this)">✉️ Subscribers</button>
+            </div>
+        </nav>
+
+        <div class="admin-main">
+        <div id="alert-container"></div>
+
+        <!-- DEVLOGS TAB -->
+        <div id="devlogs-tab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="devlog-total">0</div>
+                    <div class="label">Total Devlogs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="devlog-month">0</div>
+                    <div class="label">This Month</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Devlogs</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('devlog')">
+                            ✨ New Devlog
+                        </button>
+                        
+                        <div id="devlogs-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="devlog-editor" style="display: none;">
+                        <!-- Devlog form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOXES TAB -->
+        <div id="foxes-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="fox-total">0</div>
+                    <div class="label">Total Foxes</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Foxes</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('fox')">
+                            ✨ New Fox
+                        </button>
+                        
+                        <div id="foxes-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="fox-editor" style="display: none;">
+                        <!-- Fox form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEAM TAB -->
+        <div id="team-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="team-total">0</div>
+                    <div class="label">Team Members</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Team</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('team')">
+                            ✨ New Member
+                        </button>
+                        
+                        <div id="team-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="team-editor" style="display: none;">
+                        <!-- Team form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME TAB -->
+        <div id="games-tab" class="tab-content">
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Games</h2>
+                        <p class="helper-text">Every project the studio has on the go. Hidden games stay off the public site until you tick them live.</p>
+                        <div id="games-list-panel"></div>
+                        <div class="button-group">
+                            <button type="button" class="btn-rugged" id="game-add">+ Add a game</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Games page</h2>
+                        <p class="helper-text">The heading and intro at the top of games.html.</p>
+                        <div class="form-group">
+                            <label>Heading (English)</label>
+                            <input type="text" id="gp-title-en" data-gp-field="titleEn" placeholder="Our Games">
+                        </div>
+                        <div class="form-group">
+                            <label>Heading (Te Reo Māori)</label>
+                            <input type="text" id="gp-title-mi" data-gp-field="titleMi">
+                        </div>
+                        <div class="form-group">
+                            <label>Intro (English)</label>
+                            <textarea rows="3" id="gp-intro-en" data-gp-field="introEn"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Intro (Te Reo Māori)</label>
+                            <textarea rows="3" id="gp-intro-mi" data-gp-field="introMi"></textarea>
+                        </div>
+                        <span class="save-hint">Leave a field blank to keep the wording already on the page.</span>
+                    </div>
+                </div>
+                <div class="main-content" id="games-editor">
+                    <!-- Filled by admin-games.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SOCIAL TAB -->
+        <div id="social-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="social-total">0</div>
+                    <div class="label">Total Posts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="social-instagram">0</div>
+                    <div class="label">Instagram</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="social-youtube">0</div>
+                    <div class="label">YouTube</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Social Posts</h2>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('social')">
+                            ✨ New Post
+                        </button>
+                        
+                        <div id="social-list" style="margin-top: 1.5rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card" id="social-editor" style="display: none;">
+                        <!-- Social form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOMEPAGE TAB -->
+        <div id="homepage-tab" class="tab-content" data-sub="hero">
+            <div class="subtab-bar" role="tablist" aria-label="Homepage sections">
+                <button type="button" class="subtab active" onclick="switchHomepageSub('hero', this)">Hero</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('announce', this)">Announcement</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('mascot', this)">Mascot</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('ticker', this)">Ticker</button>
+                <button type="button" class="subtab" onclick="switchHomepageSub('links', this)">Community links</button>
+            </div>
+
+            <div class="stats-grid" id="hp-links-stats">
+                <div class="stat-card">
+                    <div class="number" id="links-total">0</div>
+                    <div class="label">Community Links</div>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <div class="sidebar" id="hp-links-panel">
+                    <div class="card">
+                        <h2>Homepage</h2>
+                        
+                        <h3 style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--frozen-juniper); margin: 0 0 0.5rem 0;">Community Links</h3>
+                        <p style="font-size: 0.8rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">The card banners in the "See what's happening in the den" section.</p>
+                        <button class="btn-rugged" style="width: 100%; margin-bottom: 1rem;" onclick="createNewItem('link')">
+                            ✨ New Link
+                        </button>
+                        <div id="links-list" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div id="hp-ticker-slot"></div>
+                    <div class="card" id="homepage-editor">
+                        <!-- Homepage settings form populated by JS -->
+                    </div>
+                    <div class="card" id="link-editor" style="display: none;">
+                        <!-- Link form will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUBSCRIBERS TAB -->
+        <div id="subscribers-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="subs-confirmed">0</div>
+                    <div class="label">Confirmed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="subs-pending">0</div>
+                    <div class="label">Awaiting confirmation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="subs-unsubscribed">0</div>
+                    <div class="label">Unsubscribed</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Mailing list</h2>
+                <p style="font-size: 0.85rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">
+                    This is your copy of the list, held in your own database. People confirm
+                    by clicking a link in the email Buttondown sends, which never touches this
+                    site &mdash; press Sync to pull those confirmations back in. Sync also retries
+                    anyone who failed to reach Buttondown when they signed up.
+                </p>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+                    <button class="btn-rugged" onclick="loadSubscribers()">🔄 Refresh</button>
+                    <button class="btn-rugged" onclick="syncSubscribers()">☁️ Sync with Buttondown</button>
+                    <a class="btn-rugged" href="/api/subscribers/export" download>⬇️ Download CSV</a>
+                </div>
+                <div id="subs-table"></div>
+            </div>
+        </div>
+
+        </div><!-- /.admin-main -->
+        </div><!-- /.admin-shell -->
+
+    </div>
+
+
+
+    <script src="admin-script.js"></script>
+    <script src="api-adapter.js"></script>
+    <script src="media-upload.js"></script>
+    <script src="ticker-editor.js"></script>
+    <script src="admin-extras.js"></script>
+    <script src="admin-games.js"></script>
+    <script src="admin-subscribers.js"></script>
+    <script src="session-guard.js"></script>
+</body>
+</html>
