@@ -1,0 +1,204 @@
+/* ==========================================================================
+   games.html - the list of everything the studio has on the go
+   ==========================================================================
+   Layout is the drift stack: each game steps further across the page rather
+   than sitting in an even grid. Three games in an auto-fill grid leaves a
+   visible hole where the fourth should be, which reads as unfinished. The
+   drift reads as deliberate at three and still works at ten.
+
+   Built on .stack-drift from core.css so this page inherits the site's
+   personality rather than introducing a pattern that will drift out of step
+   the next time the design changes.
+   ========================================================================== */
+
+.games-head {
+    max-width: 62ch;
+    margin: 0 0 5rem;
+}
+
+.games-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.75rem;
+}
+
+.games-head h1 {
+    font-family: var(--font-display);
+    font-size: var(--size-xl);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+}
+
+.games-intro {
+    font-size: 1.05rem;
+    max-width: 52ch;
+}
+
+.games-empty {
+    font-family: var(--font-mono);
+    opacity: 0.75;
+}
+
+/* ---- the stack ---- */
+
+.games-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    margin-bottom: 6rem;
+}
+
+.game-plank {
+    max-width: 88%;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+}
+
+.game-plank.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* The drift. Repeats every six so it keeps going past the sixth game. */
+.game-plank:nth-child(6n + 1) { margin-left: 0; }
+.game-plank:nth-child(6n + 2) { margin-left: 4%; }
+.game-plank:nth-child(6n + 3) { margin-left: 8%; }
+.game-plank:nth-child(6n + 4) { margin-left: 4%; }
+.game-plank:nth-child(6n + 5) { margin-left: 10%; }
+.game-plank:nth-child(6n + 6) { margin-left: 2%; }
+
+.game-plank__inner {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 2.25rem;
+    align-items: center;
+    padding: 1.5rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: var(--radius);
+    background: var(--card-surface);
+    color: var(--long-black);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* Only the ones that go somewhere react to a cursor. A hover state on a
+   dead card promises a click that does nothing. */
+a.game-plank__inner:hover,
+a.game-plank__inner:focus-visible {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+}
+
+a.game-plank__inner:focus-visible {
+    outline: var(--border-width) solid var(--frozen-juniper);
+    outline-offset: 4px;
+}
+
+div.game-plank__inner {
+    border-style: dashed;
+    box-shadow: var(--shadow-sm);
+}
+
+.game-plank__art {
+    aspect-ratio: 16 / 10;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--long-black);
+}
+
+.game-plank__art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.game-plank__art.is-empty {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--arctic-willow);
+}
+
+.game-plank__status {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.7rem;
+    margin-bottom: 0.9rem;
+    border: 2px solid var(--long-black);
+    border-radius: 999px;
+    background: var(--flat-white);
+}
+
+.game-plank__title {
+    font-family: var(--font-display);
+    font-size: var(--size-lg);
+    line-height: 1;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.game-plank__tagline {
+    margin-bottom: 1.1rem;
+    max-width: 44ch;
+}
+
+.game-plank__more {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid var(--long-black);
+    padding-bottom: 2px;
+}
+
+.game-plank__soon {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
+/* ---- narrow ---- */
+
+@media (max-width: 780px) {
+    .games-stack { gap: 2.5rem; }
+
+    /* The drift costs more than it gives on a phone: it eats the width the
+       text needs. Everything squares up instead. */
+    .game-plank,
+    .game-plank:nth-child(6n + 1),
+    .game-plank:nth-child(6n + 2),
+    .game-plank:nth-child(6n + 3),
+    .game-plank:nth-child(6n + 4),
+    .game-plank:nth-child(6n + 5),
+    .game-plank:nth-child(6n + 6) {
+        margin-left: 0;
+        max-width: 100%;
+    }
+
+    .game-plank__inner {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        padding: 1.1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-plank { transition: none; opacity: 1; transform: none; }
+    a.game-plank__inner:hover,
+    a.game-plank__inner:focus-visible { transform: none; }
+}

@@ -32,6 +32,7 @@
             ),
             fetch('/api/content/homepage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/game', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            fetch('/api/content/gamesPage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
 
         TYPES.forEach((t, i) => { data[t] = results[i] || []; });
@@ -48,6 +49,8 @@
         data.homepage = homepage || null;
         data.links = (homepage && homepage.communityLinks) || [];
         data.game = game || null;
+        // 404s until it has been saved once, which is not an error.
+        data.gamesPage = results[TYPES.length + 2] || {};
 
         if (typeof renderAllLists === 'function') renderAllLists();
 
@@ -106,6 +109,10 @@
                     continue;
                 }
                 await putContent(type, data[type] || []);
+            }
+
+            if (data.gamesPage && Object.keys(data.gamesPage).length) {
+                await putContent('gamesPage', data.gamesPage);
             }
 
             // homepage settings and community links save together

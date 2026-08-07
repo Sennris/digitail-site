@@ -176,10 +176,20 @@ async function getGames(db, opts = {}) {
             statusEn: r.status_en || '', statusMi: r.status_mi || '',
             ctaLabelEn: r.cta_label_en || '', ctaLabelMi: r.cta_label_mi || '',
             ctaUrl: r.cta_url || '',
+            ctaHeadingEn: r.cta_heading_en || '', ctaHeadingMi: r.cta_heading_mi || '',
+            ctaBodyEn: r.cta_body_en || '', ctaBodyMi: r.cta_body_mi || '',
             noteEn: r.note_en || '', noteMi: r.note_mi || '',
             featured: Boolean(r.featured),
             published: Boolean(r.published),
             features: featuresByGame.get(r.id) || [],
+            // Derived, not stored. A game only links through from the games
+            // list once there is something on the other side. It flips on by
+            // itself the moment she writes a holding message or adds a
+            // section, so it can never disagree with what is actually there.
+            hasPage: Boolean(
+                (featuresByGame.get(r.id) || []).length ||
+                r.note_en || r.note_mi || r.trailer_url || r.cta_url
+            ),
         }));
 }
 
@@ -201,6 +211,7 @@ async function getFeaturedGame(db) {
 const READERS = {
     devlogs: getDevlogs, foxes: getFoxes, team: getTeam,
     social: getSocial, tags: getTags, games: getGames,
+    gamesPage: (db) => getSetting(db, 'gamesPage'),
     homepage: (db) => getSetting(db, 'homepage'),
     game: (db) => getFeaturedGame(db),
 };

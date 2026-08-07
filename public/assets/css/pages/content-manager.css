@@ -634,3 +634,128 @@ body .admin-main .card small {
     .game-row { flex-wrap: wrap; }
     .game-row-tools { width: 100%; justify-content: flex-end; }
 }
+
+/* ============================================================
+   Switch plates
+   ============================================================
+   The two settings that change what the public can see. They
+   were plain checkboxes and read as small print, which is the
+   wrong weight for "this game is visible to everyone".
+
+   Chunky border, hard offset shadow and the pressed-in shift
+   on the on state, matching .btn-rugged and .card elsewhere
+   on the site. The on state names its own colours for both
+   background AND text, so the .card:nth-child cycling in
+   core.css cannot leave it light-on-light. */
+
+.switch-bank {
+    display: grid;
+    gap: 0.9rem;
+    margin-bottom: 1.75rem;
+}
+
+.switch-plate {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+    border: var(--border-width) dashed currentColor;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: inherit;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.switch-plate:hover { transform: translate(-1px, -1px); }
+
+.switch-plate input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Keyboard users get the same ring the rest of the panel uses. */
+.switch-plate:focus-within {
+    outline: var(--border-width) solid var(--frozen-juniper);
+    outline-offset: 3px;
+}
+
+.switch-lamp {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 26px;
+    margin-top: 0.15rem;
+    border: var(--border-width) solid currentColor;
+    border-radius: 999px;
+    position: relative;
+    background: transparent;
+}
+
+.switch-lamp::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: currentColor;
+    transition: transform 0.14s ease;
+}
+
+.switch-body { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.switch-state {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.switch-name { font-weight: 700; }
+
+.switch-note { font-size: 0.82rem; opacity: 0.8; }
+
+/* ---- on ---- */
+.switch-plate.is-on {
+    border-style: solid;
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    box-shadow: var(--shadow-sm);
+}
+
+.switch-plate.is-on .switch-lamp::after { transform: translateX(20px); }
+
+.switch-plate.is-on:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* The main-game plate reads differently from the visibility one, so a
+   sighted user can tell them apart without reading the label. */
+.switch-plate--star.is-on {
+    background: var(--flat-white);
+    transform: rotate(-0.6deg);
+}
+
+.switch-plate--star.is-on:hover { transform: rotate(-0.6deg) translate(-1px, -1px); }
+
+/* A published game with nothing behind it. */
+.game-flag {
+    border-left: var(--border-width) solid var(--alert-red);
+    border-radius: 0;
+    padding: 0.6rem 0 0.6rem 0.85rem;
+    margin: 0 0 1.5rem;
+    font-size: 0.85rem;
+    color: inherit;
+    opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .switch-plate,
+    .switch-lamp::after { transition: none; }
+    .switch-plate:hover { transform: none; }
+    .switch-plate--star.is-on:hover { transform: rotate(-0.6deg); }
+}

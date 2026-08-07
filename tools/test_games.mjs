@@ -132,6 +132,8 @@ const payload = [
         trailerUrl: '', keyArt: '/media/art.webp',
         statusEn: 'In development', statusMi: '',
         ctaLabelEn: 'Wishlist', ctaLabelMi: '', ctaUrl: 'https://example.test/store',
+        ctaHeadingEn: 'Break the loop', ctaHeadingMi: '',
+        ctaBodyEn: 'Wishlists keep the lights on.', ctaBodyMi: '',
         noteEn: '', noteMi: '',
         featured: true, published: true,
         features: [
@@ -144,6 +146,7 @@ const payload = [
         taglineEn: '', taglineMi: '', blurbEn: '', blurbMi: '',
         trailerUrl: '', keyArt: '', statusEn: '', statusMi: '',
         ctaLabelEn: '', ctaLabelMi: '', ctaUrl: '',
+        ctaHeadingEn: '', ctaHeadingMi: '', ctaBodyEn: '', ctaBodyMi: '',
         noteEn: 'More soon.', noteMi: '',
         // Deliberately also ticked as featured. Only one may survive.
         featured: true, published: true, features: [],
@@ -167,6 +170,40 @@ check('only one game is featured',
     `featured=${saved.filter((g) => g.featured).length}`);
 check('a blank slug falls back to the id', saved[1].slug === '2');
 check('the button link survived', saved[0].ctaUrl === 'https://example.test/store');
+check('the call to action heading survived',
+    saved[0].ctaHeadingEn === 'Break the loop', `got ${JSON.stringify(saved[0].ctaHeadingEn)}`);
+check('the call to action text survived',
+    saved[0].ctaBodyEn === 'Wishlists keep the lights on.');
+
+
+/* ---- 3b. hasPage is derived, never stored ---------------------------- */
+
+console.log('\nWhether a game links through:');
+
+// Game 1 has sections and a button link. Game 2 has only a holding message.
+check('a game with sections links through', saved[0].hasPage === true);
+check('a game with only a holding message still links through',
+    saved[1].hasPage === true);
+check('hasPage is not a stored column', (() => {
+    const cols = db.prepare('PRAGMA table_info(games)').all().map((c) => c.name);
+    return !cols.includes('has_page');
+})(), 'it is worked out from the content, so it cannot go out of step');
+
+// Strip everything that would give it a page and it must flip off by itself.
+const bare = saved.map((g) => (g.id === 2
+    ? { ...g, noteEn: '', noteMi: '', trailerUrl: '', ctaUrl: '', features: [] }
+    : g));
+await worker.fetch(put('/api/content/games', bare, cookie), env(db));
+const afterStrip = await (await worker.fetch(get('/api/content/games', cookie), env(db))).json();
+check('emptying a game turns its link off without touching a setting',
+    afterStrip.find((g) => g.id === 2).hasPage === false);
+
+// ...and putting one thing back turns it on again.
+const refilled = bare.map((g) => (g.id === 2 ? { ...g, noteEn: 'Back soon.' } : g));
+await worker.fetch(put('/api/content/games', refilled, cookie), env(db));
+const afterRefill = await (await worker.fetch(get('/api/content/games', cookie), env(db))).json();
+check('writing a holding message turns it back on',
+    afterRefill.find((g) => g.id === 2).hasPage === true);
 
 
 /* ---- 4. the front page card keeps working --------------------------- */
@@ -201,7 +238,9 @@ check('the rollback copy was updated to match the featured game',
 console.log('\nIf the Worker is deployed before the migration runs:');
 const old = new DatabaseSync(':memory:');
 for (const f of readdirSync(join(ROOT, 'migrations')).sort()) {
-    if (f.startsWith('0009')) continue;
+    // 0010 alters `games`, so it cannot run without 0009 either. Skipping
+    // only 0009 threw here and killed every check below this point.
+    if (f.startsWith('0009') || f.startsWith('0010')) continue;
     old.exec(readFileSync(join(ROOT, 'migrations', f), 'utf8'));
 }
 
@@ -238,6 +277,41 @@ check('games are in the load and save cycle',
 check('a failed games load cannot publish an empty list',
     /loadedOk\.games/.test(adapterSrc) &&
     /type === 'games' && !loadedOk\.games/.test(adapterSrc));
+check('the games list wrapper is installed at parse time, not inside boot()',
+    /installWrapper\(\);\n\n    \/\/ Belt and braces/.test(adminGamesSrc),
+    'installing it inside boot() lost the race with api-adapter and left the list empty');
+check('there is a backstop if the script order is ever changed',
+    /function settle\(\)/.test(codeOnly) && /clearInterval/.test(codeOnly));
+check('the two visibility settings render as switch plates, not bare checkboxes',
+    /switch-plate/.test(codeOnly) && /switch-lamp/.test(codeOnly));
+check('a published game with nothing behind it is flagged in the admin',
+    /game-flag/.test(codeOnly));
+
+const cmCss = readFileSync(join(ROOT, 'public/assets/css/pages/content-manager.css'), 'utf8');
+check('the on state names its own text colour',
+    /\.switch-plate\.is-on\s*\{[^}]*color:\s*var\(--long-black\)/.test(cmCss),
+    'core.css cycles card backgrounds, so inheriting here goes light-on-light');
+check('the switch plates respect reduced motion',
+    /prefers-reduced-motion[\s\S]*switch-plate/.test(cmCss));
+
+const gamesCss = readFileSync(join(ROOT, 'public/assets/css/pages/games.css'), 'utf8');
+check('only the linkable planks get a hover state',
+    /a\.game-plank__inner:hover/.test(gamesCss) && !/^\.game-plank__inner:hover/m.test(gamesCss),
+    'a hover on a dead card promises a click that does nothing');
+check('the drift repeats past the sixth game',
+    /nth-child\(6n \+ 6\)/.test(gamesCss));
+
+const gamesJs = readFileSync(join(ROOT, 'public/assets/js/pages/games.js'), 'utf8');
+check('a game without a page renders as a div, not a dead link',
+    /createElement\(game\.hasPage \? 'a' : 'div'\)/.test(gamesJs));
+
+const navPages = ['index', 'game', 'games', 'devlogs', 'foxes', 'social', 'about'];
+const navOk = navPages.every((n) => {
+    const html = readFileSync(join(ROOT, `public/${n}.html`), 'utf8');
+    return /<a class="nav-link" href="games\.html"/.test(html);
+});
+check('every page navigates to the games list', navOk, navPages.join(', '));
+
 check('the browser no longer publishes its own copy of the game blob',
     !/putContent\('game',/.test(adapterSrc),
     'putGames owns that blob now; a second writer could only put it out of date');

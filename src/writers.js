@@ -225,15 +225,18 @@ export async function putGames(db, items) {
             db.prepare(
                 `INSERT INTO games (id, slug, title_en, title_mi, tagline_en, tagline_mi,
                  blurb_en, blurb_mi, trailer_url, key_art, status_en, status_mi,
-                 cta_label_en, cta_label_mi, cta_url, note_en, note_mi,
+                 cta_label_en, cta_label_mi, cta_url,
+                 cta_heading_en, cta_heading_mi, cta_body_en, cta_body_mi,
+                 note_en, note_mi,
                  featured, published, position, updated_at)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
             ).bind(
                 n(g.id) || gi + 1, s(g.slug),
                 s(g.titleEn), s(g.titleMi), s(g.taglineEn), s(g.taglineMi),
                 s(g.blurbEn), s(g.blurbMi), s(g.trailerUrl), s(g.keyArt),
                 s(g.statusEn), s(g.statusMi),
                 s(g.ctaLabelEn), s(g.ctaLabelMi), s(g.ctaUrl),
+                s(g.ctaHeadingEn), s(g.ctaHeadingMi), s(g.ctaBodyEn), s(g.ctaBodyMi),
                 s(g.noteEn), s(g.noteMi),
                 // Exactly one featured game. Whichever comes first wins, so
                 // ticking a new one in the admin cannot leave two set.
@@ -259,6 +262,12 @@ export async function putGames(db, items) {
     try {
         await db.batch(stmts);
     } catch (e) {
+        if (/no column named cta_(heading|body)_(en|mi)/i.test(e.message)) {
+            throw new Error(
+                'Saved nothing: the call to action columns are missing. Run ' +
+                'migration 0010_game_cta.sql, then save again.'
+            );
+        }
         if (!/no such table: (games|game_features)/i.test(e.message)) throw e;
         if (mirror) await putSetting(db, 'game', mirror);
         throw new Error(
@@ -293,8 +302,9 @@ export const WRITERS = {
     foxes:    (db, body) => putFoxes(db, body),
     team:     (db, body) => putTeam(db, body),
     social:   (db, body) => putSocial(db, body),
-    tags:     (db, body) => putTags(db, body),
-    games:    (db, body) => putGames(db, body),
+    tags:      (db, body) => putTags(db, body),
+    games:     (db, body) => putGames(db, body),
+    gamesPage: (db, body) => putSetting(db, 'gamesPage', body),
     homepage: (db, body) => putSetting(db, 'homepage', body),
     // Kept so the old endpoint still answers, but the admin no longer writes
     // to it. putGames owns this blob now - see the note there.

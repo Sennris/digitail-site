@@ -3,35 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Real talk about game development. Our wins, our bugs, our late-night debugging sessions, and everything in between. No corporate polish.">
-    <link rel="canonical" href="https://www.digitailstudios.com/devlogs">
+    <meta name="description" content="Every game Digi Tail Studios has on the go, from the one we are deep in to the small things we are still poking at.">
+    <link rel="canonical" href="https://www.digitailstudios.com/games">
 
     <!-- Link previews: Discord, Bluesky, Slack, Mastodon, etc -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Digi Tail Studios">
     <meta property="og:locale" content="en_NZ">
     <meta property="og:locale:alternate" content="mi_NZ">
-    <meta property="og:url" content="https://www.digitailstudios.com/devlogs">
-    <meta property="og:title" content="Dev Logs | Digi Tail Studios">
-    <meta property="og:description" content="Real talk about game development. Our wins, our bugs, our late-night debugging sessions, and everything in between. No corporate polish.">
+    <meta property="og:url" content="https://www.digitailstudios.com/games">
+    <meta property="og:title" content="Our Games | Digi Tail Studios">
+    <meta property="og:description" content="Every game Digi Tail Studios has on the go, from the one we are deep in to the small things we are still poking at.">
     <meta property="og:image" content="https://www.digitailstudios.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Digi Tail Studios: indie game development from Aotearoa">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Dev Logs | Digi Tail Studios">
-    <meta name="twitter:description" content="Real talk about game development. Our wins, our bugs, our late-night debugging sessions, and everything in between. No corporate polish.">
+    <meta name="twitter:title" content="Our Games | Digi Tail Studios">
+    <meta name="twitter:description" content="Every game Digi Tail Studios has on the go, from the one we are deep in to the small things we are still poking at.">
     <meta name="twitter:image" content="https://www.digitailstudios.com/og-image.png">
 
     <meta name="theme-color" content="#1D0D12">
-    <title>Dev Logs | Digi Tail Studios</title>
+    <title>Our Games | Digi Tail Studios</title>
     
         <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/core.css">
-    <link rel="stylesheet" href="/assets/css/pages/devlogs.css">
+    <link rel="stylesheet" href="/assets/css/pages/games.css">
 </head>
 <body class="lang-en">
 
@@ -66,57 +66,34 @@
 
     <main id="main" class="container">
 
-        <header class="hero-section">
-            <h1>
-                <span class="en">Dev Logs</span>
-                <span class="mi">TOO ADD</span>
+        <header class="games-head">
+            <p class="games-eyebrow">
+                <span class="en">Digi Tail Studios</span>
+                <span class="mi">Digi Tail Studios</span>
+            </p>
+            <h1 id="games-title">
+                <span class="en">Our Games</span>
+                <span class="mi">Ā Mātou Kēmu</span>
             </h1>
-            <p>
-                <span class="en">// Development Logs, Ramblings, and Patch Notes.</span>
-                <span class="mi">// Ngā Rātaka, Ngā Kōrero, me ngā Whakahōu.</span>
+            <p class="games-intro">
+                <span class="en" id="games-intro-en">Everything we have on the go, from the one we are deep in to the small things we are still poking at.</span>
+                <span class="mi" id="games-intro-mi">Ko ngā mea katoa kei te mahia e mātou.</span>
             </p>
         </header>
 
-        <div class="controls-bar">
-            <!-- These are a fallback only. The real buttons are rebuilt from
-                 the tag manager in the admin panel (Devlogs tab) by
-                 assets/js/pages/devlogs.js. Edit them there, not here. -->
-            <div class="filter-group">
-                <button class="btn-rugged active" data-filter="all">
-                    <span class="en">All Logs</span><span class="mi">Katoa</span>
-                </button>
-                <button class="btn-rugged" data-filter="code">
-                    <span class="en">Code</span><span class="mi">Waehere</span>
-                </button>
-                <button class="btn-rugged" data-filter="bug">
-                    <span class="en">Bugs</span><span class="mi">Hapa</span>
-                </button>
-                <button class="btn-rugged" data-filter="art">
-                    <span class="en">Art</span><span class="mi">Toi</span>
-                </button>
-                <button class="btn-rugged" data-filter="audio">
-                    <span class="en">Audio</span><span class="mi">Ororongo</span>
-                </button>
-                <button class="btn-rugged" data-filter="news">
-                    <span class="en">Studio News</span><span class="mi">Rongo Whare</span>
-                </button>
-            </div>
-            
-            <div class="sort-group">
-                <span class="en">Sort By:</span><span class="mi">Raupapa:</span>
-                <select id="sort-select" class="rugged-select">
-                    <option value="newest" class="en">Newest First</option>
-                    <option value="newest" class="mi">Pito Hōu Tuatahi</option>
-                    <option value="oldest" class="en">Oldest First</option>
-                    <option value="oldest" class="mi">Pito Tawhito Tuatahi</option>
-                </select>
-            </div>
+        <!-- Built from the Games tab in the admin panel by
+             assets/js/pages/games.js. The block below is what shows if that
+             fetch fails, and is replaced otherwise. -->
+        <div class="games-stack" id="games-stack">
+            <p class="games-empty">
+                <span class="en">Loading our games…</span>
+                <span class="mi">Kei te uta…</span>
+            </p>
         </div>
 
-        <section class="devlog-grid stagger" id="devlog-grid">
-        </section>
-
     </main>
+
+</main>
 
     <footer>
         <p>&copy; 2026 Digi Tail Studios. 
@@ -126,7 +103,7 @@
         </p>
     </footer>
 
-    <script src="/assets/js/pages/devlogs.js"></script>
+    <script src="/assets/js/pages/games.js"></script>
     <script src="/assets/js/lang-attr.js"></script>
     <script src="/assets/js/a11y.js"></script>
     <script src="/assets/js/card-click.js"></script>

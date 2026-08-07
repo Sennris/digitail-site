@@ -149,6 +149,27 @@
                             <button type="button" class="btn-rugged" id="game-add">+ Add a game</button>
                         </div>
                     </div>
+                    <div class="card">
+                        <h2>Games page</h2>
+                        <p class="helper-text">The heading and intro at the top of games.html.</p>
+                        <div class="form-group">
+                            <label>Heading (English)</label>
+                            <input type="text" id="gp-title-en" data-gp-field="titleEn" placeholder="Our Games">
+                        </div>
+                        <div class="form-group">
+                            <label>Heading (Te Reo Māori)</label>
+                            <input type="text" id="gp-title-mi" data-gp-field="titleMi">
+                        </div>
+                        <div class="form-group">
+                            <label>Intro (English)</label>
+                            <textarea rows="3" id="gp-intro-en" data-gp-field="introEn"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Intro (Te Reo Māori)</label>
+                            <textarea rows="3" id="gp-intro-mi" data-gp-field="introMi"></textarea>
+                        </div>
+                        <span class="save-hint">Leave a field blank to keep the wording already on the page.</span>
+                    </div>
                 </div>
                 <div class="main-content" id="games-editor">
                     <!-- Filled by admin-games.js -->

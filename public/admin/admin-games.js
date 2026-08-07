@@ -55,6 +55,7 @@
             blurbEn: '', blurbMi: '', trailerUrl: '', keyArt: '',
             statusEn: '', statusMi: '',
             ctaLabelEn: '', ctaLabelMi: '', ctaUrl: '',
+            ctaHeadingEn: '', ctaHeadingMi: '', ctaBodyEn: '', ctaBodyMi: '',
             noteEn: '', noteMi: '',
             featured: false, published: false, features: [],
         };
@@ -167,27 +168,46 @@
             </div>`;
         }
 
+        const linkedThrough = Boolean(
+            (g.features || []).length || g.noteEn || g.noteMi || g.trailerUrl || g.ctaUrl
+        );
+
         return `
         <div class="card">
             <h2>${esc(g.titleEn || 'Untitled game')}</h2>
 
-            <div class="form-group">
-                <label>
+            <div class="switch-bank">
+                <label class="switch-plate${g.published ? ' is-on' : ''}">
                     <input type="checkbox" data-game-field="published"
                            ${g.published ? 'checked' : ''}>
-                    Show this game on the website
+                    <span class="switch-lamp" aria-hidden="true"></span>
+                    <span class="switch-body">
+                        <span class="switch-state">${g.published ? 'Live on the site' : 'Hidden'}</span>
+                        <span class="switch-name">Show this game on the website</span>
+                        <span class="switch-note">${g.published
+                            ? 'Anyone can see this game right now.'
+                            : 'Not sent to the public site at all, not even the title.'}</span>
+                    </span>
                 </label>
-                <div class="helper-text">Leave this off while a project is unannounced. Hidden games are not sent to the public site at all, not even the title.</div>
-            </div>
 
-            <div class="form-group">
-                <label>
+                <label class="switch-plate switch-plate--star${g.featured ? ' is-on' : ''}">
                     <input type="checkbox" data-game-field="featured"
                            ${g.featured ? 'checked' : ''}>
-                    This is the main game
+                    <span class="switch-lamp" aria-hidden="true"></span>
+                    <span class="switch-body">
+                        <span class="switch-state">${g.featured ? 'Main game' : 'Not the main game'}</span>
+                        <span class="switch-name">Front page and game page by default</span>
+                        <span class="switch-note">${g.featured
+                            ? 'This is what visitors land on.'
+                            : 'Only one game can hold this. Ticking it here releases the current one.'}</span>
+                    </span>
                 </label>
-                <div class="helper-text">The one on the front page card and on the game page by default. Only one game can hold this at a time.</div>
             </div>
+
+            ${g.published && !linkedThrough ? `
+            <p class="game-flag">No page yet, so this game shows in the list without a link
+            through. Add a section, a holding message, a trailer or a button link and the
+            link appears by itself.</p>` : ''}
 
             <hr class="game-divider">
 
@@ -271,7 +291,26 @@
             </div>
 
             <hr class="game-divider">
-            <h3 class="game-subhead">Button at the bottom</h3>
+            <h3 class="game-subhead">Call to action</h3>
+            <p class="helper-text">The block at the bottom of the game page. Leave the heading blank to keep what is written there now.</p>
+
+            <div class="form-group">
+                <label>Heading (English)</label>
+                <input type="text" data-game-field="ctaHeadingEn" value="${esc(g.ctaHeadingEn)}"
+                       placeholder="Help us break the simulation.">
+            </div>
+            <div class="form-group">
+                <label>Heading (Te Reo Māori)</label>
+                <input type="text" data-game-field="ctaHeadingMi" value="${esc(g.ctaHeadingMi)}">
+            </div>
+            <div class="form-group">
+                <label>Text under the heading (English)</label>
+                <textarea rows="2" data-game-field="ctaBodyEn">${esc(g.ctaBodyEn)}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Text under the heading (Te Reo Māori)</label>
+                <textarea rows="2" data-game-field="ctaBodyMi">${esc(g.ctaBodyMi)}</textarea>
+            </div>
 
             <div class="form-group">
                 <label>Button text (English)</label>
@@ -334,7 +373,29 @@
         }
     }
 
+    // The games page heading lives in its own settings blob, the same way the
+    // homepage settings do. Its fields are typed into admin/index.html rather
+    // than rendered, so they only need reading into the store on change.
+    function populateGamesPage() {
+        const d = store();
+        const page = (d && d.gamesPage) || {};
+        ['titleEn', 'titleMi', 'introEn', 'introMi'].forEach((field) => {
+            const el = document.querySelector(`[data-gp-field="${field}"]`);
+            if (el && document.activeElement !== el) el.value = page[field] || '';
+        });
+    }
+
     document.addEventListener('input', (e) => {
+        const gpField = e.target.getAttribute && e.target.getAttribute('data-gp-field');
+        if (gpField) {
+            const d = store();
+            if (d) {
+                if (!d.gamesPage || typeof d.gamesPage !== 'object') d.gamesPage = {};
+                d.gamesPage[gpField] = e.target.value;
+            }
+            return;
+        }
+
         const gameField = e.target.getAttribute && e.target.getAttribute('data-game-field');
         if (gameField) { setField(gameField, e.target.value); return; }
 
@@ -350,7 +411,8 @@
         const field = e.target.getAttribute && e.target.getAttribute('data-game-field');
         if (field && e.target.type === 'checkbox') {
             setField(field, e.target.checked);
-            if (field === 'featured') renderAll(true);
+            // Both plates show their own state in words, so both redraw.
+            renderAll(true);
         }
     });
 
@@ -436,9 +498,19 @@
 
     /* ---------- wiring ---------- */
 
-    // api-adapter.js calls window.loadFromServer. admin-extras.js already
-    // wraps it to redraw the tag manager; this wraps whatever is there by
-    // the time we load, so both redraws survive.
+    // Installed at parse time, NOT inside boot(). That is the whole fix for
+    // the games list sitting empty until "Add game" was pressed.
+    //
+    // api-adapter.js is loaded before this file, so by now it has already
+    // registered its own DOMContentLoaded handler. Ours would be registered
+    // second and therefore run second - meaning its load had already started
+    // against the UNWRAPPED window.loadFromServer, and nothing was listening
+    // when the games came back. They were in memory the whole time; the list
+    // just never redrew. Pressing "Add game" forced a redraw, which is why
+    // they appeared only then.
+    //
+    // Wrapping now, while the page is still parsing, puts us in front of
+    // every DOMContentLoaded handler there is.
     function installWrapper() {
         const inner = window.loadFromServer;
         if (typeof inner !== 'function') return false;
@@ -458,6 +530,7 @@
                 }
             }
             renderAll(true);
+            populateGamesPage();
             return out;
         };
         wrapped.__gamesWrapped = true;
@@ -465,13 +538,34 @@
         return true;
     }
 
+    installWrapper();
+
+    // Belt and braces. Script order in admin/index.html is a load-bearing
+    // detail that a future edit could quietly reorder, and the wrapper only
+    // works while this file loads after api-adapter.js. This watches for the
+    // games arriving by any route and stops as soon as they do.
+    //
+    // Cheap to run: renderList and renderEditor are both signature-guarded,
+    // so a tick that changes nothing costs one string compare.
+    function settle() {
+        const started = Date.now();
+        const timer = setInterval(() => {
+            const d = store();
+            const arrived = d && Array.isArray(d.games) && d.games.length;
+            if (arrived && selectedId === null) {
+                const main = d.games.find((g) => g.featured) || d.games[0];
+                selectedId = main.id;
+            }
+            renderAll(false);
+            if (arrived) populateGamesPage();
+            if (arrived || Date.now() - started > 15000) clearInterval(timer);
+        }, 120);
+    }
+
     function boot() {
-        if (!installWrapper()) {
-            // api-adapter.js has not published it yet. Try again next tick.
-            setTimeout(boot, 0);
-            return;
-        }
+        installWrapper();
         renderAll(true);
+        settle();
     }
 
     if (document.readyState === 'loading') {

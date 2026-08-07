@@ -161,6 +161,11 @@ function render(game) {
         noteEl.hidden = false;
     }
 
+    setPair('game-cta-heading-en', 'game-cta-heading-mi',
+        game.ctaHeadingEn, game.ctaHeadingMi);
+    setPair('game-cta-body-en', 'game-cta-body-mi',
+        game.ctaBodyEn, game.ctaBodyMi);
+
     const ctaSection = document.getElementById('game-cta-section');
     const cta = document.getElementById('game-cta');
     if (cta && ctaSection) {
@@ -171,8 +176,12 @@ function render(game) {
             }
         } else {
             // No link means no button. A dead "#" link on a wishlist button
-            // reads as broken rather than as "not yet".
-            ctaSection.hidden = true;
+            // reads as broken rather than as "not yet". The heading and text
+            // stay if she has written her own; otherwise the whole block goes,
+            // rather than leaving the placeholder wishlist copy stranded with
+            // nothing to click.
+            cta.hidden = true;
+            if (!game.ctaHeadingEn && !game.ctaBodyEn) ctaSection.hidden = true;
         }
     }
 }
