@@ -59,7 +59,7 @@
         </p>
         <ul>
             <li>
-                <span class="en"><strong>Cloudflare</strong> hosts this website and its database, and runs the "are you a person" check on our forms. That check sees your IP address, as any website host does. We do not keep it.</span>
+                <span class="en"><strong>Cloudflare</strong> hosts this website and its database, runs the "are you a person" check on our forms, and counts page views for us. That check sees your IP address, as any website host does. We do not keep it.</span>
                 <span class="mi"><strong>Cloudflare</strong> e whakahaere ana i tēnei pae me tōna pātengi raraunga, me te arowhai "he tangata koe". Ka kite taua arowhai i tō wāhitau IP, pērā i ngā kaiwhakahaere paetukutuku katoa. Kāore mātou e pupuri.</span>
             </li>
             <li>
@@ -79,6 +79,22 @@
         <p>
             <span class="en">You have the right to ask what we hold about you and to have it corrected. Ask us at <a href="mailto:hello@digitailstudios.com">hello@digitailstudios.com</a>.</span>
             <span class="mi">Kei a koe te mana ki te pātai he aha ā mātou e pupuri ana mōu, me te whakatika. Pātai mai ki <a href="mailto:hello@digitailstudios.com">hello@digitailstudios.com</a>.</span>
+        </p>
+
+        <!-- AWAITING TRANSLATION. This section has no .en/.mi spans, so the
+             English shows in both language modes - the same approach the
+             footer links already use. Adding the te reo is a matter of
+             wrapping each block in .en and adding the .mi partner. -->
+        <h2>Visitor numbers</h2>
+        <p>
+            We count page views so we can tell which parts of the site people
+            actually use. That is done with Cloudflare Web Analytics, which sets
+            no cookie, does not fingerprint your device, and cannot follow you to
+            any other website.
+        </p>
+        <p>
+            There is no profile of you held anywhere, because there is nothing to
+            build one from. We see totals, not people.
         </p>
 
         <h2>
@@ -101,5 +117,11 @@
     <script src="/assets/js/pages/unsubscribe.js"></script>
     <script src="/assets/js/lang-attr.js"></script>
     <script src="/assets/js/a11y.js"></script>
+    <!-- Cloudflare Web Analytics. Cookieless: it does not set a cookie, does
+         not fingerprint the visitor and does not follow anyone across sites,
+         which is why it is the one measurement tool on here. Deliberately not
+         loaded on /admin - that is the studio using its own site, and it would
+         only add noise to the numbers. -->
+    <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f4106eee0d174f5496955c154fff782d"}'></script>
 </body>
 </html>
