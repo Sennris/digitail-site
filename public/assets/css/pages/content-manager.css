@@ -522,12 +522,16 @@ body .admin-main .card small {
 #homepage-tab #hp-links-panel,
 #homepage-tab #hp-links-stats { display: none; }
 
+#homepage-tab #hp-sections-panel { display: none; }
+
 #homepage-tab[data-sub="ticker"] #hp-ticker-slot { display: block; }
 #homepage-tab[data-sub="links"]  #hp-links-panel,
 #homepage-tab[data-sub="links"]  #hp-links-stats { display: block; }
+#homepage-tab[data-sub="copy"]   #hp-sections-panel { display: block; }
 
 /* The settings form card is only meaningful on the three form subtabs */
 #homepage-tab[data-sub="ticker"] #homepage-editor,
+#homepage-tab[data-sub="copy"]   #homepage-editor,
 #homepage-tab[data-sub="links"]  #homepage-editor { display: none; }
 
 @media (max-width: 600px) {

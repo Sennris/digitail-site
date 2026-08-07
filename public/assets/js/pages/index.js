@@ -125,6 +125,57 @@
             });
         }
 
+        // --- HOMEPAGE SECTION COPY -------------------------------------
+        //
+        // Every heading and paragraph down this page used to be typed into
+        // index.html. They are editable from the admin panel now (Homepage
+        // tab, Page copy).
+        //
+        // A blank field means "leave the page alone", NOT "publish nothing".
+        // Writing an empty string here would wipe live copy the moment an
+        // unfilled field was saved - which is exactly what happened once
+        // before on the hero taglines and the announcement.
+        function applySectionCopy(sections) {
+            if (!sections || typeof sections !== 'object') return;
+
+            // Newlines become real <br> elements and *word* becomes <em>word</em>.
+            // Built as nodes, never by assigning innerHTML: this text is typed
+            // by hand in a textarea, so one stray angle bracket pasted into
+            // markup would take the homepage down.
+            function write(el, text) {
+                if (!el || !text) return;
+                const frag = document.createDocumentFragment();
+                text.split(/\r?\n/).forEach((line, lineIndex) => {
+                    if (lineIndex > 0) frag.appendChild(document.createElement('br'));
+                    line.split(/\*([^*]+)\*/).forEach((piece, i) => {
+                        if (!piece) return;
+                        if (i % 2 === 1) {
+                            const em = document.createElement('em');
+                            em.textContent = piece;
+                            frag.appendChild(em);
+                        } else {
+                            frag.appendChild(document.createTextNode(piece));
+                        }
+                    });
+                });
+                el.replaceChildren(frag);
+            }
+
+            Object.keys(sections).forEach((groupName) => {
+                const groupValues = sections[groupName];
+                if (!groupValues || typeof groupValues !== 'object') return;
+                Object.keys(groupValues).forEach((fieldName) => {
+                    // headingEn -> hs-about-heading-en
+                    const lang = /Mi$/.test(fieldName) ? 'mi' : 'en';
+                    const base = fieldName.replace(/(En|Mi)$/, '');
+                    write(
+                        document.getElementById(`hs-${groupName}-${base}-${lang}`),
+                        groupValues[fieldName]
+                    );
+                });
+            });
+        }
+
         // --- FETCH HOMEPAGE CONTENT FROM JSON ---
         fetch('/api/content/homepage')
             .then(response => response.json())
@@ -284,6 +335,8 @@
                         grid.querySelectorAll('.fade-in-section').forEach(el => obs.observe(el));
                     }
                 }
+
+                applySectionCopy(data.sections);
             })
             .catch(error => console.error('Error fetching homepage data:', error));
 
