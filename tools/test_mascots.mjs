@@ -481,6 +481,19 @@ check('no hand-typed value reaches markup unescaped',
         return bare.length === 0;
     },
     'one stray quote in a hand-typed name broke a row on this site before');
+// The upload button, the Library button and drag-and-drop are all attached
+// by media-upload.js matching on the input's id. Nothing else connects them,
+// so if either side of that pattern is renamed the field silently becomes a
+// plain text box and she is back to pasting URLs by hand.
+const mediaJs = readFileSync(join(ROOT, 'public/admin/media-upload.js'), 'utf8');
+check('the mascot image field can be uploaded to',
+    () => {
+        const rendered = /id="mascot-image-\$\{m\.id\}"/.test(adminJs);
+        const targeted = /\[id\^="mascot-image-"\]/.test(mediaJs);
+        return rendered && targeted;
+    },
+    'the id the editor renders has to match the selector media-upload.js scans for');
+
 check('it keeps the rollback copy in step',
     () => /d\.homepage\.mascot\s*=/.test(adminCode),
     'api-adapter publishes the homepage AFTER the mascots, so the browser copy has to agree');

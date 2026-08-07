@@ -24,13 +24,51 @@
         let cards = []; 
         let currentFilter = 'all';
 
-        // Load the database
-        fetch('/api/content/devlogs')
-            .then(response => {
+        // The badges and the filter buttons both need the tag list, so the
+        // two requests are made together rather than racing each other. The
+        // tags one resolves to null on any failure: a missing te reo label
+        // must never stop the devlogs themselves rendering.
+        const tagsPromise = fetch('/api/content/tags')
+            .then(response => (response.ok ? response.json() : null))
+            .catch(() => null);
+
+        Promise.all([
+            fetch('/api/content/devlogs').then(response => {
                 if (!response.ok) throw new Error("JSON file not found");
                 return response.json();
-            })
-            .then(data => {
+            }),
+            tagsPromise,
+        ])
+            .then(([data, tags]) => {
+                // Lowercased tag name -> its te reo label. Devlogs store the
+                // English name as the link between the two.
+                const tagLabels = new Map();
+                (Array.isArray(tags) ? tags : []).forEach(t => {
+                    if (t && t.name) tagLabels.set(t.name.toLowerCase(), t.nameMi || '');
+                });
+
+                // Built as elements, not concatenated into innerHTML. Tag
+                // names are hand-typed, and one stray quote in one has broken
+                // a row on this site before.
+                function badge(name, extraClass) {
+                    const span = document.createElement('span');
+                    span.className = 'tag-badge' + (extraClass ? ' ' + extraClass : '');
+
+                    const en = document.createElement('span');
+                    en.className = 'en';
+                    en.textContent = name;
+
+                    const mi = document.createElement('span');
+                    mi.className = 'mi';
+                    // Falls back to the English name. A tag with no te reo
+                    // label yet must still read as itself in te reo mode
+                    // rather than leaving a blank badge.
+                    mi.textContent = tagLabels.get(name.toLowerCase()) || name;
+
+                    span.append(en, mi);
+                    return span;
+                }
+
                 // Build the HTML for each log
                 data.forEach(log => {
                     const card = document.createElement('div');
@@ -44,16 +82,6 @@
                     card.setAttribute('data-tags', tagsString);
                     card.setAttribute('data-date', log.sortDate);
 
-                    // Primary tag reads as the subject, secondary as the update type.
-                    const primaryHTML = log.primaryTag
-                        ? `<span class="tag-badge tag-badge--primary">${log.primaryTag}</span>` : '';
-                    const secondaryHTML = log.secondaryTag
-                        ? `<span class="tag-badge tag-badge--secondary">${log.secondaryTag}</span>` : '';
-                    const legacyHTML = (log.tags || [])
-                        .filter(t => t !== log.primaryTag && t !== log.secondaryTag)
-                        .map(tag => `<span class="tag-badge">${tag}</span>`).join('');
-                    const tagsHTML = primaryHTML + secondaryHTML + legacyHTML;
-
                     // The Smart Image Fix
                     const cardImageHTML = log.image ? `<div class="image-placeholder">${log.image}</div>` : '';
                     const modalImageHTML = log.image ? `<div class="image-placeholder">${log.image}</div>` : '';
@@ -61,7 +89,7 @@
                         ${cardImageHTML}
                         <div class="log-meta">
                             <span class="log-date">${log.displayDate}</span>
-                            <div class="log-tags">${tagsHTML}</div>
+                            <div class="log-tags"></div>
                         </div>
                         <h3>
                             <span class="en">${log.titleEn}</span>
@@ -82,11 +110,27 @@
                             <span class="mi">${log.contentMi}</span>
                         </div>
                     `;
+
+                    // Primary tag reads as the subject, secondary as the
+                    // update type. Appended after the markup so each badge is
+                    // a real element with its own .en / .mi spans.
+                    const tagHolder = card.querySelector('.log-tags');
+                    if (log.primaryTag) {
+                        tagHolder.appendChild(badge(log.primaryTag, 'tag-badge--primary'));
+                    }
+                    if (log.secondaryTag) {
+                        tagHolder.appendChild(badge(log.secondaryTag, 'tag-badge--secondary'));
+                    }
+                    (log.tags || [])
+                        .filter(t => t !== log.primaryTag && t !== log.secondaryTag)
+                        .forEach(t => tagHolder.appendChild(badge(t)));
+
                     grid.appendChild(card);
                 });
 
                 cards = Array.from(grid.querySelectorAll('.devlog-card'));
                 updateGrid('all', sortSelect.value);
+                buildFilterButtons(tags);
             })
             .catch(error => {
                 console.error("Error loading devlogs:", error);
@@ -135,43 +179,44 @@
         // admin panel could never add a button. Now the row is rebuilt from
         // the tags marked as filter buttons, in the order set there.
         //
-        // If the request fails, or nothing is marked as a filter, the buttons
-        // already in the page are left exactly as they are - an empty filter
-        // row would be worse than a slightly stale one.
-        fetch('/api/content/tags')
-            .then(response => (response.ok ? response.json() : null))
-            .then(tags => {
-                if (!filterGroup || !Array.isArray(tags)) return;
+        // Called with the tags fetched alongside the devlogs above, so the
+        // buttons and the badges always come from the same list rather than
+        // two independent requests that could disagree.
+        //
+        // If the request failed, or nothing is marked as a filter, the
+        // buttons already in the page are left exactly as they are - an
+        // empty filter row would be worse than a slightly stale one.
+        function buildFilterButtons(tags) {
+            if (!filterGroup || !Array.isArray(tags)) return;
 
-                const shown = tags.filter(t => t && t.name && t.filter !== false);
-                if (!shown.length) return;
+            const shown = tags.filter(t => t && t.name && t.filter !== false);
+            if (!shown.length) return;
 
-                filterGroup.textContent = '';
+            filterGroup.textContent = '';
 
-                const addButton = (value, en, mi, isActive) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-rugged' + (isActive ? ' active' : '');
-                    btn.setAttribute('data-filter', value);
+            const addButton = (value, en, mi, isActive) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-rugged' + (isActive ? ' active' : '');
+                btn.setAttribute('data-filter', value);
 
-                    const enSpan = document.createElement('span');
-                    enSpan.className = 'en';
-                    enSpan.textContent = en;
+                const enSpan = document.createElement('span');
+                enSpan.className = 'en';
+                enSpan.textContent = en;
 
-                    const miSpan = document.createElement('span');
-                    miSpan.className = 'mi';
-                    miSpan.textContent = mi || en;
+                const miSpan = document.createElement('span');
+                miSpan.className = 'mi';
+                miSpan.textContent = mi || en;
 
-                    btn.append(enSpan, miSpan);
-                    filterGroup.appendChild(btn);
-                };
+                btn.append(enSpan, miSpan);
+                filterGroup.appendChild(btn);
+            };
 
-                addButton('all', 'All Logs', 'Katoa', true);
-                shown.forEach(t => addButton(t.name.toLowerCase(), t.name, t.nameMi));
+            addButton('all', 'All Logs', 'Katoa', true);
+            shown.forEach(t => addButton(t.name.toLowerCase(), t.name, t.nameMi));
 
-                currentFilter = 'all';
-                updateGrid(currentFilter, sortSelect.value);
-            })
-            .catch(error => console.error('Error loading filter tags:', error));
+            currentFilter = 'all';
+            updateGrid(currentFilter, sortSelect.value);
+        }
 
         sortSelect.addEventListener('change', (e) => {
             updateGrid(currentFilter, e.target.value);

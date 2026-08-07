@@ -205,6 +205,17 @@
                         <button type="button" class="btn-rugged" data-add-tag="primary"
                                 style="font-size:0.75rem; padding:0.3rem 0.7rem;">Add</button>
                     </div>
+                    <div style="margin-top:0.6rem;">
+                        <button type="button" class="btn-rugged" id="tags-from-games"
+                                style="font-size:0.75rem; padding:0.3rem 0.7rem;">
+                            + Add a tag for each game
+                        </button>
+                        <div style="font-family:var(--font-mono); font-size:0.7rem;
+                                    opacity:0.6; margin-top:0.35rem;">
+                            Makes one primary tag per game in the Games tab. Skips any that
+                            already exist, so it is safe to press again after adding a game.
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -246,6 +257,55 @@
                 renderTagManager();
                 refreshPickers();
             });
+        });
+
+        // Games became a real list in migration 0009, which is what unblocked
+        // this. The primary axis is "which game is this devlog about", so the
+        // names come straight from the Games tab rather than being retyped.
+        //
+        // It creates real tag rows rather than deriving the options live: a
+        // devlog stores its primary tag by NAME, so a derived list would make
+        // every devlog silently lose its tag the moment a game was renamed.
+        // As rows they are hers to rename, reorder, give a te reo label, and
+        // switch off as filter buttons, exactly like every other tag.
+        const fromGames = document.getElementById('tags-from-games');
+        if (fromGames) fromGames.addEventListener('click', () => {
+            const games = Array.isArray(data.games) ? data.games : [];
+            const titled = games
+                .map((g) => (g && typeof g.titleEn === 'string' ? g.titleEn.trim() : ''))
+                .filter(Boolean);
+
+            if (!titled.length) {
+                showAlert('No games with a title yet. Name one in the Games tab first.', 'error');
+                return;
+            }
+
+            // Deduplicated against EVERY tag, not just the primary ones - two
+            // tags with the same name would be indistinguishable on a badge.
+            // Also deduplicated within this batch, in case two games share a
+            // title (the two placeholders currently do).
+            let added = 0;
+            titled.forEach((name) => {
+                const taken = data.tags.some(
+                    (t) => t.name && t.name.toLowerCase() === name.toLowerCase());
+                if (taken) return;
+                const nextId = data.tags.reduce((m, t) => Math.max(m, t.id || 0), 0) + 1;
+                data.tags.push({
+                    id: nextId, name,
+                    color: '#5DCCCA', category: 'general', kind: 'primary',
+                });
+                added++;
+            });
+
+            if (!added) {
+                showAlert('Every game already has a tag.', 'success');
+                return;
+            }
+            renderTagManager();
+            refreshPickers();
+            showAlert(
+                `Added ${added} game tag${added === 1 ? '' : 's'}. ` +
+                'Press 💾 Save to site to publish.', 'success');
         });
 
         panel.querySelectorAll('[data-tag-delete]').forEach((btn) => {
