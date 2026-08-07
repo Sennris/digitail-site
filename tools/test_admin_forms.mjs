@@ -140,6 +140,20 @@ check('window.data is undefined, as it is in a real browser',
 check('the script\'s own data binding is reachable',
     vm.runInContext('typeof data', sandbox) === 'object');
 
+// Pulled by brace matching, not sliced to a closing string.
+function fnBody(src, signature) {
+    const start = src.indexOf(signature);
+    if (start < 0) return '';
+    let depth = 0;
+    for (let i = src.indexOf('{', start); i < src.length; i++) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}' && --depth === 0) return src.slice(start, i + 1);
+    }
+    return '';
+}
+const populateSrc = fnBody(adminSrc, 'function populateHomepageForm');
+const collectSrc = fnBody(adminSrc, 'function collectHomepageInfo');
+
 console.log('\nHomepage settings survive a round trip:');
 
 setData({ homepage: JSON.parse(JSON.stringify(stored)), game: null });
@@ -147,9 +161,14 @@ const filled = sandbox.populateHomepageForm(getData().homepage);
 check('populateHomepageForm reports it filled the form', filled === true);
 check('announcement text reached the form', els.get('hp-announce-text').value === 'Demo out now!');
 check('enabled tickbox reached the form', els.get('hp-announce-enabled').checked === true);
-check('mascot choice reached the form', els.get('hp-mascot-current').value === 'halloween');
-check('a mascot image URL reached the form',
-    els.get('hp-mascot-halloween-img').value === '/media/spooky.webp');
+// The mascot moved out of this form in migration 0012. What matters here
+// is no longer "did it reach the form" but "did this form leave it alone" -
+// admin-mascots.js owns it, and src/writers.js keeps it as the rollback
+// copy. Reading a now-missing input would throw and take the whole
+// homepage save down with it, so both directions are checked.
+check('the homepage form does not reach for a mascot input',
+    !/hp-mascot/.test(populateSrc + collectSrc),
+    'those inputs are gone; reading one would throw mid-save');
 
 sandbox.collectHomepageInfo();
 const a = getData().homepage.announcement;
@@ -159,8 +178,9 @@ check('link is not blanked by saving', a.link === 'https://example.test/demo');
 check('style is not blanked by saving', a.style === 'warning');
 check('hero tagline is not blanked by saving',
     getData().homepage.hero.taglineEn === '// Real games.');
-check('mascot images are not blanked by saving',
-    getData().homepage.mascot.versions.halloween.image === '/media/spooky.webp');
+check('the mascot blob is left exactly as it was found',
+    JSON.stringify(getData().homepage.mascot) === JSON.stringify(stored.mascot),
+    'the homepage form must not touch what admin-mascots.js owns');
 check('ticker settings are left alone entirely',
     Boolean(getData().homepage.ticker) && getData().homepage.ticker.speed === 40);
 

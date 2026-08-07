@@ -14,7 +14,7 @@
     'use strict';
 
     const TYPES = ['devlogs', 'foxes', 'team', 'social', 'tags', 'games',
-                   'pressItems', 'pressAssets'];
+                   'pressItems', 'pressAssets', 'mascots'];
 
     /* ---------- load ---------- */
 
@@ -22,30 +22,54 @@
     // actually stored, or you end up editing a stale version of the site.
     const FRESH = { cache: 'no-store' };
 
-    const loadedOk = { games: false, pressItems: false, pressAssets: false };
+    // Which collections actually came back from the server this load.
+    // Anything false here is skipped on save - see the note in
+    // saveAllToServer.
+    const loadedOk = { games: false, pressItems: false, pressAssets: false,
+                       mascots: false };
+
+    // Fetch one collection and say, separately from its contents, whether
+    // the server really answered.
+    //
+    // This used to return the rows alone, and loadedOk was worked out
+    // afterwards with Array.isArray on the result. That could never be
+    // false: the fallback for a failed fetch was itself an empty ARRAY, so
+    // the check passed identically whether the rows had arrived or the
+    // request had collapsed. The guard read as if it were protecting the
+    // save and was doing nothing at all.
+    //
+    // A 404 is treated as a real answer on purpose. It means the endpoint
+    // is there and the table is not - the migration has not been run yet -
+    // and publishing in that state produces the "run migration NNNN" message
+    // from src/writers.js, which is what she needs to see. It cannot delete
+    // anything, because there is nothing there to delete. A 500 or a dropped
+    // connection is the dangerous case and is what this now catches.
+    function fetchCollection(type) {
+        return fetch(`/api/content/${type}`, FRESH)
+            .then((r) => {
+                if (r.ok) return r.json().then((rows) => ({ answered: true, rows }));
+                if (r.status === 404) return { answered: true, rows: [] };
+                return { answered: false, rows: [] };
+            })
+            .catch(() => ({ answered: false, rows: [] }));
+    }
 
     async function loadFromServer() {
         const results = await Promise.all([
-            ...TYPES.map((t) =>
-                fetch(`/api/content/${t}`, FRESH)
-                    .then((r) => (r.ok ? r.json() : []))
-                    .catch(() => [])
-            ),
+            ...TYPES.map(fetchCollection),
             fetch('/api/content/homepage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/game', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/gamesPage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/pressKit', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
 
-        TYPES.forEach((t, i) => { data[t] = results[i] || []; });
-
-        // Games only publish if they actually arrived. A failed fetch hands
-        // back an empty array, and saving that would delete every game -
-        // the same shape of accident that once published blank hero
-        // taglines over real ones.
-        loadedOk.games = Array.isArray(results[TYPES.indexOf('games')]);
-        loadedOk.pressItems = Array.isArray(results[TYPES.indexOf('pressItems')]);
-        loadedOk.pressAssets = Array.isArray(results[TYPES.indexOf('pressAssets')]);
+        TYPES.forEach((t, i) => {
+            const got = results[i];
+            data[t] = Array.isArray(got.rows) ? got.rows : [];
+            // Only the collections named in loadedOk are guarded. The rest
+            // predate the guard and are left as they were.
+            if (t in loadedOk) loadedOk[t] = got.answered && Array.isArray(got.rows);
+        });
 
         const homepage = results[TYPES.length];
         const game = results[TYPES.length + 1];
@@ -71,6 +95,10 @@
         else console.error('[admin] populateHomepageForm missing - homepage form will be empty');
 
         const counts = TYPES.map((t) => `${t} ${data[t].length}`).join(', ');
+        const missed = TYPES.filter((t) => t in loadedOk && !loadedOk[t]);
+        if (missed.length) {
+            console.warn('[admin] did not load, will not be published:', missed.join(', '));
+        }
         console.log('[admin] loaded from server:', counts);
     }
 

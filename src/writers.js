@@ -347,6 +347,110 @@ export function putPressAssets(db, items) {
 }
 
 
+/**
+ * Mascots, as of migration 0012.
+ *
+ * Same delete-then-insert shape as the rest: the admin holds the whole
+ * list and saves the lot. Two extra jobs on top of that:
+ *
+ *   1. At most one mascot can be `forced` - the manual override that
+ *      ignores the calendar. Whichever comes first in her order wins, so
+ *      ticking a new one in the admin cannot leave two set. Same
+ *      approach as `featured` on games.
+ *
+ *   2. The old `homepage.mascot` blob is kept as a rollback copy,
+ *      pointing at the always-on mascot (the first enabled one with no
+ *      dates, or failing that the first enabled one at all). Nothing
+ *      reads it as the source of truth any more, but pages/index.js
+ *      falls back to it when this table is missing, so letting it go
+ *      stale would turn a deploy ordering mistake into a wrong picture
+ *      on the front page.
+ *
+ * The admin module keeps the same mirror up to date in the browser. It
+ * has to: api-adapter publishes the homepage settings AFTER this runs,
+ * so a browser copy left untouched here would land on top of the mirror
+ * a moment after it was written.
+ */
+export function mascotMirror(items) {
+    const live = items.filter((m) => m && m.enabled !== false);
+    const pick = live.find((m) => !s(m.dateStart) && !s(m.dateEnd)) || live[0] || null;
+    if (!pick) return null;
+    return {
+        current: 'default',
+        // There is no schedule in this shape to switch on, and the whole
+        // point of the fallback is to show something dependable.
+        autoSwitch: false,
+        versions: {
+            default: {
+                name: s(pick.name),
+                image: s(pick.image),
+                size: s(pick.size) || 'medium',
+            },
+        },
+    };
+}
+
+export async function putMascots(db, items) {
+    if (!Array.isArray(items)) throw new Error('Expected an array of mascots');
+
+    const forced = items.find((m) => m && m.forced) || null;
+
+    const stmts = [db.prepare('DELETE FROM mascots')];
+    items.forEach((m, i) => {
+        stmts.push(
+            db.prepare(
+                `INSERT INTO mascots (id, name, image, size, date_start, date_end,
+                 repeats_yearly, forced, enabled, position, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,datetime('now'))`
+            ).bind(
+                n(m.id) || i + 1,
+                s(m.name), s(m.image),
+                // Anything unrecognised lands on medium, which is what the
+                // mascot has always been, rather than on nothing.
+                ['small', 'medium', 'large'].includes(s(m.size)) ? s(m.size) : 'medium',
+                s(m.dateStart), s(m.dateEnd),
+                m.repeatsYearly === false ? 0 : 1,
+                forced && m === forced ? 1 : 0,
+                m.enabled === false ? 0 : 1,
+                i
+            )
+        );
+    });
+
+    try {
+        await db.batch(stmts);
+    } catch (e) {
+        if (!/no such table: mascots/i.test(e.message)) throw e;
+        throw new Error(
+            'Saved nothing: the mascots table does not exist yet. Run migration ' +
+            '0012_mascots.sql, then save again.'
+        );
+    }
+
+    const mirror = mascotMirror(items);
+    if (mirror) {
+        const homepage = (await getSettingObject(db, 'homepage')) || {};
+        homepage.mascot = mirror;
+        await putSetting(db, 'homepage', homepage);
+    }
+    return items.length;
+}
+
+// Reads a settings blob back so one key can be updated without flattening
+// the rest of it.
+async function getSettingObject(db, key) {
+    try {
+        const row = await db.prepare('SELECT value FROM settings WHERE key = ?')
+            .bind(key).first();
+        if (!row || !row.value) return null;
+        const parsed = JSON.parse(row.value);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+
 export async function putSetting(db, key, value) {
     if (value === null || typeof value !== 'object') {
         throw new Error(`Expected an object for ${key}`);
@@ -373,6 +477,7 @@ export const WRITERS = {
     pressKit:  (db, body) => putSetting(db, 'pressKit', body),
     pressItems:  (db, body) => putPressItems(db, body),
     pressAssets: (db, body) => putPressAssets(db, body),
+    mascots:   (db, body) => putMascots(db, body),
     homepage: (db, body) => putSetting(db, 'homepage', body),
     // Kept so the old endpoint still answers, but the admin no longer writes
     // to it. putGames owns this blob now - see the note there.

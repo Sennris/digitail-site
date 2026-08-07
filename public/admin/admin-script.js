@@ -534,42 +534,17 @@ function initializeForms() {
                 </div>
 
                 <div class="hp-sec" data-sec="mascot">
-                <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono);">Mascot Settings</h3>
-                <div class="form-group">
-                    <label>Current Mascot</label>
-                    <select id="hp-mascot-current">
-                        <option value="default">Default Arctic Fox</option>
-                        <option value="halloween">Spooky Fox (Halloween)</option>
-                        <option value="christmas">Holiday Fox (Christmas)</option>
-                        <option value="newyear">Party Fox (New Year)</option>
-                    </select>
+                <h3 style="color: var(--frozen-juniper); font-family: var(--font-mono);">Mascots</h3>
+                <div class="helper-text" style="margin-bottom: 1rem;">
+                    Add as many as you like, each with its own dates and size. The four
+                    fixed slots that used to live here are now just the first four in the
+                    list. Everything below is edited by admin-mascots.js.
                 </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="hp-mascot-auto" style="width: auto; margin-right: 0.5rem;" checked>
-                        Auto-switch mascot by date
-                    </label>
-                    <div class="helper-text">When enabled, mascot changes automatically based on calendar dates</div>
+                <div class="button-group">
+                    <button type="button" class="btn-rugged" id="mascot-add">+ Add mascot</button>
                 </div>
-
-                <div class="form-group">
-                    <label>Default Mascot Image URL</label>
-                    <input type="text" id="hp-mascot-default-img" placeholder="Image URL for default mascot">
-                    <div id="hp-mascot-default-preview"></div>
-                </div>
-                <div class="form-group">
-                    <label>Halloween Mascot Image URL</label>
-                    <input type="text" id="hp-mascot-halloween-img" placeholder="Spooky fox image (Oct 1-31)">
-                </div>
-                <div class="form-group">
-                    <label>Christmas Mascot Image URL</label>
-                    <input type="text" id="hp-mascot-christmas-img" placeholder="Holiday fox image (Dec 1-31)">
-                </div>
-                <div class="form-group">
-                    <label>New Year Mascot Image URL</label>
-                    <input type="text" id="hp-mascot-newyear-img" placeholder="Party fox image (Dec 31 - Jan 7)">
-                </div>
-
+                <div id="mascots-list-panel"></div>
+                <div id="mascots-editor"></div>
                 </div>
 
                 <div class="button-group">
@@ -643,8 +618,7 @@ function setupImagePreviews() {
         'fox-image': 'fox-image-preview',
         'team-avatar': 'team-image-preview',
         'social-thumbnail': 'social-image-preview',
-        'hp-announce-image': 'hp-announce-image-preview',
-        'hp-mascot-default-img': 'hp-mascot-default-preview'
+        'hp-announce-image': 'hp-announce-image-preview'
     };
 
     Object.entries(imageInputs).forEach(([inputId, previewId]) => {
@@ -847,24 +821,10 @@ function populateHomepageForm(hp) {
             document.getElementById('hp-announce-image-preview').innerHTML = '<img src="' + hp.announcement.image + '" class="image-preview" alt="" style="max-width:100%;">';
         }
     }
-    if (hp.mascot) {
-        document.getElementById('hp-mascot-current').value = hp.mascot.current || 'default';
-        document.getElementById('hp-mascot-auto').checked = hp.mascot.autoSwitch !== false;
-        
-        // Populate mascot image URLs
-        if (hp.mascot.versions) {
-            ['default', 'halloween', 'christmas', 'newyear'].forEach(key => {
-                const imgInput = document.getElementById('hp-mascot-' + key + '-img');
-                if (imgInput && hp.mascot.versions[key]) {
-                    imgInput.value = hp.mascot.versions[key].image || '';
-                }
-            });
-            // Preview default mascot
-            if (hp.mascot.versions.default && hp.mascot.versions.default.image) {
-                document.getElementById('hp-mascot-default-preview').innerHTML = '<img src="' + hp.mascot.versions.default.image + '" class="image-preview" alt="" style="max-height:120px;">';
-            }
-        }
-    }
+    // The mascot is not read here any more. It is a list of its own since
+    // migration 0012, owned by admin-mascots.js, which renders the whole
+    // subtab. hp.mascot still exists in the blob as a rollback copy - see
+    // putMascots in src/writers.js - but nothing in this form touches it.
 
     return true;
 }
@@ -1075,20 +1035,11 @@ function collectHomepageInfo() {
         style: document.getElementById('hp-announce-style').value
     };
     
-    if (!data.homepage.mascot) {
-        data.homepage.mascot = { current: 'default', autoSwitch: true, versions: {} };
-    }
-    data.homepage.mascot.current = document.getElementById('hp-mascot-current').value;
-    data.homepage.mascot.autoSwitch = document.getElementById('hp-mascot-auto').checked;
-    
-    // Save mascot images into versions
-    const versions = data.homepage.mascot.versions || {};
-    ['default', 'halloween', 'christmas', 'newyear'].forEach(key => {
-        if (!versions[key]) versions[key] = {};
-        const imgInput = document.getElementById('hp-mascot-' + key + '-img');
-        if (imgInput) versions[key].image = imgInput.value.trim();
-    });
-    data.homepage.mascot.versions = versions;
+    // The mascot is deliberately NOT collected here. Those four inputs are
+    // gone - mascots are their own list since migration 0012, and reading a
+    // missing element's .value would throw and take the whole homepage save
+    // down with it. admin-mascots.js keeps data.homepage.mascot up to date
+    // as the rollback copy.
 
     return true;
 }

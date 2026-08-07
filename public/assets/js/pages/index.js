@@ -176,6 +176,124 @@
             });
         }
 
+        /* ---------- which mascot shows today ----------
+           The rule, agreed before this was built: when two scheduled
+           mascots both cover today, the one with the SHORTER date range
+           wins, and list order breaks a tie. A mascot with no dates at all
+           counts as an infinitely long range, so it is the fallback
+           without needing to be flagged as one - any dated mascot covering
+           today beats it.
+
+           Dates are read in the VISITOR's local time, not New Zealand
+           time. That is deliberate, and is what the old four-slot version
+           did: someone in London should see the Halloween mascot on their
+           31 October, not ours. */
+
+        const MASCOT_SIZES = ['small', 'medium', 'large'];
+        const pad2 = (v) => String(v).padStart(2, '0');
+
+        // Returns null for "no dates set", which means always eligible.
+        // Tolerates either date format in either field: a repeating mascot
+        // cares only about the MM-DD tail, a one-off needs the year, and
+        // one date on its own means a single day.
+        function mascotDates(m, now) {
+            let start = String(m.dateStart || '').trim();
+            let end = String(m.dateEnd || '').trim();
+            if (!start && !end) return null;
+            if (!start) start = end;
+            if (!end) end = start;
+            if (m.repeatsYearly) {
+                return { start: start.slice(-5), end: end.slice(-5) };
+            }
+            const year = String(now.getFullYear());
+            if (start.length === 5) start = year + '-' + start;
+            if (end.length === 5) end = year + '-' + end;
+            return { start, end };
+        }
+
+        function mascotCoversToday(m, now) {
+            const d = mascotDates(m, now);
+            if (!d) return true;
+            const today = m.repeatsYearly
+                ? pad2(now.getMonth() + 1) + '-' + pad2(now.getDate())
+                : now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+            if (d.start <= d.end) return today >= d.start && today <= d.end;
+            // A repeating range is allowed to wrap the year end, e.g. New
+            // Year running 12-31 to 01-07. A one-off with its dates the
+            // wrong way round is a typo, not a wrap, so it matches nothing
+            // rather than quietly covering eleven months.
+            return m.repeatsYearly ? (today >= d.start || today <= d.end) : false;
+        }
+
+        // Length of the range in days, inclusive of both ends. Infinity for
+        // a mascot with no dates - that is what makes it lose to everything.
+        function mascotSpan(m, now) {
+            const d = mascotDates(m, now);
+            if (!d) return Infinity;
+            if (m.repeatsYearly) {
+                // Counted on a fixed non-leap year so the number does not
+                // move about; it is only ever compared with another span.
+                const toDay = (mmdd) => {
+                    const parts = mmdd.split('-');
+                    return Date.UTC(2001, (Number(parts[0]) || 1) - 1, Number(parts[1]) || 1) / 86400000;
+                };
+                const a = toDay(d.start);
+                const b = toDay(d.end);
+                return (b >= a ? b - a : b - a + 365) + 1;
+            }
+            const a = Date.parse(d.start + 'T00:00:00Z');
+            const b = Date.parse(d.end + 'T00:00:00Z');
+            if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) return Infinity;
+            return (b - a) / 86400000 + 1;
+        }
+
+        function pickMascot(list, now) {
+            const live = (Array.isArray(list) ? list : [])
+                .filter((m) => m && m.enabled !== false);
+            if (!live.length) return null;
+
+            // The manual override wins outright, calendar or not.
+            const forced = live.find((m) => m.forced);
+            if (forced) return forced;
+
+            const covering = live.filter((m) => mascotCoversToday(m, now));
+            if (!covering.length) return null;
+
+            // Shortest span wins. Walking the list in her order and only
+            // replacing on a STRICTLY shorter span means an earlier entry
+            // keeps a tie, which is the agreed tiebreak - and it does not
+            // depend on the engine's sort being stable.
+            let best = covering[0];
+            let bestSpan = mascotSpan(best, now);
+            for (let i = 1; i < covering.length; i++) {
+                const span = mascotSpan(covering[i], now);
+                if (span < bestSpan) { best = covering[i]; bestSpan = span; }
+            }
+            return best;
+        }
+
+        // The pre-0012 shape, used only until the migration has been run.
+        function legacyMascot(blob) {
+            if (!blob || !blob.versions) return null;
+            const v = blob.versions[blob.current || 'default'] || blob.versions.default;
+            return v ? { name: v.name, image: v.image, size: 'medium' } : null;
+        }
+
+        function renderMascot(m) {
+            const el = document.getElementById('hero-mascot');
+            if (!el || !m || !m.image) return;
+            // Built as an element rather than concatenated into innerHTML.
+            // A single quote in a hand-typed name used to break the markup
+            // here, because the name went straight into an alt attribute.
+            const img = document.createElement('img');
+            img.src = m.image;
+            img.alt = m.name || 'Studio mascot';
+            el.replaceChildren(img);
+            MASCOT_SIZES.forEach((s) => el.classList.remove('mascot-' + s));
+            el.classList.add('mascot-' + (MASCOT_SIZES.indexOf(m.size) >= 0 ? m.size : 'medium'));
+            el.style.display = 'block';
+        }
+
         // --- FETCH HOMEPAGE CONTENT FROM JSON ---
         fetch('/api/content/homepage')
             .then(response => response.json())
@@ -190,32 +308,20 @@
                     if (taglineMi && data.hero.taglineMi) taglineMi.innerText = data.hero.taglineMi;
                 }
 
-                // Mascot
-                if (data.mascot && data.mascot.versions) {
-                    let mascotKey = data.mascot.current || 'default';
-                    
-                    // Auto-switch by date if enabled
-                    if (data.mascot.autoSwitch) {
-                        const now = new Date();
-                        const mmdd = String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-                        for (const [key, ver] of Object.entries(data.mascot.versions)) {
-                            if (key === 'default' || !ver.activeDates) continue;
-                            const [start, end] = ver.activeDates;
-                            if ((start <= end && mmdd >= start && mmdd <= end) || 
-                                (start > end && (mmdd >= start || mmdd <= end))) {
-                                mascotKey = key;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    const mascotData = data.mascot.versions[mascotKey] || data.mascot.versions['default'];
-                    if (mascotData && mascotData.image) {
-                        const mascotEl = document.getElementById('hero-mascot');
-                        mascotEl.innerHTML = '<img src="' + mascotData.image + '" alt="' + (mascotData.name || 'Studio Mascot') + '">';
-                        mascotEl.style.display = 'block';
-                    }
-                }
+                // Mascot. Its own collection since migration 0012 - see the
+                // block of functions above. If that endpoint has nothing to
+                // say (the Worker deployed before the migration was run) the
+                // old four-slot blob on the homepage settings is used, so the
+                // hero is never left bare during the gap.
+                fetch('/api/content/mascots')
+                    .then(r => (r.ok ? r.json() : null))
+                    .then(list => {
+                        const picked = (Array.isArray(list) && list.length)
+                            ? pickMascot(list, new Date())
+                            : legacyMascot(data.mascot);
+                        renderMascot(picked);
+                    })
+                    .catch(() => renderMascot(legacyMascot(data.mascot)));
 
                 // Announcement banner
                 if (data.announcement && data.announcement.enabled) {

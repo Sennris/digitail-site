@@ -18,8 +18,7 @@
     // Image fields in the admin panel, by input id.
     const IMAGE_FIELDS = [
         'devlog-image', 'fox-image', 'team-avatar', 'social-thumbnail', 'game-keyart',
-        'hp-announce-image', 'hp-mascot-default-img', 'hp-mascot-halloween-img',
-        'hp-mascot-christmas-img', 'hp-mascot-newyear-img',
+        'hp-announce-image',
     ];
 
 
@@ -261,6 +260,9 @@
         // Game page sections are added and removed as she edits, so their
         // image fields cannot be listed by id ahead of time.
         document.querySelectorAll('[id^="game-feature-image-"]').forEach((el) => enhance(el));
+        // Mascot images. Rendered by admin-mascots.js, so they appear after
+        // this file has run - the observer below is what catches them.
+        document.querySelectorAll('[id^="mascot-image-"]').forEach((el) => enhance(el));
 
         // Press kit rows, likewise created and destroyed as she edits.
         document.querySelectorAll('[id^="press-asset-image-"]').forEach((el) => enhance(el));

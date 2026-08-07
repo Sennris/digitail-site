@@ -278,9 +278,12 @@ const adapterSrc = readFileSync(join(ROOT, 'public/admin/api-adapter.js'), 'utf8
 check('games are in the load and save cycle',
     /TYPES\s*=\s*\[[^\]]*'games'/.test(adapterSrc));
 check('a failed games load cannot publish an empty list',
-    /loadedOk\.games/.test(adapterSrc) &&
+    /loadedOk\s*=\s*\{[^}]*\bgames\s*:/.test(adapterSrc) &&
     /type in loadedOk && !loadedOk\[type\]/.test(adapterSrc),
-    'the guard is generic now, covering games and both press lists');
+    'the guard is generic now, covering games, both press lists and mascots');
+check('the guard is set from whether the server answered',
+    /loadedOk\[t\]\s*=\s*got\.answered/.test(adapterSrc),
+    'it used to be Array.isArray of a value that was an array either way, so it could never be false');
 check('the games list wrapper is installed at parse time, not inside boot()',
     /installWrapper\(\);\n\n    \/\/ Belt and braces/.test(adminGamesSrc),
     'installing it inside boot() lost the race with api-adapter and left the list empty');

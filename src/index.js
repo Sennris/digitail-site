@@ -230,6 +230,33 @@ async function getPressAssets(db) {
     }
 }
 
+// The mascot list, as of migration 0012. Returned in her order - the
+// homepage uses that order as the tiebreak when two mascots cover the
+// same day, so position is content, not decoration.
+//
+// Unpublished has no equivalent here: an `enabled` mascot with no image
+// renders nothing, and a mascot is a picture of a fox rather than an
+// unannounced title, so there is nothing to leak.
+async function getMascots(db) {
+    try {
+        const { results } = await db.prepare(
+            'SELECT * FROM mascots ORDER BY position, id').all();
+        return results.map((r) => ({
+            id: r.id,
+            name: r.name || '',
+            image: r.image || '',
+            size: r.size || 'medium',
+            dateStart: r.date_start || '',
+            dateEnd: r.date_end || '',
+            repeatsYearly: Boolean(r.repeats_yearly),
+            forced: Boolean(r.forced),
+            enabled: Boolean(r.enabled),
+        }));
+    } catch {
+        return null;   // migration 0012 has not been run yet
+    }
+}
+
 // The flat shape the front page card has always fetched.
 async function getFeaturedGame(db) {
     const games = await getGames(db);
@@ -252,6 +279,7 @@ const READERS = {
     pressKit: (db) => getSetting(db, 'pressKit'),
     pressItems: getPressItems,
     pressAssets: getPressAssets,
+    mascots: getMascots,
     homepage: (db) => getSetting(db, 'homepage'),
     game: (db) => getFeaturedGame(db),
 };
