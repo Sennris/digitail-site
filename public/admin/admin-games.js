@@ -57,7 +57,7 @@
             ctaLabelEn: '', ctaLabelMi: '', ctaUrl: '',
             ctaHeadingEn: '', ctaHeadingMi: '', ctaBodyEn: '', ctaBodyMi: '',
             noteEn: '', noteMi: '',
-            featured: false, published: false, features: [],
+            featured: false, published: false, features: [], press: {},
         };
     }
 
@@ -168,6 +168,7 @@
             </div>`;
         }
 
+        const press = (g.press && typeof g.press === 'object') ? g.press : {};
         const linkedThrough = Boolean(
             (g.features || []).length || g.noteEn || g.noteMi || g.trailerUrl || g.ctaUrl
         );
@@ -328,6 +329,45 @@
                 <div class="helper-text">Leave blank to hide the button.</div>
             </div>
 
+            <hr class="game-divider">
+            <h3 class="game-subhead">Press kit factsheet</h3>
+            <p class="helper-text">Shown on this game's press page. Awards, quotes, articles and downloads for this game live in the Press Kit tab.</p>
+
+            <div class="form-group">
+                <label>Platforms</label>
+                <input type="text" data-game-press="platformsEn" value="${esc(press.platformsEn)}"
+                       placeholder="PC (Steam), Nintendo Switch">
+            </div>
+            <div class="form-group">
+                <label>Release date</label>
+                <input type="text" data-game-press="releaseDateEn" value="${esc(press.releaseDateEn)}"
+                       placeholder="TBA 2027">
+                <div class="helper-text">Free text, so "TBA" and "Q3 2027" are both fine.</div>
+            </div>
+            <div class="form-group">
+                <label>Price</label>
+                <input type="text" data-game-press="priceEn" value="${esc(press.priceEn)}"
+                       placeholder="TBA">
+            </div>
+            <div class="form-group">
+                <label>Press description (English)</label>
+                <textarea rows="4" data-game-press="descriptionEn">${esc(press.descriptionEn)}</textarea>
+                <div class="helper-text">The paragraph a journalist will paste. Longer and plainer than the tagline.</div>
+            </div>
+            <div class="form-group">
+                <label>Press description (Te Reo Māori)</label>
+                <textarea rows="4" data-game-press="descriptionMi">${esc(press.descriptionMi)}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Content considerations (English)</label>
+                <textarea rows="3" data-game-press="contentNotesEn">${esc(press.contentNotesEn)}</textarea>
+                <div class="helper-text">What is in the game that a reviewer or streamer should know about before they start.</div>
+            </div>
+            <div class="form-group">
+                <label>Content considerations (Te Reo Māori)</label>
+                <textarea rows="3" data-game-press="contentNotesMi">${esc(press.contentNotesMi)}</textarea>
+            </div>
+
             <div class="button-group">
                 <span class="save-hint">Changes are kept as a draft. Press 💾 Save to site at the top of the page to publish them.</span>
             </div>
@@ -398,6 +438,16 @@
 
         const gameField = e.target.getAttribute && e.target.getAttribute('data-game-field');
         if (gameField) { setField(gameField, e.target.value); return; }
+
+        const pressField = e.target.getAttribute && e.target.getAttribute('data-game-press');
+        if (pressField) {
+            const g = selected();
+            if (g) {
+                if (!g.press || typeof g.press !== 'object') g.press = {};
+                g.press[pressField] = e.target.value;
+            }
+            return;
+        }
 
         const featField = e.target.getAttribute && e.target.getAttribute('data-feature-field');
         if (featField) {

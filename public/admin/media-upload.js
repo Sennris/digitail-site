@@ -72,13 +72,27 @@
 
     /* ---------- upload ---------- */
 
+    // Anything that is not an image is sent exactly as it left her machine.
+    // The compress() path above redraws through a canvas and re-encodes as
+    // WebP, which would turn a press pack into a corrupt file that still had
+    // a .zip name - the worst kind of broken, because it looks fine until a
+    // journalist tries to open it.
+    const RAW_TYPES = [
+        'application/zip', 'application/x-zip-compressed', 'application/pdf',
+    ];
+    function isRaw(file) {
+        return RAW_TYPES.includes(file.type);
+    }
+
     async function upload(file, onProgress) {
         if (!file.type.startsWith('image/')) {
             throw new Error('That is not an image file');
         }
 
         onProgress && onProgress('Compressing...');
-        const { blob, width, height, name } = await compress(file);
+        const { blob, width, height, name } = isRaw(file)
+            ? { blob: file, width: 0, height: 0, name: file.name }
+            : await compress(file);
 
         const form = new FormData();
         form.append('file', new File([blob], name, { type: blob.type }));
@@ -101,9 +115,13 @@
 
     /* ---------- wiring an input up ---------- */
 
-    function enhance(input) {
+    // A press pack is not an image: it takes a different picker, a different
+    // button label, and no image Library button, because a zip will never be
+    // in there.
+    function enhance(input, opts) {
         if (input.dataset.uploadReady) return;
         input.dataset.uploadReady = '1';
+        const rawFile = Boolean(opts && opts.rawFile);
 
         const wrap = document.createElement('div');
         wrap.style.cssText = 'display:flex; gap:0.5rem; align-items:center; margin-top:0.4rem; flex-wrap:wrap;';
@@ -112,7 +130,7 @@
         btn.type = 'button';
         btn.className = 'btn-rugged';
         btn.style.cssText = 'font-size:0.8rem; padding:0.35rem 0.7rem;';
-        btn.textContent = '📁 Upload image';
+        btn.textContent = rawFile ? '📦 Upload file' : '📁 Upload image';
 
         const libBtn = document.createElement('button');
         libBtn.type = 'button';
@@ -125,10 +143,12 @@
 
         const picker = document.createElement('input');
         picker.type = 'file';
-        picker.accept = 'image/*';
         picker.style.display = 'none';
 
-        wrap.append(btn, libBtn, status, picker);
+        picker.accept = rawFile ? '.zip,.pdf,application/zip,application/pdf' : 'image/*';
+
+        if (rawFile) wrap.append(btn, status, picker);
+        else wrap.append(btn, libBtn, status, picker);
         input.insertAdjacentElement('afterend', wrap);
 
         async function run(file) {
@@ -240,7 +260,12 @@
 
         // Game page sections are added and removed as she edits, so their
         // image fields cannot be listed by id ahead of time.
-        document.querySelectorAll('[id^="game-feature-image-"]').forEach(enhance);
+        document.querySelectorAll('[id^="game-feature-image-"]').forEach((el) => enhance(el));
+
+        // Press kit rows, likewise created and destroyed as she edits.
+        document.querySelectorAll('[id^="press-asset-image-"]').forEach((el) => enhance(el));
+        document.querySelectorAll('[id^="press-asset-file-"]')
+            .forEach((el) => enhance(el, { rawFile: true }));
     }
 
     // One pass per frame. Without this, scan() runs on every single DOM

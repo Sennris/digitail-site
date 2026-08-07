@@ -32,6 +32,7 @@
                 <div class="side-label">Content</div>
                 <button class="tab-button active" onclick="switchTab('devlogs', this)">📝 Devlogs</button>
                 <button class="tab-button" onclick="switchTab('games', this)">🎮 Games</button>
+                <button class="tab-button" onclick="switchTab('press', this)">📰 Press Kit</button>
                 <button class="tab-button" onclick="switchTab('homepage', this)">🏠 Homepage</button>
             </div>
             <div class="side-group">
@@ -177,6 +178,29 @@
             </div>
         </div>
 
+        <div id="press-tab" class="tab-content">
+            <div class="main-grid">
+                <div class="sidebar">
+                    <div class="card">
+                        <h2>Studio factsheet</h2>
+                        <p class="helper-text">The top of the press kit, and the part journalists copy from. Everything here is optional.</p>
+                        <div id="press-kit-fields"></div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="card">
+                        <h2>Press kit entries</h2>
+                        <div class="form-group">
+                            <label for="press-scope">These belong to</label>
+                            <select id="press-scope"></select>
+                            <div class="helper-text">Awards, quotes, articles and files can sit against the studio or against one game. Pick which, then add them below.</div>
+                        </div>
+                        <div id="press-lists"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- SOCIAL TAB -->
         <div id="social-tab" class="tab-content">
             <div class="stats-grid">
@@ -302,6 +326,7 @@
     <script src="ticker-editor.js"></script>
     <script src="admin-extras.js"></script>
     <script src="admin-games.js"></script>
+    <script src="admin-press.js"></script>
     <script src="admin-subscribers.js"></script>
     <script src="session-guard.js"></script>
 </body>

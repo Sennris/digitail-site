@@ -17,7 +17,18 @@ const ALLOWED = {
     'image/avif': 'avif',
 };
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10MB, generous since the browser compresses first
+// Press packs. These are NOT images: the admin uploads them untouched, with
+// no browser-side resizing, because compressing a zip would corrupt it.
+const ALLOWED_FILES = {
+    'application/zip': 'zip',
+    'application/x-zip-compressed': 'zip',
+    'application/pdf': 'pdf',
+};
+
+// Images arrive already shrunk by the browser, so 10MB is generous. A press
+// pack is a bundle of full-resolution art and cannot be shrunk on the way in.
+const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_FILE_BYTES = 60 * 1024 * 1024;
 
 const NO_CACHE = {
     'Content-Type': 'application/json; charset=utf-8',
@@ -66,15 +77,24 @@ export async function handleUpload(request, env) {
     if (!file || typeof file === 'string') return fail('No file in the upload');
 
     const type = file.type || '';
-    const ext = ALLOWED[type];
+    const ext = ALLOWED[type] || ALLOWED_FILES[type];
     if (!ext) {
-        return fail(`${type || 'That file type'} is not supported. Use JPG, PNG, WebP, GIF or AVIF.`);
+        return fail(
+            `${type || 'That file type'} is not supported. ` +
+            'Use JPG, PNG, WebP, GIF or AVIF for images, or ZIP or PDF for a press pack.'
+        );
     }
+
+    const isImage = Boolean(ALLOWED[type]);
+    const cap = isImage ? MAX_BYTES : MAX_FILE_BYTES;
 
     const buffer = await file.arrayBuffer();
     if (buffer.byteLength === 0) return fail('That file is empty');
-    if (buffer.byteLength > MAX_BYTES) {
-        return fail(`That file is ${(buffer.byteLength / 1048576).toFixed(1)}MB. The limit is 10MB.`);
+    if (buffer.byteLength > cap) {
+        return fail(
+            `That file is ${(buffer.byteLength / 1048576).toFixed(1)}MB. ` +
+            `The limit is ${cap / 1048576}MB.`
+        );
     }
 
     const now = new Date();

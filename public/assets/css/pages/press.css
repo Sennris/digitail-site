@@ -1,0 +1,231 @@
+/* ==========================================================================
+   press.html - the press kit
+   ==========================================================================
+   Deliberately calmer than the rest of the site. A journalist on deadline is
+   scanning for a fact, not being sold to, so this page keeps the palette and
+   the type but drops the rotations and the drift. The one place it gets loud
+   is the video permission block, because that is the bit worth noticing.
+   ========================================================================== */
+
+.press-head {
+    max-width: 62ch;
+    margin: 0 0 3rem;
+}
+
+.press-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.75rem;
+}
+
+.press-head h1 {
+    font-family: var(--font-display);
+    font-size: var(--size-xl);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+}
+
+.press-intro { font-size: 1.05rem; max-width: 52ch; }
+
+.press-loading { font-family: var(--font-mono); opacity: 0.75; }
+
+/* ---- switching between the studio and each game ---- */
+
+.press-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+}
+
+.press-switcher__link {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.9rem;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.press-switcher__link.is-current {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border-color: var(--long-black);
+}
+
+/* ---- sections ---- */
+
+#press-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    margin-bottom: 6rem;
+    max-width: 70ch;
+}
+
+.press-section__title {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid currentColor;
+}
+
+.press-prose p { margin-bottom: 1rem; max-width: 62ch; }
+
+/* The two blocks a streamer needs before they hit record. */
+.press-section--highlight {
+    background: var(--frozen-juniper);
+    color: var(--long-black);
+    border: var(--border-width) solid var(--long-black);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 1.75rem;
+}
+
+.press-section--note {
+    border-left: var(--border-width) solid var(--flat-white);
+    border-radius: 0;
+    padding-left: 1.25rem;
+}
+
+/* ---- factsheet ---- */
+
+.press-factsheet {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.6rem 1.5rem;
+}
+
+.press-fact { display: contents; }
+
+.press-fact__label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+
+.press-fact__value { margin: 0; }
+
+/* ---- lists ---- */
+
+.press-list { list-style: none; padding: 0; margin: 0; }
+
+.press-list__item {
+    padding: 0 0 1.1rem 1.1rem;
+    margin-bottom: 1.1rem;
+    border-left: 2px solid currentColor;
+    border-radius: 0;
+}
+
+.press-list__item:last-child { margin-bottom: 0; }
+
+.press-list__head { font-weight: 700; }
+
+.press-list__body { margin: 0.35rem 0 0; max-width: 60ch; }
+
+.press-list__meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    opacity: 0.7;
+    margin: 0.35rem 0 0;
+}
+
+/* ---- downloads ---- */
+
+.press-assets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1rem;
+}
+
+.press-assets__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    height: 100%;
+    padding: 0.9rem;
+    border: var(--border-width) solid var(--long-black);
+    border-radius: var(--radius);
+    background: var(--card-surface);
+    color: var(--long-black);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.press-assets__link:hover,
+.press-assets__link:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
+}
+
+.press-assets__link img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border: 2px solid var(--long-black);
+    border-radius: 2px;
+}
+
+.press-assets__label { font-weight: 700; }
+
+.press-assets__note {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    opacity: 0.75;
+}
+
+/* ---- copy button ---- */
+
+.press-copy { margin-top: 0.75rem; }
+
+.press-copy__btn {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.8rem;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.press-copy__btn:hover { background: rgba(93, 204, 202, 0.25); }
+
+.press-contact {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    color: inherit;
+    border-bottom: 2px solid currentColor;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    .press-factsheet { grid-template-columns: 1fr; gap: 0.2rem; }
+    .press-fact { display: block; margin-bottom: 0.9rem; }
+    .press-section--highlight { padding: 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .press-assets__link { transition: none; }
+    .press-assets__link:hover,
+    .press-assets__link:focus-visible { transform: none; }
+}

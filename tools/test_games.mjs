@@ -238,9 +238,12 @@ check('the rollback copy was updated to match the featured game',
 console.log('\nIf the Worker is deployed before the migration runs:');
 const old = new DatabaseSync(':memory:');
 for (const f of readdirSync(join(ROOT, 'migrations')).sort()) {
-    // 0010 alters `games`, so it cannot run without 0009 either. Skipping
-    // only 0009 threw here and killed every check below this point.
-    if (f.startsWith('0009') || f.startsWith('0010')) continue;
+    // Everything from 0009 on builds on the games table, so none of it can
+    // run without 0009. Naming the numbers individually broke twice: 0010
+    // then 0011 each alter `games`, and each time the omission threw here
+    // and silently killed every check below this point. Test by number, not
+    // by a list that has to be remembered.
+    if (Number(f.slice(0, 4)) >= 9) continue;
     old.exec(readFileSync(join(ROOT, 'migrations', f), 'utf8'));
 }
 
@@ -276,7 +279,8 @@ check('games are in the load and save cycle',
     /TYPES\s*=\s*\[[^\]]*'games'/.test(adapterSrc));
 check('a failed games load cannot publish an empty list',
     /loadedOk\.games/.test(adapterSrc) &&
-    /type === 'games' && !loadedOk\.games/.test(adapterSrc));
+    /type in loadedOk && !loadedOk\[type\]/.test(adapterSrc),
+    'the guard is generic now, covering games and both press lists');
 check('the games list wrapper is installed at parse time, not inside boot()',
     /installWrapper\(\);\n\n    \/\/ Belt and braces/.test(adminGamesSrc),
     'installing it inside boot() lost the race with api-adapter and left the list empty');

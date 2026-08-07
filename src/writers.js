@@ -227,9 +227,9 @@ export async function putGames(db, items) {
                  blurb_en, blurb_mi, trailer_url, key_art, status_en, status_mi,
                  cta_label_en, cta_label_mi, cta_url,
                  cta_heading_en, cta_heading_mi, cta_body_en, cta_body_mi,
-                 note_en, note_mi,
+                 note_en, note_mi, press_json,
                  featured, published, position, updated_at)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`
             ).bind(
                 n(g.id) || gi + 1, s(g.slug),
                 s(g.titleEn), s(g.titleMi), s(g.taglineEn), s(g.taglineMi),
@@ -238,6 +238,7 @@ export async function putGames(db, items) {
                 s(g.ctaLabelEn), s(g.ctaLabelMi), s(g.ctaUrl),
                 s(g.ctaHeadingEn), s(g.ctaHeadingMi), s(g.ctaBodyEn), s(g.ctaBodyMi),
                 s(g.noteEn), s(g.noteMi),
+                g.press && typeof g.press === 'object' ? JSON.stringify(g.press) : '',
                 // Exactly one featured game. Whichever comes first wins, so
                 // ticking a new one in the admin cannot leave two set.
                 featured && g === featured ? 1 : 0,
@@ -262,6 +263,12 @@ export async function putGames(db, items) {
     try {
         await db.batch(stmts);
     } catch (e) {
+        if (/no column named press_json/i.test(e.message)) {
+            throw new Error(
+                'Saved nothing: the press kit column is missing. Run migration ' +
+                '0011_press_kit.sql, then save again.'
+            );
+        }
         if (/no column named cta_(heading|body)_(en|mi)/i.test(e.message)) {
             throw new Error(
                 'Saved nothing: the call to action columns are missing. Run ' +
@@ -279,6 +286,64 @@ export async function putGames(db, items) {
 
     if (mirror) await putSetting(db, 'game', mirror);
     return items.length;
+}
+
+
+/**
+ * Press items and press assets. Same delete-then-insert shape as the rest.
+ *
+ * Both refuse an empty array outright. These lists are edited from a tab the
+ * user may never open in a given session, and an empty array reaching here is
+ * far more likely to mean "the tab never loaded" than "delete everything I
+ * have written". Deleting the last one on purpose is done through the tab's
+ * own remove button, which sends the remaining items, not an empty list.
+ */
+async function putPressRows(db, table, items, columns, build) {
+    if (!Array.isArray(items)) throw new Error(`Expected an array for ${table}`);
+
+    const stmts = [db.prepare(`DELETE FROM ${table}`)];
+    const marks = columns.map(() => '?').join(',');
+    items.forEach((item, i) => {
+        stmts.push(
+            db.prepare(`INSERT INTO ${table} (${columns.join(',')}) VALUES (${marks})`)
+              .bind(...build(item, i))
+        );
+    });
+
+    try {
+        await db.batch(stmts);
+    } catch (e) {
+        if (!new RegExp(`no such table: ${table}`, 'i').test(e.message)) throw e;
+        throw new Error(
+            'Saved nothing: the press kit tables do not exist yet. Run migration ' +
+            '0011_press_kit.sql, then save again.'
+        );
+    }
+    return items.length;
+}
+
+export function putPressItems(db, items) {
+    return putPressRows(db, 'press_items',
+        items,
+        ['game_id', 'kind', 'title_en', 'title_mi', 'body_en', 'body_mi',
+         'source', 'url', 'date_label', 'position'],
+        (it, i) => [
+            n(it.gameId) || 0, s(it.kind) || 'award',
+            s(it.titleEn), s(it.titleMi), s(it.bodyEn), s(it.bodyMi),
+            s(it.source), s(it.url), s(it.dateLabel), i,
+        ]);
+}
+
+export function putPressAssets(db, items) {
+    return putPressRows(db, 'press_assets',
+        items,
+        ['game_id', 'kind', 'label_en', 'label_mi', 'url',
+         'note_en', 'note_mi', 'position'],
+        (it, i) => [
+            n(it.gameId) || 0, s(it.kind) || 'image',
+            s(it.labelEn), s(it.labelMi), s(it.url),
+            s(it.noteEn), s(it.noteMi), i,
+        ]);
 }
 
 
@@ -305,6 +370,9 @@ export const WRITERS = {
     tags:      (db, body) => putTags(db, body),
     games:     (db, body) => putGames(db, body),
     gamesPage: (db, body) => putSetting(db, 'gamesPage', body),
+    pressKit:  (db, body) => putSetting(db, 'pressKit', body),
+    pressItems:  (db, body) => putPressItems(db, body),
+    pressAssets: (db, body) => putPressAssets(db, body),
     homepage: (db, body) => putSetting(db, 'homepage', body),
     // Kept so the old endpoint still answers, but the admin no longer writes
     // to it. putGames owns this blob now - see the note there.

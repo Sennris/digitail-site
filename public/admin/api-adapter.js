@@ -13,7 +13,8 @@
 (function () {
     'use strict';
 
-    const TYPES = ['devlogs', 'foxes', 'team', 'social', 'tags', 'games'];
+    const TYPES = ['devlogs', 'foxes', 'team', 'social', 'tags', 'games',
+                   'pressItems', 'pressAssets'];
 
     /* ---------- load ---------- */
 
@@ -21,7 +22,7 @@
     // actually stored, or you end up editing a stale version of the site.
     const FRESH = { cache: 'no-store' };
 
-    const loadedOk = { games: false };
+    const loadedOk = { games: false, pressItems: false, pressAssets: false };
 
     async function loadFromServer() {
         const results = await Promise.all([
@@ -33,6 +34,7 @@
             fetch('/api/content/homepage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/game', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
             fetch('/api/content/gamesPage', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+            fetch('/api/content/pressKit', FRESH).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
 
         TYPES.forEach((t, i) => { data[t] = results[i] || []; });
@@ -42,6 +44,8 @@
         // the same shape of accident that once published blank hero
         // taglines over real ones.
         loadedOk.games = Array.isArray(results[TYPES.indexOf('games')]);
+        loadedOk.pressItems = Array.isArray(results[TYPES.indexOf('pressItems')]);
+        loadedOk.pressAssets = Array.isArray(results[TYPES.indexOf('pressAssets')]);
 
         const homepage = results[TYPES.length];
         const game = results[TYPES.length + 1];
@@ -51,6 +55,7 @@
         data.game = game || null;
         // 404s until it has been saved once, which is not an error.
         data.gamesPage = results[TYPES.length + 2] || {};
+        data.pressKit = results[TYPES.length + 3] || {};
 
         if (typeof renderAllLists === 'function') renderAllLists();
 
@@ -104,11 +109,18 @@
             if (typeof collectGameInfo === 'function') collectGameInfo();
 
             for (const type of TYPES) {
-                if (type === 'games' && !loadedOk.games) {
-                    console.warn('[admin] games did not load; leaving them alone');
+                // A failed fetch hands back an empty array. Publishing that
+                // would delete every row. Same guard, same reason, for all
+                // three lists that are edited from a tab she may never open.
+                if (type in loadedOk && !loadedOk[type]) {
+                    console.warn(`[admin] ${type} did not load; leaving them alone`);
                     continue;
                 }
                 await putContent(type, data[type] || []);
+            }
+
+            if (data.pressKit && Object.keys(data.pressKit).length) {
+                await putContent('pressKit', data.pressKit);
             }
 
             if (data.gamesPage && Object.keys(data.gamesPage).length) {

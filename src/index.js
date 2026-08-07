@@ -182,6 +182,12 @@ async function getGames(db, opts = {}) {
             featured: Boolean(r.featured),
             published: Boolean(r.published),
             features: featuresByGame.get(r.id) || [],
+            // Stored as one JSON column rather than ten. Bad JSON must never
+            // take the games endpoint down with it, so it degrades to empty.
+            press: (() => {
+                try { return r.press_json ? JSON.parse(r.press_json) : {}; }
+                catch { return {}; }
+            })(),
             // Derived, not stored. A game only links through from the games
             // list once there is something on the other side. It flips on by
             // itself the moment she writes a holding message or adds a
@@ -191,6 +197,37 @@ async function getGames(db, opts = {}) {
                 r.note_en || r.note_mi || r.trailer_url || r.cta_url
             ),
         }));
+}
+
+// Awards, quotes, articles and extra links. game_id 0 is studio level.
+async function getPressItems(db) {
+    try {
+        const { results } = await db.prepare(
+            'SELECT * FROM press_items ORDER BY game_id, kind, position, id').all();
+        return results.map((r) => ({
+            id: r.id, gameId: r.game_id, kind: r.kind,
+            titleEn: r.title_en, titleMi: r.title_mi,
+            bodyEn: r.body_en, bodyMi: r.body_mi,
+            source: r.source, url: r.url, dateLabel: r.date_label,
+        }));
+    } catch {
+        return null;   // migration 0011 has not been run yet
+    }
+}
+
+// Downloadable packs and individual files.
+async function getPressAssets(db) {
+    try {
+        const { results } = await db.prepare(
+            'SELECT * FROM press_assets ORDER BY game_id, kind, position, id').all();
+        return results.map((r) => ({
+            id: r.id, gameId: r.game_id, kind: r.kind,
+            labelEn: r.label_en, labelMi: r.label_mi,
+            url: r.url, noteEn: r.note_en, noteMi: r.note_mi,
+        }));
+    } catch {
+        return null;
+    }
 }
 
 // The flat shape the front page card has always fetched.
@@ -212,6 +249,9 @@ const READERS = {
     devlogs: getDevlogs, foxes: getFoxes, team: getTeam,
     social: getSocial, tags: getTags, games: getGames,
     gamesPage: (db) => getSetting(db, 'gamesPage'),
+    pressKit: (db) => getSetting(db, 'pressKit'),
+    pressItems: getPressItems,
+    pressAssets: getPressAssets,
     homepage: (db) => getSetting(db, 'homepage'),
     game: (db) => getFeaturedGame(db),
 };
