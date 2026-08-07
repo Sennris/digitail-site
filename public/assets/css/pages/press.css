@@ -229,3 +229,41 @@
     .press-assets__link:hover,
     .press-assets__link:focus-visible { transform: none; }
 }
+
+/* ============================================================
+   Links inside the lists
+   ============================================================
+   core.css has no global anchor rule, so these were falling through
+   to the browser's own blue and purple - the one place on the site
+   that did not look like the site. Everything else on this page
+   (.press-switcher__link, .press-assets__link, .press-contact) was
+   already styled, which is why only these showed up. */
+
+.press-list a {
+    color: var(--frozen-juniper);
+    text-decoration: none;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 1px;
+}
+
+.press-list a:hover,
+.press-list a:focus-visible {
+    background: rgba(93, 204, 202, 0.22);
+}
+
+.press-list a:focus-visible {
+    outline: 2px solid var(--frozen-juniper);
+    outline-offset: 3px;
+}
+
+/* The permission block is a juniper panel, so a juniper link inside it
+   would be invisible. */
+.press-section--highlight .press-list a,
+.press-section--highlight a {
+    color: var(--long-black);
+}
+
+.press-section--highlight .press-list a:hover,
+.press-section--highlight a:hover {
+    background: rgba(29, 13, 18, 0.15);
+}

@@ -175,7 +175,7 @@
 
         return `
         <div class="card">
-            <h2>${esc(g.titleEn || 'Untitled game')}</h2>
+            <h2 class="game-name">${esc(g.titleEn || 'Untitled game')}</h2>
 
             <div class="switch-bank">
                 <label class="switch-plate${g.published ? ' is-on' : ''}">

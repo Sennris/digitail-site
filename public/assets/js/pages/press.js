@@ -116,7 +116,16 @@ function prose(en, mi, withCopy) {
     return wrap;
 }
 
-function itemList(rows) {
+// A row added in the admin and then left blank would otherwise render as a
+// bare bordered strip with no text in it - a ghost bar down the page. Empty
+// entries are dropped rather than shown.
+function hasContent(item) {
+    return Boolean(item.titleEn || item.titleMi || item.bodyEn ||
+                   item.bodyMi || item.source || item.url);
+}
+
+function itemList(allRows) {
+    const rows = allRows.filter(hasContent);
     if (!rows.length) return null;
     const ul = document.createElement('ul');
     ul.className = 'press-list';
@@ -153,7 +162,9 @@ function itemList(rows) {
     return ul;
 }
 
-function assetList(rows) {
+function assetList(allRows) {
+    // A file with no URL behind it is a download that goes nowhere.
+    const rows = allRows.filter((a) => a.url && (a.labelEn || a.labelMi));
     if (!rows.length) return null;
     const ul = document.createElement('ul');
     ul.className = 'press-assets';

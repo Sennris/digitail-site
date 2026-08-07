@@ -759,3 +759,42 @@ body .admin-main .card small {
     .switch-plate:hover { transform: none; }
     .switch-plate--star.is-on:hover { transform: rotate(-0.6deg); }
 }
+
+/* ============================================================
+   Switch plate text, and the game name
+   ============================================================ */
+
+/* The pin above (`body .admin-main .card label`) is specificity 0,2,2.
+   `.switch-plate.is-on` is 0,2,0, so the pin won and the black text on
+   the teal and cream plates never applied - the third time in this
+   project that the admin card colour pin has quietly beaten a later
+   rule. Matching its shape (0,4,2) rather than reaching for !important,
+   and naming the children directly because spans are not in the pin's
+   selector list and were only ever inheriting. */
+body .admin-main .card label.switch-plate.is-on,
+body .admin-main .card label.switch-plate.is-on .switch-state,
+body .admin-main .card label.switch-plate.is-on .switch-name,
+body .admin-main .card label.switch-plate.is-on .switch-note {
+    color: var(--long-black);
+}
+
+/* The lamp takes its border and knob from currentColor, so it follows. */
+body .admin-main .card label.switch-plate.is-on .switch-lamp {
+    border-color: var(--long-black);
+}
+
+/* Black keyline around the game name, the same eight-direction technique
+   as the hero title in core.css, at 1px because this is a 1.5rem heading
+   rather than a mega one. The 3px offset is the site's hard shadow. */
+.game-name {
+    text-shadow:
+        -1px -1px 0 var(--long-black),
+         1px -1px 0 var(--long-black),
+        -1px  1px 0 var(--long-black),
+         1px  1px 0 var(--long-black),
+         0   -1px 0 var(--long-black),
+         0    1px 0 var(--long-black),
+        -1px  0   0 var(--long-black),
+         1px  0   0 var(--long-black),
+         3px  3px 0 var(--long-black);
+}

@@ -253,6 +253,48 @@ check('a zip skips the WebP compression',
 check('press pack fields get the file picker, not the image one',
     /press-asset-file-"\]'\)\s*\n\s*\.forEach\(\(el\) => enhance\(el, \{ rawFile: true \}\)\)/.test(uploadSrc));
 
+check('blank entries are dropped instead of rendering as empty bars',
+    /function hasContent/.test(pressJs) && /allRows\.filter\(hasContent\)/.test(pressJs));
+check('a download with no file behind it is dropped',
+    /allRows\.filter\(\(a\) => a\.url &&/.test(pressJs));
+
+const pressCss = readFileSync(join(ROOT, 'public/assets/css/pages/press.css'), 'utf8');
+check('links in the press lists are styled rather than browser blue',
+    /\.press-list a\s*\{[^}]*color:\s*var\(--frozen-juniper\)/.test(pressCss),
+    'core.css has no global anchor rule, so an unstyled link falls through to blue and purple');
+check('links inside the juniper permission panel switch to black',
+    /\.press-section--highlight a\s*\{[^}]*color:\s*var\(--long-black\)/.test(
+        pressCss.replace(/\.press-section--highlight \.press-list a,\n/, '')),
+    'a juniper link on a juniper panel would be invisible');
+
+const cmCss2 = readFileSync(join(ROOT, 'public/assets/css/pages/content-manager.css'), 'utf8');
+check('the on-state switch text out-specifies the admin card colour pin',
+    /body \.admin-main \.card label\.switch-plate\.is-on/.test(cmCss2),
+    'the pin is body .admin-main .card label (0,2,2); .switch-plate.is-on (0,2,0) loses to it');
+check('the switch children are named directly, not left to inherit',
+    /label\.switch-plate\.is-on \.switch-name/.test(cmCss2) &&
+    /label\.switch-plate\.is-on \.switch-note/.test(cmCss2));
+// Comments stripped first. The previous version of this check matched the
+// word inside the comment that explains why !important was NOT used - the
+// same assertion-collides-with-nearby-text failure as the 'Paper Crown'
+// placeholder in round 7.
+// Comments stripped first: the previous version matched the word inside the
+// comment explaining why !important was NOT used. The version after that
+// used split()[1], which is the slice BETWEEN the first two occurrences of
+// the delimiter, not everything after the first - and that selector appears
+// a dozen times, so it was checking a few bytes that could never contain
+// the mutation. There is no !important anywhere in this file's rules, so
+// just check all of them.
+const cmRules = cmCss2.replace(/\/\*[\s\S]*?\*\//g, '');
+check('the admin stylesheet reaches for specificity, not !important',
+    !/!important/.test(cmRules));
+check('the game name carries the black keyline',
+    /\.game-name\s*\{[^}]*text-shadow/.test(cmCss2));
+
+const adminGames2 = readFileSync(join(ROOT, 'public/admin/admin-games.js'), 'utf8');
+check('the game heading has the class the keyline targets',
+    /<h2 class="game-name">/.test(adminGames2));
+
 const navPages = ['index', 'game', 'games', 'devlogs', 'foxes', 'social', 'about', 'press'];
 check('every page links to the press kit',
     navPages.every((n) => /href="press\.html"/.test(
