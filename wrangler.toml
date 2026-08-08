@@ -17,3 +17,9 @@ database_id = "bcecdc93-fc38-4ef3-a1f0-516b6f08a0a1"
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "digitail-media"
+# Nightly traffic snapshot. 03:17 UTC, which is after UTC midnight so
+# "yesterday" is a complete day. Deliberately not on the hour - every
+# cron on the platform fires at :00 and the queue is longer there.
+# Free plan allows 3 crons per Worker; this is the first.
+[triggers]
+crons = ["17 3 * * *"]

@@ -44,6 +44,7 @@
             <div class="side-group">
                 <div class="side-label">Audience</div>
                 <button class="tab-button" onclick="switchTab('subscribers', this)">✉️ Subscribers</button>
+                <button class="tab-button" onclick="switchTab('traffic', this)">📈 Traffic</button>
             </div>
         </nav>
 
@@ -316,6 +317,52 @@
             </div>
         </div>
 
+        <!-- TRAFFIC TAB -->
+        <div id="traffic-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="traffic-views">0</div>
+                    <div class="label">Page views (range)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="traffic-visits">0</div>
+                    <div class="label">Visits (range)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="traffic-days">0</div>
+                    <div class="label">Days on record</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Traffic history</h2>
+                <p style="font-size: 0.85rem; color: var(--arctic-willow); margin: 0 0 1rem 0;">
+                    Cloudflare keeps only the last 30 days. Every night this site takes a
+                    copy into your own database, so this record keeps growing after
+                    Cloudflare has forgotten. Dates are <strong>UTC</strong>, not New
+                    Zealand time.
+                </p>
+                <p style="font-size: 0.85rem; color: var(--alert-red); margin: 0 0 1rem 0;">
+                    <strong>These are estimates.</strong> Cloudflare measures a sample of
+                    traffic and scales it up, and counts one person visiting ten times as
+                    ten visits. Treat them as a trend, not a headcount &mdash; especially
+                    if you are quoting a number in a funding application.
+                </p>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.25rem;">
+                    <button class="btn-rugged" onclick="loadTraffic()">🔄 Refresh view</button>
+                    <button class="btn-rugged" onclick="fetchTrafficNow()">☁️ Fetch from Cloudflare now</button>
+                    <select id="traffic-range" onchange="loadTraffic()">
+                        <option value="30">Last 30 days</option>
+                        <option value="90" selected>Last 90 days</option>
+                        <option value="365">Last year</option>
+                        <option value="3650">Everything</option>
+                    </select>
+                    <a class="btn-rugged" href="/api/analytics/export" download id="traffic-export">⬇️ Download CSV</a>
+                </div>
+                <div id="traffic-table"></div>
+            </div>
+        </div>
+
         </div><!-- /.admin-main -->
         </div><!-- /.admin-shell -->
 
@@ -333,6 +380,7 @@
     <script src="admin-mascots.js"></script>
     <script src="admin-homepage-sections.js"></script>
     <script src="admin-subscribers.js"></script>
+    <script src="admin-traffic.js"></script>
     <script src="session-guard.js"></script>
 </body>
 </html>

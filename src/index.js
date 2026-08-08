@@ -17,6 +17,7 @@ import {
     handleSubscribe, handleUnsubscribe, handleSubscriberList,
     handleSubscriberExport, handleSubscriberSync, newsletterHealth,
 } from './newsletter.js';
+import { readAnalytics, refreshAnalytics, toCsv } from './analytics.js';
 
 // Not for /api/content/* - see the GET handler. Caching content reads meant
 // a save could take up to a minute to show up, on the site and in the admin.
@@ -569,6 +570,51 @@ async function handleApi(request, env, url) {
         return fail('Unknown media action', 404);
     }
 
+    // Traffic history. Admin only - visitor numbers are not published,
+    // and the table is read straight from D1, never from Cloudflare, so
+    // this stays fast and keeps answering if the API token ever breaks.
+    if (parts[1] === 'analytics') {
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        if (parts[2] === 'refresh' && request.method === 'POST') {
+            // The same job the cron runs, on a button. Useful on the
+            // day it is installed, and after a night it did not run.
+            const result = await refreshAnalytics(env);
+            if (!result.ok) return fail(result.error, 502);
+            return json(result, 200, NO_CACHE);
+        }
+
+        if (parts[2] === 'export' && request.method === 'GET') {
+            try {
+                const data = await readAnalytics(env.DB, 3650);
+                // Oldest first for a spreadsheet, newest first on screen.
+                const rows = data.rows.slice().reverse();
+                return new Response(toCsv(rows), {
+                    status: 200,
+                    headers: {
+                        'Content-Type': 'text/csv; charset=utf-8',
+                        'Cache-Control': 'no-store',
+                        'Content-Disposition': `attachment; filename="digitail-traffic-${new Date().toISOString().slice(0, 10)}.csv"`,
+                    },
+                });
+            } catch (e) {
+                return fail(`Could not export traffic history: ${e.message}`, 500);
+            }
+        }
+
+        if (!parts[2] && request.method === 'GET') {
+            try {
+                const days = Number(url.searchParams.get('days')) || 90;
+                return json(await readAnalytics(env.DB, days), 200, NO_CACHE);
+            } catch (e) {
+                return fail(`Could not read traffic history - has migration 0013 been run? (${e.message})`, 500);
+            }
+        }
+
+        return fail('Unknown analytics action', 404);
+    }
+
     if (parts[1] === 'content' && parts[2]) {
         const type = parts[2];
 
@@ -620,6 +666,21 @@ async function handleApi(request, env, url) {
 /* ================= entry ================= */
 
 export default {
+    // Nightly traffic snapshot. Cloudflare keeps 30 days; this keeps
+    // them forever. It never throws: a cron has nobody to report to,
+    // and a failed run must leave the table exactly as it was rather
+    // than write zeros over real days. See src/analytics.js.
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil((async () => {
+            const result = await refreshAnalytics(env);
+            if (result.ok) {
+                console.log(`Traffic snapshot: wrote ${result.written} day(s)`);
+            } else {
+                console.error(`Traffic snapshot failed, nothing written: ${result.error}`);
+            }
+        })());
+    },
+
     async fetch(request, env) {
         const url = new URL(request.url);
 
