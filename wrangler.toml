@@ -23,3 +23,13 @@ bucket_name = "digitail-media"
 # Free plan allows 3 crons per Worker; this is the first.
 [triggers]
 crons = ["17 3 * * *"]
+
+# Cloudflare Access, shared with the studio hub.
+#
+# Neither value is a credential. The AUD tag is stamped into every token
+# Access issues and Cloudflare's own docs tell you to put it in your
+# validation script; the team domain appears in the address bar during
+# login. They must MATCH the hub's exactly - same application, same values.
+[vars]
+ACCESS_TEAM_DOMAIN = "autumn-recipe-b82c.cloudflareaccess.com"
+ACCESS_AUD = "89b16d953df151a6b1f0c82fcdf13fecd0bb783507a67b551081dc8da1f9cee1"

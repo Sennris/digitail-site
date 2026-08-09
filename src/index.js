@@ -295,7 +295,7 @@ async function handleAuth(request, env, parts) {
     if (action === 'me') {
         const session = await requireAuth(request, env);
         return session
-            ? json({ loggedIn: true, email: session.email }, 200, NO_CACHE)
+            ? json({ loggedIn: true, email: session.email, viaAccess: !!session.viaAccess }, 200, NO_CACHE)
             : json({ loggedIn: false }, 200, NO_CACHE);
     }
 
@@ -307,6 +307,15 @@ async function handleAuth(request, env, parts) {
         if (request.method !== 'POST') return fail('POST required', 405);
         const session = await requireAuth(request, env);
         if (!session) return fail('Not logged in', 401);
+
+        // An Access login has no cookie of ours to slide, and issuing
+        // one would mint a session with a null user id that outlives
+        // the Access session it was standing in for.
+        if (session.viaAccess) {
+            return new Response(JSON.stringify({ ok: true, viaAccess: true }), {
+                status: 200, headers: { ...NO_CACHE },
+            });
+        }
 
         const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
         return new Response(JSON.stringify({ ok: true }), {
@@ -726,6 +735,15 @@ export default {
                 || (page.status >= 300 && page.status < 400);
 
             if (!isDocument || bodyless) return page;
+
+            // Nothing to slide for an Access login - Cloudflare owns
+            // that session. Still no-store, because the page it just
+            // served depends on who asked for it.
+            if (session.viaAccess) {
+                const viaAccessPage = new Response(page.body, page);
+                viaAccessPage.headers.set('Cache-Control', 'no-store');
+                return viaAccessPage;
+            }
 
             const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
             const withCookie = new Response(page.body, page);

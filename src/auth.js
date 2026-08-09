@@ -21,6 +21,8 @@ const ITERATIONS = 8000;
 // session dies within this window. The cookie itself has no Max-Age, so
 // it also does not survive the browser closing.
 const IDLE_MINUTES = 15;
+import { identify } from './access.js';
+
 const COOKIE_NAME = 'dt_session';
 
 const enc = new TextEncoder();
@@ -168,7 +170,54 @@ export function getCookie(request) {
 
 /* ---------- request guard ---------- */
 
+/**
+ * Cloudflare Access identity, mapped to the studio hub's people table.
+ *
+ * Returns a session-shaped object, or null - and null means "not this
+ * way", NOT "denied". The caller falls through to the password login.
+ *
+ * Being on the team is not enough. can_edit_site is a separate power
+ * from being a director: approving hours is a financial
+ * responsibility, publishing to the public is an editorial one, and
+ * the only way to let someone write a devlog should not be to also let
+ * them sign off their colleagues' funding hours.
+ */
+async function accessSession(request, env) {
+    // Unconfigured means this route simply does not exist. It must
+    // never mean "let them in".
+    if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) return null;
+
+    const identity = await identify(request, env);
+    if (!identity) return null;
+
+    let person;
+    try {
+        person = await env.DB
+            .prepare('SELECT id, email, can_edit_site FROM people WHERE email = ? AND active = 1')
+            .bind(identity.email).first();
+    } catch {
+        // The people table lives in the hub's migrations. If it is
+        // missing or the database hiccups, fall back to the password
+        // login rather than locking her out of her own website.
+        return null;
+    }
+
+    if (!person || !person.can_edit_site) return null;
+
+    return { userId: null, email: person.email, personId: person.id, viaAccess: true };
+}
+
 export async function requireAuth(request, env) {
+    // Cloudflare Access first. Once this is proven, the password login
+    // below gets deleted along with hashPassword, verifyPassword,
+    // createSession, readSession, the cookies and session-guard.js.
+    const viaAccess = await accessSession(request, env);
+    if (viaAccess) return viaAccess;
+
+    // The site's own password login. Being retired, kept for now as
+    // the way back in if Access is ever misconfigured - though the
+    // real recovery is removing the /admin destination from the Access
+    // application, which takes one click in the dashboard.
     if (!env.SESSION_SECRET) return null;
     return readSession(getCookie(request), env.SESSION_SECRET);
 }

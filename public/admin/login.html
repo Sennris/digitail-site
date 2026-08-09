@@ -125,6 +125,24 @@
     </div>
 
     <script>
+    // If Cloudflare Access has already signed this person in, there is no
+    // password to ask for. Bounce them straight through rather than showing
+    // a form they do not need and may not have a password for.
+    //
+    // Deliberately fails OPEN to the form: if this check errors the worst
+    // outcome is seeing a login box unnecessarily, whereas hanging here
+    // would strand somebody who genuinely does need to type a password.
+    (function () {
+        fetch('/api/auth/session', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d && d.loggedIn && d.viaAccess) window.location.replace('/admin/');
+            })
+            .catch(function () { /* show the form */ });
+    }());
+    </script>
+
+    <script>
         const emailEl = document.getElementById('email');
         const passEl  = document.getElementById('password');
         const btn     = document.getElementById('submit');
