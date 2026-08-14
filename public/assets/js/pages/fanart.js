@@ -39,6 +39,40 @@
         return node;
     }
 
+    /* ---------- reveal on scroll ---------- */
+
+    /*
+     * ⚠️ THIS RUNS UNCONDITIONALLY, AND IT MUST.
+     *
+     * core.css sets .fade-in-section to `opacity: 0; visibility: hidden`
+     * and only .is-visible brings it back. So anything carrying that
+     * class is INVISIBLE AND UNCLICKABLE until this observer reaches it.
+     *
+     * It used to live at the bottom of the gallery fetch's success path,
+     * which meant an empty gallery - the state this page is in until the
+     * first piece is published - returned early, never created the
+     * observer, and left the submission form completely gone from the
+     * page. Nothing in the test suite could see it: the form was in the
+     * markup, the script had every string it was supposed to have, and
+     * the page was still broken.
+     *
+     * The reveal has nothing to do with the gallery data. Keep it out
+     * here where no fetch result can skip it.
+     */
+    var revealer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) entry.target.classList.add('is-visible');
+        });
+    }, { threshold: 0.1 });
+
+    function reveal(root) {
+        (root || document).querySelectorAll('.fade-in-section').forEach(function (node) {
+            revealer.observe(node);
+        });
+    }
+
+    reveal();
+
     /* ---------- the gallery ---------- */
 
     var grid = document.getElementById('fanart-grid');
@@ -109,15 +143,9 @@
             items.forEach(function (item, index) {
                 grid.appendChild(buildPiece(item, index));
             });
-
-            var observer = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) entry.target.classList.add('is-visible');
-                });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.fade-in-section').forEach(function (node) {
-                observer.observe(node);
-            });
+            // The cards did not exist when reveal() first ran, so they
+            // get picked up here. Observing a node twice is harmless.
+            reveal(grid);
         })
         .catch(function () {
             if (grid) {

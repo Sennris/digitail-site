@@ -376,6 +376,53 @@ await check('outbound credit links carry noopener', async () => {
     return /rel\s*=\s*'noopener/.test(fn.slice(0, 2000));
 });
 
+await check('THE REVEAL RUNS BEFORE THE FETCH, SO NO RESULT CAN SKIP IT', async () => {
+    // THE BUG THIS EXISTS FOR, shipped 13 Aug 2026 and found by Cat:
+    // core.css makes .fade-in-section `opacity: 0; visibility: hidden`
+    // until .is-visible lands. The observer that adds it used to sit at
+    // the end of the gallery fetch's success path, AFTER an early return
+    // for an empty gallery - so on a page with nothing published yet,
+    // the observer never ran and the submission form was invisible and
+    // unclickable. Every other test in this file passed while it was
+    // broken: the form was in the markup and the script had all the
+    // right strings in it.
+    const revealAt = pageJsCode.indexOf('\n    reveal();');
+    const fetchAt = pageJsCode.indexOf("fetch('/api/content/fanArt')");
+    if (revealAt === -1) return 'there is no unconditional reveal() call';
+    if (fetchAt === -1) return 'the gallery fetch has gone';
+    return revealAt < fetchAt
+        || 'the reveal happens inside the fetch, so an empty gallery hides the form';
+});
+
+await check('no observer is created inside the fetch result handler', async () => {
+    const at = pageJsCode.indexOf(".then(function (items)");
+    if (at === -1) return 'the gallery handler has gone';
+    const handler = pageJsCode.slice(at, pageJsCode.indexOf('.catch(', at));
+    return !handler.includes('new IntersectionObserver')
+        || 'the reveal has moved back inside the fetch';
+});
+
+await check('newly rendered cards are handed to the reveal', async () => {
+    // The other half of the same bug. Cards built after reveal() first
+    // ran were never observed, so they would render into the page and
+    // stay at opacity 0 forever - visible in devtools, invisible to a
+    // person, and passing every other check in this file.
+    const at = pageJsCode.indexOf(".then(function (items)");
+    if (at === -1) return 'the gallery handler has gone';
+    const handler = pageJsCode.slice(at, pageJsCode.indexOf('.catch(', at));
+    return /reveal\(\s*grid\s*\)/.test(handler)
+        || 'the cards are rendered but never revealed';
+});
+
+await check('every hidden-until-revealed section is actually reachable', async () => {
+    // Anything carrying fade-in-section without is-visible in the markup
+    // depends entirely on the script to become visible at all.
+    const sections = pageHtmlCode.match(/class="[^"]*fade-in-section[^"]*"/g) || [];
+    const needsScript = sections.filter((c) => !c.includes('is-visible'));
+    return needsScript.length === 0 || pageJsCode.includes('function reveal(')
+        || `${needsScript.length} section(s) can never appear`;
+});
+
 await check('the form has a Turnstile widget on it', async () => {
     return pageHtmlCode.includes('cf-turnstile')
         && pageHtmlCode.includes('challenges.cloudflare.com/turnstile');

@@ -191,6 +191,17 @@ mutate "outbound credit links lose noopener" public/assets/js/pages/fanart.js \
   "            link.rel = 'noopener noreferrer nofollow';" \
   "            link.rel = 'nofollow';"
 
+mutate "THE REVEAL GOES BACK INSIDE THE FETCH (the invisible form bug)" public/assets/js/pages/fanart.js \
+  "    reveal();
+
+    /* ---------- the gallery ---------- */" \
+  "
+    /* ---------- the gallery ---------- */"
+
+mutate "the reveal stops picking up newly rendered cards" public/assets/js/pages/fanart.js \
+  "            reveal(grid);" \
+  "            void grid;"
+
 mutate "the Turnstile widget is never reset" public/assets/js/pages/fanart.js \
   "                    if (window.turnstile) window.turnstile.reset();
                     return;" \
