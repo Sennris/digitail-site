@@ -16,7 +16,11 @@ import { handleUpload, handleList, handleDelete, serveMedia } from './media.js';
 import {
     handleSubscribe, handleUnsubscribe, handleSubscriberList,
     handleSubscriberExport, handleSubscriberSync, newsletterHealth,
+    verifyTurnstile,
 } from './newsletter.js';
+import {
+    handleFanArtSubmit, handleSubmissionList, handleSubmissionUpdate, handleFanArtPublish,
+} from './fanart.js';
 import { readAnalytics, refreshAnalytics, toCsv } from './analytics.js';
 
 // Not for /api/content/* - see the GET handler. Caching content reads meant
@@ -273,6 +277,35 @@ async function getFeaturedGame(db) {
     return getSetting(db, 'game');
 }
 
+/**
+ * The PUBLISHED gallery only.
+ *
+ * This function can see the `fan_art` table and nothing else. The
+ * submissions table - which carries contact details and the consent
+ * record - is not reachable from here at all, which is why they were
+ * built as two tables rather than one with a status column. There is no
+ * WHERE clause to forget.
+ *
+ * permission_note is deliberately NOT returned. It is the studio's own
+ * record of where permission came from, not something the public needs.
+ */
+async function getFanArt(db) {
+    try {
+        const { results } = await db.prepare(
+            'SELECT * FROM fan_art WHERE enabled = 1 ORDER BY position, id').all();
+        return (results || []).map((r) => ({
+            id: r.id,
+            artistName: r.artist_name || '',
+            creditLink: r.credit_link || '',
+            title: r.title || '',
+            image: r.image || '',
+            altText: r.alt_text || '',
+        }));
+    } catch {
+        return null;   // migration 0014 has not been run yet
+    }
+}
+
 const READERS = {
     devlogs: getDevlogs, foxes: getFoxes, team: getTeam,
     social: getSocial, tags: getTags, games: getGames,
@@ -281,6 +314,7 @@ const READERS = {
     pressItems: getPressItems,
     pressAssets: getPressAssets,
     mascots: getMascots,
+    fanArt: getFanArt,
     homepage: (db) => getSetting(db, 'homepage'),
     game: (db) => getFeaturedGame(db),
 };
@@ -530,6 +564,39 @@ async function handleApi(request, env, url) {
         } catch (e) {
             return fail(`Unsubscribe failed: ${e.message}`, 500);
         }
+    }
+
+    if (parts[1] === 'fanart') {
+        // PUBLIC. The only unauthenticated write on this site besides the
+        // newsletter, and it reuses the same Turnstile check rather than
+        // inventing a second way to tell a person from a script.
+        if (parts[2] === 'submit') {
+            try {
+                return await handleFanArtSubmit(request, env, verifyTurnstile);
+            } catch (e) {
+                return fail(`Could not take your submission: ${e.message}`, 500);
+            }
+        }
+
+        // EVERYTHING BELOW IS ADMIN. The gate sits here, above all of
+        // them, so a route added later cannot be added outside it.
+        const session = await requireAuth(request, env);
+        if (!session) return fail('Not logged in', 401);
+
+        try {
+            if (parts[2] === 'submissions' && !parts[3] && request.method === 'GET') {
+                return await handleSubmissionList(env);
+            }
+            if (parts[2] === 'submissions' && parts[3] && request.method === 'PATCH') {
+                return await handleSubmissionUpdate(request, env, parts[3]);
+            }
+            if (parts[2] === 'publish' && request.method === 'POST') {
+                return await handleFanArtPublish(request, env);
+            }
+        } catch (e) {
+            return fail(`Fan art request failed: ${e.message}`, 500);
+        }
+        return fail('Unknown fan art action', 404);
     }
 
     if (parts[1] === 'subscribers') {

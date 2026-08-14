@@ -40,6 +40,7 @@
                 <button class="tab-button" onclick="switchTab('team', this)">👥 Team</button>
                 <button class="tab-button" onclick="switchTab('foxes', this)">🦊 Foxes</button>
                 <button class="tab-button" onclick="switchTab('social', this)">📱 Social Media</button>
+                <button class="tab-button" onclick="switchTab('fanart', this)">🎨 Fan Art</button>
             </div>
             <div class="side-group">
                 <div class="side-label">Audience</div>
@@ -284,6 +285,28 @@
         </div>
 
         <!-- SUBSCRIBERS TAB -->
+        <div id="fanart-tab" class="tab-content">
+            <h2>Fan Art</h2>
+
+            <h3>Waiting to be looked at</h3>
+            <p class="muted">
+                Submissions from the website form. Open the art, and if you want it
+                on the site: upload the image on the Media tab, paste its path in,
+                write a line of alt text, and press Publish. The artist's name and
+                link come across on their own &mdash; they are never retyped, and
+                they cannot be edited afterwards.
+            </p>
+            <div id="fanart-queue"></div>
+
+            <h3>On the site</h3>
+            <p class="muted">
+                Unticking <em>Showing on the site</em> takes a piece down straight
+                away and keeps the record of who sent it and what they agreed to.
+                That is how to handle a takedown request.
+            </p>
+            <div id="fanart-published"></div>
+        </div>
+
         <div id="subscribers-tab" class="tab-content">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -381,6 +404,7 @@
     <script src="admin-homepage-sections.js"></script>
     <script src="admin-subscribers.js"></script>
     <script src="admin-traffic.js"></script>
+    <script src="admin-fanart.js"></script>
     <script src="session-guard.js"></script>
 </body>
 </html>

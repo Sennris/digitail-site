@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fan art from the Digi Tail community. Send us yours and we will credit you.">
+    <link rel="canonical" href="https://www.digitailstudios.com/fanart">
+
+    <!-- Link previews: Discord, Bluesky, Slack, Mastodon, etc -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Digi Tail Studios">
+    <meta property="og:locale" content="en_NZ">
+    <meta property="og:locale:alternate" content="mi_NZ">
+    <meta property="og:url" content="https://www.digitailstudios.com/fanart">
+    <meta property="og:title" content="Fan Art | Digi Tail Studios">
+    <meta property="og:description" content="Fan art from the Digi Tail community. Send us yours and we will credit you.">
+    <meta property="og:image" content="https://www.digitailstudios.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Digi Tail Studios: indie game development from Aotearoa">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fan Art | Digi Tail Studios">
+    <meta name="twitter:description" content="Fan art from the Digi Tail community. Send us yours and we will credit you.">
+    <meta name="twitter:image" content="https://www.digitailstudios.com/og-image.png">
+
+    <meta name="theme-color" content="#1D0D12">
+    <title>Fan Art | Digi Tail Studios</title>
+    
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/core.css">
+    <link rel="stylesheet" href="/assets/css/pages/fanart.css">
+</head>
+
+<body class="lang-en">
+
+<a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main">
+        <a class="site-nav__brand" href="index.html"><span aria-hidden="true">🦊</span> Digi Tail</a>
+        <a class="nav-link" href="index.html">home</a>
+        <a class="nav-link" href="games.html">games</a>
+        <a class="nav-link" href="devlogs.html">devlogs</a>
+        <a class="nav-link" href="foxes.html">foxes</a>
+        <a class="nav-link" href="social.html">social</a>
+        <a class="nav-link" href="fanart.html" aria-current="page">fan art</a>
+        <a class="nav-link" href="about.html">about</a>
+        <a class="nav-link" href="press.html">press</a>
+        <button id="lang-toggle-btn" class="btn-rugged nav-lang"><span class="en">Te Reo Māori</span><span class="mi">English</span>
+        </button>
+    </nav>
+
+    <main id="main" class="container">
+
+        <header class="hero-section fade-in-section is-visible">
+            <h1>
+                <span class="en">Fan Art</span>
+                <span class="mi">Toi Kaiwhaiwhai</span>
+            </h1>
+            <p>
+                <span class="en">// Art people have made of our games and our foxes, shown here with permission and credited to whoever made it. If you have made something, we would love to see it.</span>
+                <span class="mi">// He toi i hangaia e te iwi mō ā mātou kēmu me ō mātou rēpokia, e whakaatuhia ana i konei ma te whakaaetanga.</span>
+            </p>
+        </header>
+
+        <section class="fanart-grid stagger" id="fanart-grid" aria-label="Fan art gallery"></section>
+
+        <section class="fanart-submit fade-in-section" id="send-yours">
+            <h2>
+                <span class="en">Send us yours</span>
+                <span class="mi">Tukuna mai āu</span>
+            </h2>
+            <p>
+                <span class="en">Fill this in and paste a link to your art &mdash; a post, a gallery, a Drive link, anything we can open. Someone from the studio will take a look, and if it goes up we will use exactly the name and link you give below.</span>
+                <span class="mi">Whakakīa tēnei, ka whakapiri mai he hono ki tāu toi. Ka titiro tētahi o te taupuni.</span>
+            </p>
+
+            <form id="fanart-form" action="/api/fanart/submit" method="POST">
+                <label>
+                    <span class="en">How should we credit you?</span><span class="mi">Me pēhea te whakawhetai ki a koe?</span>
+                    <input type="text" id="fa-name" name="artistName" maxlength="80" required
+                           placeholder="Your name or handle, however you want it to appear">
+                </label>
+                <label>
+                    <span class="en">Link to your art</span><span class="mi">Hono ki tāu toi</span>
+                    <input type="url" id="fa-art" name="artUrl" maxlength="500" required
+                           placeholder="https://">
+                </label>
+                <label>
+                    <span class="en">Link to you (optional)</span><span class="mi">Hono ki a koe (kōwhiringa)</span>
+                    <input type="url" id="fa-link" name="creditLink" maxlength="500"
+                           placeholder="https:// &mdash; where people can find more of your work">
+                </label>
+                <label>
+                    <span class="en">Title (optional)</span><span class="mi">Taitara (kōwhiringa)</span>
+                    <input type="text" id="fa-title" name="title" maxlength="120">
+                </label>
+                <label>
+                    <span class="en">Email (optional)</span><span class="mi">Īmēra (kōwhiringa)</span>
+                    <input type="email" id="fa-email" name="contactEmail" maxlength="254"
+                           placeholder="Only so we can tell you when it goes up">
+                </label>
+                <label>
+                    <span class="en">Anything you want to tell us (optional)</span><span class="mi">He kōrero anō (kōwhiringa)</span>
+                    <textarea id="fa-note" name="note" rows="3" maxlength="1000"></textarea>
+                </label>
+
+                <!-- The wording here is duplicated in CONSENT_TEXT in
+                     src/fanart.js, and the SERVER's copy is the one that
+                     gets stored against the submission. If you change one,
+                     change both - tools/test_fanart.mjs fails if they
+                     drift apart. -->
+                <label class="fanart-consent">
+                    <input type="checkbox" id="fa-consent" name="consent" required>
+                    <span>This is my own artwork, and I give Digi Tail Studios permission to
+                    show it on their website with the credit above. I understand I can
+                    ask for it to be taken down at any time.</span>
+                </label>
+
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAEG1e3La0sGXIWkv" data-action="fanart-submit"></div>
+
+                <button type="submit" class="submit-btn">
+                    <span class="en">Send it in</span>
+                    <span class="mi">Tukuna</span>
+                </button>
+                <p class="form-status" id="fanart-status" role="status" aria-live="polite"></p>
+                <p class="form-smallprint">
+                    <span class="en">We only show art with permission, and we always credit it. If yours is already up and you would like it changed or taken down, email us and we will. <a href="/privacy.html">How we handle your details</a>.</span>
+                    <span class="mi">Ka whakaatuhia anake te toi me te whakaaetanga. <a href="/privacy.html">Me pēhea mātou e tiaki ai i ō taipitopito</a>.</span>
+                </p>
+            </form>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Digi Tail Studios. 
+            <span class="en">Stay wild.</span>
+            <span class="mi">Kia mohoao tonu.</span>
+            <span class="en"> · <a href="/privacy.html" class="footer-privacy">Privacy</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Studio login</a></span><span class="mi"> · <a href="/privacy.html" class="footer-privacy">Tūmataiti</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Takiuru</a></span>
+        </p>
+    </footer>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="/assets/js/pages/fanart.js"></script>
+    <script src="/assets/js/lang-attr.js"></script>
+    <script src="/assets/js/a11y.js"></script>
+    <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f4106eee0d174f5496955c154fff782d"}'></script>
+</body>
+</html>

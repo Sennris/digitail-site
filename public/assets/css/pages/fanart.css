@@ -1,0 +1,77 @@
+/* fanart.html
+   Layout notes: the gallery is an asymmetric drift stack rather than a
+   uniform grid, the same shape games.html uses. Fan art arrives in wildly
+   different aspect ratios, and a strict grid either crops it or leaves
+   ragged gaps - letting every third card sit lower absorbs that instead
+   of fighting it. */
+
+.fanart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 2rem 1.75rem;
+    align-items: start;
+    margin: 3rem 0 4rem;
+}
+
+.fanart-card { margin: 0; }
+.fanart-card--drift { transform: translateY(1.8rem); }
+
+.fanart-frame {
+    border: var(--edge, 2px solid currentColor);
+    background: rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 9rem;
+}
+/* Never crop somebody's artwork to fit a box. The frame takes the shape
+   of what is in it. */
+.fanart-frame img { display: block; width: 100%; height: auto; }
+
+.fanart-credit { margin-top: 0.7rem; font-size: 0.9rem; line-height: 1.45; }
+.fanart-title { display: block; font-weight: 700; }
+.fanart-by { display: block; opacity: 0.85; }
+.fanart-by a { text-decoration: underline; }
+
+.empty-note { opacity: 0.75; font-style: italic; }
+
+/* ---- the submission form ---- */
+
+.fanart-submit { max-width: 34rem; margin: 0 0 4rem; }
+.fanart-submit label { display: block; margin: 0 0 1rem; }
+.fanart-submit label > span { display: block; margin-bottom: 0.3rem; font-weight: 600; }
+.fanart-submit input,
+.fanart-submit textarea {
+    width: 100%;
+    font: inherit;
+    padding: 0.55rem 0.65rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+    border: 2px solid currentColor;
+}
+.fanart-submit textarea { resize: vertical; }
+
+/* The consent tick is the one control on this page that has legal
+   weight, so it is deliberately NOT styled down into a quiet footnote
+   the way small print usually is. */
+.fanart-consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    align-items: start;
+    margin: 1.5rem 0;
+    padding: 0.9rem 1rem;
+    border: 2px dashed currentColor;
+}
+.fanart-consent input { width: auto; margin-top: 0.2rem; }
+.fanart-consent span { font-weight: 400; margin: 0; }
+
+.form-status.is-error { font-weight: 700; }
+
+@media (max-width: 640px) {
+    /* The drift is a desktop nicety. In one column it just looks like a
+       card that failed to line up. */
+    .fanart-card--drift { transform: none; }
+    .fanart-grid { gap: 1.5rem; }
+}

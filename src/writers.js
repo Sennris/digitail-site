@@ -466,6 +466,48 @@ export async function putSetting(db, key, value) {
 }
 
 
+/**
+ * The published gallery.
+ *
+ * NOTE WHAT IS NOT HERE: artist_name and credit_link are NOT taken from
+ * the admin's payload on an update. They were carried across from the
+ * submission when it was published and they stay put - the panel can
+ * reorder, retitle, fix alt text and switch a piece off, but it cannot
+ * quietly rewrite whose work it is. permission_note and submission_id
+ * are the record of where it came from and are equally untouchable.
+ */
+export async function putFanArt(db, items) {
+    const rows = Array.isArray(items) ? items : [];
+    const statements = rows.map((item, index) => db.prepare(
+        `UPDATE fan_art
+            SET title = ?, image = ?, alt_text = ?, enabled = ?, position = ?,
+                updated_at = datetime('now')
+          WHERE id = ?`,
+    ).bind(
+        String(item.title || '').slice(0, 120),
+        String(item.image || '').slice(0, 500),
+        String(item.altText || '').slice(0, 120),
+        item.enabled === false ? 0 : 1,
+        index + 1,
+        Number(item.id || 0),
+    ));
+
+    // Removing a piece entirely is a delete, and it is the only delete
+    // here. A takedown normally goes through `enabled` instead, which
+    // keeps the record of who submitted it and what they agreed to.
+    const keep = rows.map((i) => Number(i.id || 0)).filter(Boolean);
+    if (keep.length) {
+        statements.push(db.prepare(
+            `DELETE FROM fan_art WHERE id NOT IN (${keep.map(() => '?').join(',')})`,
+        ).bind(...keep));
+    } else {
+        statements.push(db.prepare('DELETE FROM fan_art'));
+    }
+
+    if (statements.length) await db.batch(statements);
+    return { ok: true, count: rows.length };
+}
+
 export const WRITERS = {
     devlogs:  (db, body) => putDevlogs(db, body),
     foxes:    (db, body) => putFoxes(db, body),
@@ -478,6 +520,7 @@ export const WRITERS = {
     pressItems:  (db, body) => putPressItems(db, body),
     pressAssets: (db, body) => putPressAssets(db, body),
     mascots:   (db, body) => putMascots(db, body),
+    fanArt:    (db, body) => putFanArt(db, body),
     homepage: (db, body) => putSetting(db, 'homepage', body),
     // Kept so the old endpoint still answers, but the admin no longer writes
     // to it. putGames owns this blob now - see the note there.

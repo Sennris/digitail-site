@@ -41,6 +41,11 @@
         <priority>0.5</priority>
     </url>
     <url>
+        <loc>https://www.digitailstudios.com/fanart</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
         <loc>https://www.digitailstudios.com/privacy</loc>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
