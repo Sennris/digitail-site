@@ -239,10 +239,14 @@ function initializeForms() {
             <div class="form-group">
                 <label>Display Date</label>
                 <input type="text" id="devlog-display-date" placeholder="e.g., May 24, 2026 - Robson" required>
+                <div class="helper-text">What visitors read under the title. Free text, so it can
+                carry a name or a note as well as a date. Changing it never moves the post.</div>
             </div>
             <div class="form-group">
                 <label>Sort Date</label>
                 <input type="date" id="devlog-sort-date" required>
+                <div class="helper-text">Decides the order posts appear in, newest first. Visitors
+                never see this one.</div>
             </div>
             <div class="form-group">
                 <label>Tags</label>

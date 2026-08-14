@@ -160,6 +160,23 @@
             </div>`;
     }
 
+    /* The holding message only appears on the game page while that game has
+       NO sections, which is written on the page but is easy to read as a
+       description rather than a condition - somebody typed one, saw nothing
+       change, and reported the field as dead. It now says which of the two
+       states it is in right now. Re-rendered with the rest of the editor,
+       so adding or removing a section updates it on the spot. */
+    function holdingState(g) {
+        const count = (g.features || []).length;
+        if (!count) {
+            return 'Showing on the game page now, because this game has no sections yet. '
+                + 'Leave it blank to show nothing.';
+        }
+        return `<strong>Not showing right now.</strong> This game has ${count} `
+            + `section${count === 1 ? '' : 's'}, and the holding message only stands in `
+            + 'while there are none. Remove the sections and it comes back.';
+    }
+
     function editorHTML(g) {
         if (!g) {
             return `<div class="card">
@@ -284,7 +301,7 @@
                 <label>Holding message (English)</label>
                 <textarea rows="2" data-game-field="noteEn"
                           placeholder="More about this one soon.">${esc(g.noteEn)}</textarea>
-                <div class="helper-text">Shown in place of the sections while there are none. Leave blank to show nothing.</div>
+                <div class="helper-text">${holdingState(g)}</div>
             </div>
             <div class="form-group">
                 <label>Holding message (Te Reo Māori)</label>

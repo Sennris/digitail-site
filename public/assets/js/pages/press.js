@@ -79,6 +79,39 @@ function copyable(text) {
     return wrap;
 }
 
+// Only http and https survive, and it is the URL parser that decides, not
+// a regular expression - the same shape src/fanart.js uses for links a
+// stranger sends us. A value that is not a web address comes back empty
+// and stays plain text.
+function safeUrl(value) {
+    const text = String(value == null ? '' : value).trim();
+    if (!text) return '';
+    let parsed;
+    try { parsed = new URL(text); } catch { return ''; }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+    return parsed.href;
+}
+
+function looksLikeEmail(value) {
+    const text = String(value == null ? '' : value).trim();
+    return /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(text) ? text : '';
+}
+
+// A journalist reading the factsheet should be able to click the website
+// rather than select and copy it. The row used to be plain text whatever
+// was in it, which is what the team reported. The label still comes from
+// us; only the value is ever hand-typed, and it is set with textContent.
+function linkedValue(value) {
+    const href = safeUrl(value);
+    const email = href ? '' : looksLikeEmail(value);
+    if (!href && !email) return document.createTextNode(value);
+    const a = document.createElement('a');
+    a.href = href || ('mailto:' + email);
+    if (href) a.rel = 'noopener';
+    a.textContent = value;
+    return a;
+}
+
 function factRow(labelEn, labelMi, value) {
     if (!value) return null;
     const row = document.createElement('div');
@@ -86,7 +119,7 @@ function factRow(labelEn, labelMi, value) {
     row.appendChild(pair('dt', 'press-fact__label', labelEn, labelMi));
     const dd = document.createElement('dd');
     dd.className = 'press-fact__value';
-    dd.textContent = value;
+    dd.appendChild(linkedValue(value));
     row.appendChild(dd);
     return row;
 }
@@ -100,6 +133,29 @@ function factsheet(rows) {
     return dl;
 }
 
+// One Enter is a line break, two is a new paragraph. The credits are a
+// list of names typed one per line and every line ran together, because
+// only a BLANK line counted for anything. Built as text nodes and <br>
+// elements - nothing is interpolated into an HTML string.
+function linesInto(el, text) {
+    String(text).split('\n').forEach((line, i) => {
+        if (i) el.appendChild(document.createElement('br'));
+        el.appendChild(document.createTextNode(line));
+    });
+}
+
+function paraPair(en, mi) {
+    const p = document.createElement('p');
+    const e = document.createElement('span');
+    e.className = 'en';
+    linesInto(e, en || mi || '');
+    const m = document.createElement('span');
+    m.className = 'mi';
+    linesInto(m, mi || en || '');
+    p.append(e, m);
+    return p;
+}
+
 function prose(en, mi, withCopy) {
     if (!en && !mi) return null;
     const wrap = document.createElement('div');
@@ -110,7 +166,7 @@ function prose(en, mi, withCopy) {
         const enPara = (en || '').split(/\n\s*\n/)[i] || '';
         const miPara = (mi || '').split(/\n\s*\n/)[i] || '';
         if (!enPara && !miPara) return;
-        wrap.appendChild(pair('p', null, enPara, miPara));
+        wrap.appendChild(paraPair(enPara, miPara));
     });
     if (withCopy && en) wrap.appendChild(copyable(en));
     return wrap;
@@ -150,11 +206,18 @@ function itemList(allRows) {
             li.appendChild(pair('p', 'press-list__body', item.bodyEn, item.bodyMi));
         }
 
-        const meta = [item.source, item.dateLabel].filter(Boolean).join(' · ');
-        if (meta) {
+        // The award she added put its link in the Source box, which printed
+        // it as plain text. Each part is checked on its own so a web address
+        // anywhere in the line becomes clickable and everything else stays
+        // exactly as typed.
+        const metaBits = [item.source, item.dateLabel].filter(Boolean);
+        if (metaBits.length) {
             const m = document.createElement('p');
             m.className = 'press-list__meta';
-            m.textContent = meta;
+            metaBits.forEach((bit, i) => {
+                if (i) m.appendChild(document.createTextNode(' · '));
+                m.appendChild(linkedValue(bit));
+            });
             li.appendChild(m);
         }
         ul.appendChild(li);
@@ -443,13 +506,15 @@ function renderSwitcher(games, currentSlug) {
 function renderHeader(kit) {
     if (!kit) return;
     const h = document.getElementById('press-heading');
-    if (h && kit.headingEn) {
-        h.querySelector('.en').textContent = kit.headingEn;
+    if (h && (kit.headingEn || kit.headingMi)) {
+        h.querySelector('.en').textContent = kit.headingEn || kit.headingMi;
         h.querySelector('.mi').textContent = kit.headingMi || kit.headingEn;
     }
     const introEn = document.getElementById('press-intro-en');
     const introMi = document.getElementById('press-intro-mi');
-    if (introEn && kit.introEn) introEn.textContent = kit.introEn;
+    if (introEn && (kit.introEn || kit.introMi)) {
+        introEn.textContent = kit.introEn || kit.introMi;
+    }
     if (introMi && (kit.introMi || kit.introEn)) {
         introMi.textContent = kit.introMi || kit.introEn;
     }
@@ -497,10 +562,10 @@ Promise.all([
 
     if (game) {
         const h = document.getElementById('press-heading');
-        if (h && game.titleEn) {
-            h.querySelector('.en').textContent = game.titleEn;
+        if (h && (game.titleEn || game.titleMi)) {
+            h.querySelector('.en').textContent = game.titleEn || game.titleMi;
             h.querySelector('.mi').textContent = game.titleMi || game.titleEn;
-            document.title = game.titleEn + ' press kit | Digi Tail Studios';
+            document.title = (game.titleEn || game.titleMi) + ' press kit | Digi Tail Studios';
         }
     }
 

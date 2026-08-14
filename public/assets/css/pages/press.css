@@ -239,7 +239,8 @@
    (.press-switcher__link, .press-assets__link, .press-contact) was
    already styled, which is why only these showed up. */
 
-.press-list a {
+.press-list a,
+.press-factsheet a {
     color: var(--frozen-juniper);
     text-decoration: none;
     border-bottom: 2px solid currentColor;
@@ -247,14 +248,21 @@
 }
 
 .press-list a:hover,
-.press-list a:focus-visible {
+.press-list a:focus-visible,
+.press-factsheet a:hover,
+.press-factsheet a:focus-visible {
     background: rgba(93, 204, 202, 0.22);
 }
 
-.press-list a:focus-visible {
+.press-list a:focus-visible,
+.press-factsheet a:focus-visible {
     outline: 2px solid var(--frozen-juniper);
     outline-offset: 3px;
 }
+
+/* The factsheet is a two-column grid and a long URL has nowhere to break,
+   so on a phone it pushed the whole page sideways. */
+.press-fact__value a { overflow-wrap: anywhere; }
 
 /* The permission block is a juniper panel, so a juniper link inside it
    would be invisible. */

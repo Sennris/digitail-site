@@ -279,6 +279,27 @@ await check('the login page skips itself for an Access login', () => {
         || 'somebody signed in via Access would still be shown a password form';
 });
 
+// This setting is invisible, silently load-bearing, and the thing the
+// whole "delete the password login" step rests on. Without it the gate
+// below never runs, because a static file wins over the Worker. A later
+// tidy-up of wrangler.toml could quietly re-open the admin, so it gets a
+// test of its own. Comments are stripped above, so a commented-out copy
+// cannot answer for the real line.
+await check('the Worker runs first on /admin, the API and /media', () => {
+    const line = toml.split('\n').find((l) => /run_worker_first/.test(l));
+    if (!line) return 'run_worker_first is missing - downloads 404 and the admin gate never runs';
+    return (['"/admin"', '"/admin/*"', '"/api/*"', '"/media/*"'].every((p) => line.includes(p)))
+        || `run_worker_first is there but incomplete: ${line.trim()}`;
+});
+
+await check('/admin is listed separately from /admin/*', () => {
+    const line = toml.split('\n').find((l) => /run_worker_first/.test(l)) || '';
+    // A pattern ending in /* does not match its own parent. Listing only
+    // /admin/* leaves /admin itself served straight from storage.
+    return /"\/admin"/.test(line)
+        || 'only /admin/* is listed, so /admin itself still skips the Worker';
+});
+
 await check('the copied verifier says loudly that it is a copy', () => {
     const copy = readFileSync(join(ROOT, 'src/access.js'), 'utf8');
     return /IF YOU CHANGE ONE, CHANGE BOTH/.test(copy)

@@ -260,8 +260,16 @@ check('a download with no file behind it is dropped',
 
 const pressCss = readFileSync(join(ROOT, 'public/assets/css/pages/press.css'), 'utf8');
 check('links in the press lists are styled rather than browser blue',
-    /\.press-list a\s*\{[^}]*color:\s*var\(--frozen-juniper\)/.test(pressCss),
+    /\.press-list a\s*,?\s*(\.press-factsheet a\s*)?\{[^}]*color:\s*var\(--frozen-juniper\)/.test(pressCss),
     'core.css has no global anchor rule, so an unstyled link falls through to blue and purple');
+// 14 Aug: the factsheet was added to this rule and the anchored regex
+// above stopped matching, which is the fourth time an existing CSS test
+// has been weakened or broken by a later rule sharing its selector. Both
+// selectors are named here so removing EITHER one still fails.
+check('the factsheet links are styled by the same rule',
+    /\.press-factsheet a\s*\{[^}]*color:\s*var\(--frozen-juniper\)/
+        .test(pressCss.replace(/\.press-list a,\n/, '')),
+    'the website row would be a browser-blue link on a dark page');
 check('links inside the juniper permission panel switch to black',
     /\.press-section--highlight a\s*\{[^}]*color:\s*var\(--long-black\)/.test(
         pressCss.replace(/\.press-section--highlight \.press-list a,\n/, '')),

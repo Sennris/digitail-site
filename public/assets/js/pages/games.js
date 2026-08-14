@@ -115,17 +115,26 @@ function renderStack(games) {
     mount.querySelectorAll('.game-plank').forEach((el) => observer.observe(el));
 }
 
+// Both headings used to be written only if the ENGLISH one was filled in,
+// so a te reo heading saved on its own was thrown away and the page kept
+// the wording baked into games.html. That is exactly what happened: she
+// filled in the te reo box, left English empty, and the page did not
+// change. Each language now stands on its own, and either one fills in
+// for a blank other - the same fallback bilingual() and pair() already
+// use everywhere else on the site.
 function renderHeader(page) {
     if (!page) return;
     const title = document.getElementById('games-title');
-    if (title && page.titleEn) {
-        title.querySelector('.en').textContent = page.titleEn;
+    if (title && (page.titleEn || page.titleMi)) {
+        title.querySelector('.en').textContent = page.titleEn || page.titleMi;
         title.querySelector('.mi').textContent = page.titleMi || page.titleEn;
-        document.title = page.titleEn + ' | Digi Tail Studios';
+        document.title = (page.titleEn || page.titleMi) + ' | Digi Tail Studios';
     }
     const introEn = document.getElementById('games-intro-en');
     const introMi = document.getElementById('games-intro-mi');
-    if (introEn && page.introEn) introEn.textContent = page.introEn;
+    if (introEn && (page.introEn || page.introMi)) {
+        introEn.textContent = page.introEn || page.introMi;
+    }
     if (introMi && (page.introMi || page.introEn)) {
         introMi.textContent = page.introMi || page.introEn;
     }

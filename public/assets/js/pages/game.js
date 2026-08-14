@@ -26,12 +26,16 @@ langToggleBtn.addEventListener('click', () => {
 // fetch, or a field left blank in the admin, leaves whatever is already in
 // the HTML - so a blank field can never wipe the page.
 
+// Either language fills in for a blank other. Gating the English span on
+// the English value meant a te reo-only entry left the English span
+// showing whatever placeholder was baked into the page - the same fault
+// that hid the te reo games heading. One pattern, fixed everywhere.
 function setPair(enId, miId, en, mi) {
     const enEl = document.getElementById(enId);
     const miEl = document.getElementById(miId);
-    if (enEl && en) enEl.textContent = en;
+    if (enEl && (en || mi)) enEl.textContent = en || mi;
     if (miEl && (mi || en)) miEl.textContent = mi || en;
-    return Boolean(en);
+    return Boolean(en || mi);
 }
 
 function renderTrailer(url) {
@@ -131,16 +135,16 @@ function render(game) {
     if (!game) return;
 
     const titleEl = document.getElementById('game-title');
-    if (titleEl && game.titleEn) {
-        titleEl.querySelector('.en').textContent = game.titleEn;
+    if (titleEl && (game.titleEn || game.titleMi)) {
+        titleEl.querySelector('.en').textContent = game.titleEn || game.titleMi;
         titleEl.querySelector('.mi').textContent = game.titleMi || game.titleEn;
-        document.title = game.titleEn + ' | Digi Tail Studios';
+        document.title = (game.titleEn || game.titleMi) + ' | Digi Tail Studios';
     }
 
     setPair('game-tagline-en', 'game-tagline-mi', game.taglineEn, game.taglineMi);
 
     const statusEl = document.getElementById('game-status');
-    if (statusEl && game.statusEn) {
+    if (statusEl && (game.statusEn || game.statusMi)) {
         setPair('game-status-en', 'game-status-mi', game.statusEn, game.statusMi);
         statusEl.hidden = false;
     }

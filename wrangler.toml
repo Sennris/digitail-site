@@ -7,6 +7,11 @@ compatibility_date = "2026-08-01"
 directory = "./public"
 binding = "ASSETS"
 not_found_handling = "404-page"
+# Run the Worker first on these paths. Without this, a link click to a
+# download or an API path is answered by the asset layer with the 404
+# page, and the admin gate in src/index.js never runs at all.
+# /admin is listed on its own because /admin/* does not match it.
+run_worker_first = [ "/admin", "/admin/*", "/api/*", "/media/*" ]
 
 # Content database
 [[d1_databases]]

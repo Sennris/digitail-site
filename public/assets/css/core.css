@@ -191,6 +191,18 @@ body.lang-mi .en { display: none; }
     border-color: var(--frozen-juniper);
 }
 
+/* The "you are here" colour is juniper and the hover background is also
+   juniper, and those two rules carry IDENTICAL specificity - so on the page
+   you are already on, hovering its own link put juniper text on a juniper
+   block and the word disappeared. Reported by the team 14 Aug 2026.
+   Named as its own rule rather than fixed by reordering: source order is
+   the kind of thing a later tidy-up silently undoes. Hover only - a
+   keyboard focus does not paint the background, so black text there would
+   swap one invisible state for another. */
+.site-nav a.nav-link[aria-current="page"]:hover {
+    color: var(--long-black);
+}
+
 
 /* --------------------------------------------------------------------------
    6. TICKER
