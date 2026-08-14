@@ -1,16 +1,13 @@
 /**
  * Digi Tail Studios - Worker
  *
- *   /api/content/*   GET is public, PUT requires a login
- *   /api/auth/*      login, logout, session check
- *   /admin/*         redirected to the login page without a session
+ *   /api/content/*   GET is public, PUT requires a Cloudflare Access login
+ *   /api/auth/me     who the Access token says you are
+ *   /admin/*         refused, with a reason, without an Access login
  *   everything else  served from /public
  */
 
-import {
-    hashPassword, verifyPassword, createSession, requireAuth,
-    sessionCookie, clearCookie, isRateLimited, logAttempt,
-} from './auth.js';
+import { adminIdentity, requireAuth } from './auth.js';
 import { WRITERS } from './writers.js';
 import { handleUpload, handleList, handleDelete, serveMedia } from './media.js';
 import {
@@ -322,197 +319,24 @@ const READERS = {
 
 /* ================= auth routes ================= */
 
-async function handleAuth(request, env, parts) {
-    const action = parts[2];
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+async function handleAuth(request, env) {
+    const action = new URL(request.url).pathname.split('/').filter(Boolean)[2];
 
-    if (action === 'me') {
-        const session = await requireAuth(request, env);
-        return session
-            ? json({ loggedIn: true, email: session.email, viaAccess: !!session.viaAccess }, 200, NO_CACHE)
-            : json({ loggedIn: false }, 200, NO_CACHE);
-    }
-
-    // The admin panel pings this while its tab is open. Each ping trades
-    // the current cookie for a fresh one, sliding the 15-minute window
-    // along. Stop pinging (tab closed, walked away) and the session
-    // expires on its own.
-    if (action === 'keepalive') {
-        if (request.method !== 'POST') return fail('POST required', 405);
-        const session = await requireAuth(request, env);
-        if (!session) return fail('Not logged in', 401);
-
-        // An Access login has no cookie of ours to slide, and issuing
-        // one would mint a session with a null user id that outlives
-        // the Access session it was standing in for.
-        if (session.viaAccess) {
-            return new Response(JSON.stringify({ ok: true, viaAccess: true }), {
-                status: 200, headers: { ...NO_CACHE },
-            });
-        }
-
-        const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
-        return new Response(JSON.stringify({ ok: true }), {
-            status: 200,
-            headers: { ...NO_CACHE, 'Set-Cookie': sessionCookie(fresh) },
-        });
-    }
-
-    // One-time account creation. Refuses once an admin exists, so it
-    // cannot be used to add a second account later.
+    // The only auth route left. The admin panel asks it who it is
+    // talking to, and session-guard.js asks it whether an unexpected 401
+    // really means the Access session has ended.
     //
-    // It also refuses once the site has EVER been set up, tracked by a
-    // flag in settings. Checking admin_users alone was not enough:
-    // re-running 0003_auth.sql, or any other route to an empty table,
-    // silently reopened this endpoint to the public. settings is not
-    // touched by that migration, so the flag outlives the accident.
-    // To deliberately reset a lost password, clear both:
-    //   DELETE FROM admin_users;
-    //   DELETE FROM settings WHERE key = 'admin_bootstrapped';
-    if (action === 'setup') {
-        const existing = await env.DB
-            .prepare('SELECT COUNT(*) AS n FROM admin_users').first();
-        const bootstrapped = await env.DB
-            .prepare("SELECT 1 AS n FROM settings WHERE key = 'admin_bootstrapped'")
-            .first();
-
-        const alreadySetUp = (existing?.n || 0) > 0 || !!bootstrapped;
-
-        if (request.method === 'GET') {
-            return json({ needsSetup: !alreadySetUp }, 200, NO_CACHE);
-        }
-        if (request.method !== 'POST') return fail('POST required', 405);
-
-        if (alreadySetUp) {
-            return fail('An admin account already exists.', 403);
-        }
-        if (!env.SESSION_SECRET) {
-            return fail('SESSION_SECRET is not configured on this Worker', 500);
-        }
-
-        let body;
-        try { body = await request.json(); } catch { return fail('Invalid request body'); }
-        const email = String(body.email || '').trim().toLowerCase();
-        const password = String(body.password || '');
-
-        if (!email.includes('@')) return fail('That does not look like an email address');
-        if (password.length < 10) return fail('Use at least 10 characters');
-
-        const { hash, salt } = await hashPassword(password, undefined, env.SESSION_SECRET);
-        await env.DB
-            .prepare('INSERT INTO admin_users (email, password_hash, salt) VALUES (?,?,?)')
-            .bind(email, hash, salt).run();
-
-        // Latch setup shut. Survives admin_users being dropped.
-        await env.DB
-            .prepare(`INSERT INTO settings (key, value)
-                      VALUES ('admin_bootstrapped', datetime('now'))
-                      ON CONFLICT(key) DO NOTHING`)
-            .run();
-
-        return json({ ok: true, email }, 200, NO_CACHE);
-    }
-
-    // Managing admin accounts. Requires an existing login, unlike setup.
-    if (action === 'users') {
-        const session = await requireAuth(request, env);
-        if (!session) return fail('Not logged in', 401);
-
-        if (request.method === 'GET') {
-            const { results } = await env.DB
-                .prepare('SELECT id, email, created_at FROM admin_users ORDER BY id').all();
-            return json(results.map((r) => ({
-                id: r.id, email: r.email, createdAt: r.created_at,
-                isYou: r.email === session.email,
-            })), 200, NO_CACHE);
-        }
-
-        if (request.method === 'POST') {
-            let body;
-            try { body = await request.json(); } catch { return fail('Invalid request body'); }
-            const email = String(body.email || '').trim().toLowerCase();
-            const password = String(body.password || '');
-
-            if (!email.includes('@')) return fail('That does not look like an email address');
-            if (password.length < 10) return fail('Use at least 10 characters');
-
-            const exists = await env.DB
-                .prepare('SELECT id FROM admin_users WHERE email = ?').bind(email).first();
-            if (exists) return fail('That email already has an account', 409);
-
-            const { hash, salt } = await hashPassword(password, undefined, env.SESSION_SECRET);
-            await env.DB
-                .prepare('INSERT INTO admin_users (email, password_hash, salt) VALUES (?,?,?)')
-                .bind(email, hash, salt).run();
-            return json({ ok: true, email }, 200, NO_CACHE);
-        }
-
-        if (request.method === 'DELETE') {
-            const id = Number(parts[3]);
-            const target = await env.DB
-                .prepare('SELECT email FROM admin_users WHERE id = ?').bind(id).first();
-            if (!target) return fail('No such account', 404);
-            if (target.email === session.email) {
-                return fail('You cannot remove your own account while signed in.', 400);
-            }
-            const { n } = await env.DB
-                .prepare('SELECT COUNT(*) AS n FROM admin_users').first();
-            if (n <= 1) return fail('There has to be at least one admin account.', 400);
-
-            await env.DB.prepare('DELETE FROM admin_users WHERE id = ?').bind(id).run();
-            return json({ ok: true, removed: target.email }, 200, NO_CACHE);
-        }
-
-        return fail('Method not allowed', 405);
-    }
-
-    if (action === 'logout') {
-        return new Response(JSON.stringify({ ok: true }), {
-            status: 200,
-            headers: { ...NO_CACHE, 'Set-Cookie': clearCookie() },
-        });
-    }
-
-    if (action === 'login') {
-        if (request.method !== 'POST') return fail('POST required', 405);
-        if (!env.SESSION_SECRET) {
-            return fail('SESSION_SECRET is not configured on this Worker', 500);
-        }
-        if (await isRateLimited(env.DB, ip)) {
-            return fail('Too many failed attempts. Try again in 15 minutes.', 429);
-        }
-
-        let body;
-        try { body = await request.json(); } catch { return fail('Invalid request body'); }
-        const email = String(body.email || '').trim().toLowerCase();
-        const password = String(body.password || '');
-
-        if (!email || !password) {
-            await logAttempt(env.DB, ip, email, false);
-            return fail('Email and password are both required', 401);
-        }
-
-        const user = await env.DB
-            .prepare('SELECT id, email, password_hash, salt FROM admin_users WHERE email = ?')
-            .bind(email).first();
-
-        let ok = false;
-        if (user) {
-            ok = await verifyPassword(password, user.password_hash, user.salt, env.SESSION_SECRET);
-        } else {
-            // Burn the same time hashing even when there's no such user, so
-            // response timing doesn't reveal which emails are registered.
-            await verifyPassword(password, '0'.repeat(64), '0'.repeat(32), env.SESSION_SECRET);
-        }
-
-        await logAttempt(env.DB, ip, email, ok);
-        if (!ok) return fail('Incorrect email or password', 401);
-
-        const token = await createSession(user.id, user.email, env.SESSION_SECRET);
-        return new Response(JSON.stringify({ ok: true, email: user.email }), {
-            status: 200,
-            headers: { ...NO_CACHE, 'Set-Cookie': sessionCookie(token) },
-        });
+    // login, logout, setup, users and keepalive were all deleted on
+    // 14 August 2026 with the password system:
+    //   login / setup  - Access issues the one-time codes now
+    //   users          - who may publish is the hub's can_edit_site flag
+    //   keepalive      - there is no cookie of ours left to slide
+    //   logout         - /cdn-cgi/access/logout, handled by Cloudflare
+    if (action === 'me') {
+        const result = await adminIdentity(request, env);
+        return result.ok
+            ? json({ loggedIn: true, email: result.session.email, viaAccess: true }, 200, NO_CACHE)
+            : json({ loggedIn: false, reason: result.reason }, 200, NO_CACHE);
     }
 
     return fail('Unknown auth action', 404);
@@ -525,13 +349,19 @@ async function handleApi(request, env, url) {
     const parts = url.pathname.split('/').filter(Boolean);
 
     if (parts[1] === 'health') {
-        // Reports whether each binding and secret is present. Never the
-        // values themselves, only whether they exist and are non-empty.
+        // Reports whether each binding is present. Never the values
+        // themselves, only whether they exist and are non-empty.
+        //
+        // It counts EDITORS now, not password accounts. If this ever
+        // reads 0, nobody can get into the admin panel and the fix is
+        // on the hub's People screen, not here.
         let dbOk = false;
-        let adminCount = null;
+        let editorCount = null;
         try {
-            const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM admin_users').first();
-            adminCount = row?.n ?? null;
+            const row = await env.DB
+                .prepare('SELECT COUNT(*) AS n FROM people WHERE active = 1 AND can_edit_site = 1')
+                .first();
+            editorCount = row?.n ?? null;
             dbOk = true;
         } catch { /* leave dbOk false */ }
 
@@ -539,10 +369,9 @@ async function handleApi(request, env, url) {
             ok: true,
             time: new Date().toISOString(),
             database: dbOk ? 'connected' : 'NOT WORKING',
-            adminAccounts: adminCount,
-            sessionSecret: env.SESSION_SECRET
-                ? `set (${String(env.SESSION_SECRET).length} chars)`
-                : 'MISSING OR EMPTY',
+            siteEditors: editorCount,
+            login: 'Cloudflare Access only',
+            accessConfigured: Boolean(env.ACCESS_TEAM_DOMAIN && env.ACCESS_AUD),
             mediaBucket: env.MEDIA ? 'bound' : 'not bound',
             ...newsletterHealth(env),
         }, 200, NO_CACHE);
@@ -622,7 +451,7 @@ async function handleApi(request, env, url) {
 
     if (parts[1] === 'auth') {
         try {
-            return await handleAuth(request, env, parts);
+            return await handleAuth(request, env);
         } catch (e) {
             // Surface the reason instead of an opaque 500.
             return fail(`Auth error: ${e.message}`, 500);
@@ -741,6 +570,89 @@ async function handleApi(request, env, url) {
 
 /* ================= entry ================= */
 
+/* ---------- being turned away, with a reason ---------- */
+
+// A blank page or a bare 403 sends people to ask Cat what is wrong. Each
+// of these needs a DIFFERENT action from whoever is reading it, so each
+// one says which.
+const REFUSALS = {
+    'no-token': {
+        status: 403,
+        title: 'Not signed in',
+        body: 'Open the studio hub and sign in there first, then come back to this page.',
+    },
+    'not-on-team': {
+        status: 403,
+        title: 'Signed in, but not on the team list',
+        body: 'Cloudflare let you through, but this address is not on the hub\u2019s People '
+            + 'screen, or it is marked as no longer active. The two lists have to match '
+            + 'exactly - a different spelling of the same address counts as a different person.',
+    },
+    'not-an-editor': {
+        status: 403,
+        title: 'You are on the team, but not set up to edit the website',
+        body: 'A director can switch this on for you: hub \u2192 People \u2192 your name \u2192 '
+            + '"can edit site". It is deliberately separate from being a director.',
+    },
+    database: {
+        status: 503,
+        title: 'The database is not answering',
+        body: 'This is not about your account. Try again in a minute; if it keeps happening, '
+            + 'the shared database or the hub\u2019s people table is the place to look.',
+    },
+    'not-configured': {
+        status: 500,
+        title: 'This Worker is missing its Access settings',
+        body: 'ACCESS_TEAM_DOMAIN and ACCESS_AUD are not set, so there is no way to check '
+            + 'who you are. They live in wrangler.toml and must match the hub exactly.',
+    },
+};
+
+function refusal(result) {
+    const chosen = REFUSALS[result.reason] || REFUSALS['no-token'];
+    // The address is echoed back because "which of my addresses did I
+    // sign in with" is the actual question in two of these cases. It is
+    // escaped rather than trusted: it arrives in a token from
+    // Cloudflare, but it is still not ours.
+    const who = result.email
+        ? `<p class="who">Signed in as ${escapeHtml(result.email)}</p>`
+        : '';
+    const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${chosen.title} | Digi Tail Studios</title>
+<link rel="stylesheet" href="/assets/css/core.css">
+<style>
+  body { display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 2rem; }
+  .box { max-width: 34rem; border: 3px solid var(--frozen-juniper); border-radius: 6px;
+         padding: 2rem; background: rgba(93,204,202,0.06); }
+  h1 { margin-top: 0; }
+  .who { font-family: var(--font-mono); font-size: 0.85rem; opacity: 0.75; }
+  a { color: var(--frozen-juniper); }
+</style>
+</head><body class="lang-en"><div class="box">
+<h1>${chosen.title}</h1>
+<p>${chosen.body}</p>
+${who}
+<p><a href="https://hub.digitailstudios.com/">Go to the studio hub</a> &middot;
+   <a href="/">Back to the site</a></p>
+</div></body></html>`;
+    return new Response(html, {
+        status: chosen.status,
+        headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store',
+        },
+    });
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+
 export default {
     // Nightly traffic snapshot. Cloudflare keeps 30 days; this keeps
     // them forever. It never throws: a cron has nobody to report to,
@@ -768,31 +680,34 @@ export default {
             return serveMedia(request, env, url);
         }
 
-        // Gate the admin panel. The login page itself stays public.
-        if (url.pathname.startsWith('/admin')
-            && !url.pathname.startsWith('/admin/login')
-            && !url.pathname.startsWith('/admin/setup')) {
-            const session = await requireAuth(request, env);
-            if (!session) {
-                return Response.redirect(new URL('/admin/login.html', url).toString(), 302);
-            }
+        // Gate the admin panel.
+        //
+        // There is no login page to let past any more - Cloudflare Access
+        // shows its own, in front of this Worker. What reaches here is
+        // either a valid Access token or somebody who should be told why
+        // not, in a sentence, on a page that looks like the site.
+        //
+        // ⚠️ This gate only runs because wrangler.toml lists /admin and
+        // /admin/* under run_worker_first. Without that, static files
+        // win and the whole block below is dead code. There is a test
+        // asserting the setting is present; do not remove it.
+        if (url.pathname.startsWith('/admin')) {
+            const result = await adminIdentity(request, env);
+            if (!result.ok) return refusal(result);
+
             const page = await env.ASSETS.fetch(request);
 
-            // Serving an admin PAGE slides the session window along, so
-            // "Back to Site" then returning does not demand a login.
+            // Cloudflare owns the session, so there is nothing to slide
+            // along here any more. What remains is the cache rule: the
+            // page served depends on who asked for it, so it must never
+            // be stored.
             //
-            // Only the page, though. This used to run for every request
-            // under /admin, which meant a fresh login cookie was pinned
-            // to cacheable .js and .css responses. A cached copy then
-            // handed the browser a stale, already-expired cookie and
-            // logged the user straight back out. Two rules now:
-            // credentials only ride on the document request, and any
-            // response carrying one is marked no-store.
-            // "Is this the page itself, or something the page pulled in?"
-            // Ask the asset server what it actually served rather than
-            // guessing from the URL - /admin, /admin/ and /admin/index.html
-            // are all the same document, and guessing from the path got
-            // this wrong once already.
+            // Only the document, though. This used to run for every
+            // request under /admin, which pinned no-store to cacheable
+            // .js and .css as well. Ask the asset server what it
+            // actually served rather than guessing from the URL -
+            // /admin, /admin/ and /admin/index.html are all the same
+            // document, and guessing from the path got this wrong once.
             const servedHtml = (page.headers.get('Content-Type') || '').includes('text/html');
             const isDocument = request.method === 'GET' && servedHtml;
 
@@ -803,20 +718,9 @@ export default {
 
             if (!isDocument || bodyless) return page;
 
-            // Nothing to slide for an Access login - Cloudflare owns
-            // that session. Still no-store, because the page it just
-            // served depends on who asked for it.
-            if (session.viaAccess) {
-                const viaAccessPage = new Response(page.body, page);
-                viaAccessPage.headers.set('Cache-Control', 'no-store');
-                return viaAccessPage;
-            }
-
-            const fresh = await createSession(session.userId, session.email, env.SESSION_SECRET);
-            const withCookie = new Response(page.body, page);
-            withCookie.headers.set('Cache-Control', 'no-store');
-            withCookie.headers.append('Set-Cookie', sessionCookie(fresh));
-            return withCookie;
+            const fresh = new Response(page.body, page);
+            fresh.headers.set('Cache-Control', 'no-store');
+            return fresh;
         }
 
         return env.ASSETS.fetch(request);

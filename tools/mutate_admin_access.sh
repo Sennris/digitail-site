@@ -15,7 +15,7 @@ cd "$(dirname "$0")/.." || exit 1
 
 BAK_DIR="$(mktemp -d)"
 TESTS="tools/test_admin_access.mjs"
-FILES=("src/auth.js" "src/access.js" "src/index.js" "wrangler.toml" "public/admin/login.html")
+FILES=("src/auth.js" "src/access.js" "src/index.js" "wrangler.toml" "public/admin/index.html")
 
 flat() { echo "$1" | tr '/' '_'; }
 backup_all() { for f in "${FILES[@]}"; do cp "$f" "$BAK_DIR/$(flat "$f").bak"; done; }
@@ -68,8 +68,8 @@ echo "Mutations:"
 
 mutate "anyone on the team can publish, permission ignored" \
     "src/auth.js" \
-    "    if (!person || !person.can_edit_site) return null;" \
-    "    if (!person) return null;"
+    "    if (!person.can_edit_site) return { ok: false, reason: 'not-an-editor', email: person.email };" \
+    "    if (false) return { ok: false, reason: 'not-an-editor', email: person.email };"
 
 mutate "somebody who has left keeps their access" \
     "src/auth.js" \
@@ -78,12 +78,8 @@ mutate "somebody who has left keeps their access" \
 
 mutate "a valid token from anyone is enough, no team lookup" \
     "src/auth.js" \
-    "    if (!person || !person.can_edit_site) return null;
-
-    return { userId: null, email: person.email" \
-    "    if (!person) return { userId: null, email: identity.email, viaAccess: true };
-
-    return { userId: null, email: person.email"
+    "    if (!person) return { ok: false, reason: 'not-on-team', email: identity.email };" \
+    "    if (!person) person = { id: 0, email: identity.email, can_edit_site: 1 };"
 
 # NOT mutated: the "if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD)" guard
 # in accessSession. src/access.js carries the same check, so removing this
@@ -93,12 +89,20 @@ mutate "a valid token from anyone is enough, no team lookup" \
 # be caught would make this harness lie about its own coverage.
 # (The same guard IS mutation-tested where it lives, in src/access.js.)
 
-mutate "the password cookie is checked before Access" \
+mutate "a refusal is quietly turned into a session" \
     "src/auth.js" \
-    "    const viaAccess = await accessSession(request, env);
-    if (viaAccess) return viaAccess;" \
-    "    const viaAccess = null;
-    if (viaAccess) return viaAccess;"
+    "    return result.ok ? result.session : null;" \
+    "    return result.session || { email: 'unknown', viaAccess: true };"
+
+mutate "every refusal collapses into one reason" \
+    "src/auth.js" \
+    "    if (!identity) return { ok: false, reason: 'no-token' };" \
+    "    if (!identity) return { ok: false, reason: 'not-on-team' };"
+
+mutate "an unconfigured Worker lets everyone in" \
+    "src/auth.js" \
+    "        return { ok: false, reason: 'not-configured' };" \
+    "        return { ok: true, session: { email: 'nobody', viaAccess: true } };"
 
 mutate "the signature is never verified" \
     "src/access.js" \
@@ -125,34 +129,32 @@ mutate "any algorithm is accepted" \
     "    if (!header || header.alg !== 'RS256' || !header.kid) return null;" \
     "    if (!header || !header.kid) return null;"
 
-mutate "an Access login is handed a session cookie by keepalive" \
+mutate "a cookie is minted again when an admin page is served" \
     "src/index.js" \
-    "        if (session.viaAccess) {
-            return new Response(JSON.stringify({ ok: true, viaAccess: true }), {" \
-    "        if (false) {
-            return new Response(JSON.stringify({ ok: true, viaAccess: true }), {"
+    "            fresh.headers.set('Cache-Control', 'no-store');" \
+    "            fresh.headers.set('Cache-Control', 'no-store');
+            fresh.headers.append('Set-Cookie', 'dt_session=x');"
 
-mutate "an Access login is pinned a cookie when a page is served" \
+mutate "the deleted login route comes back" \
     "src/index.js" \
-    "            if (session.viaAccess) {
-                const viaAccessPage = new Response(page.body, page);" \
-    "            if (false) {
-                const viaAccessPage = new Response(page.body, page);"
+    "    return fail('Unknown auth action', 404);" \
+    "    if (action === 'login') return fail('gone', 410);
+    return fail('Unknown auth action', 404);"
 
-mutate "the session endpoint stops reporting how somebody signed in" \
+mutate "the admin gate exempts a path again" \
     "src/index.js" \
-    "viaAccess: !!session.viaAccess" \
-    "viaAccess: false"
+    "        if (url.pathname.startsWith('/admin')) {" \
+    "        if (url.pathname.startsWith('/admin') && !url.pathname.startsWith('/admin/login')) {"
 
 mutate "the website's aud drifts from the hub's" \
     "wrangler.toml" \
     'ACCESS_AUD = "89b16d953df151a6b1f0c82fcdf13fecd0bb783507a67b551081dc8da1f9cee1"' \
     'ACCESS_AUD = "a-different-application-entirely"'
 
-mutate "the login page stops skipping itself" \
-    "public/admin/login.html" \
-    "                if (d && d.loggedIn && d.viaAccess) window.location.replace('/admin/');" \
-    "                if (false) window.location.replace('/admin/');"
+mutate "Sign out goes back to clearing a cookie of ours" \
+    "public/admin/index.html" \
+    '<a class="btn-rugged" href="/cdn-cgi/access/logout">' \
+    '<a class="btn-rugged" href="/admin/login.html">' 
 
 mutate "the copied verifier loses its warning" \
     "src/access.js" \

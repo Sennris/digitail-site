@@ -13,7 +13,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import worker from '../src/index.js';
-import { createSession } from '../src/auth.js';
+import { accessKit } from './_access_test_kit.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = 'test-session-secret';
@@ -83,9 +83,15 @@ function freshDb() {
     return db;
 }
 
+// Built AFTER the Buttondown/Turnstile stub above, on purpose: the kit
+// wraps whatever fetch is already installed rather than replacing it, so
+// the certs URL is answered here and everything else still reaches the
+// stub this suite depends on.
+const kit = await accessKit();
+
 const env = (db, overrides = {}) => ({
     DB: d1(db),
-    SESSION_SECRET: SECRET,
+    ...kit.vars,
     TURNSTILE_SECRET: 'fake-turnstile-secret',
     BUTTONDOWN_API_KEY: 'fake-buttondown-key',
     ASSETS: { fetch: async () => new Response('asset') },
@@ -185,6 +191,7 @@ check('unsubscribe also needs Turnstile', res.status === 403, `got ${res.status}
 
 console.log('\nAdmin endpoints:');
 db = freshDb();
+kit.addPeopleTable(db);
 await worker.fetch(signup(), env(db));
 
 for (const path of ['/api/subscribers', '/api/subscribers/export']) {
@@ -194,8 +201,7 @@ for (const path of ['/api/subscribers', '/api/subscribers/export']) {
 const anonSync = await worker.fetch(post('/api/subscribers/sync', {}), env(db));
 check('/api/subscribers/sync refuses a stranger (401)', anonSync.status === 401, `got ${anonSync.status}`);
 
-const token = await createSession(1, 'cat@example.test', SECRET);
-const asAdmin = { Cookie: `dt_session=${token}` };
+const asAdmin = await kit.headers('cat@test.nz');
 
 res = await worker.fetch(new Request('https://www.digitailstudios.com/api/subscribers',
     { headers: asAdmin }), env(db));

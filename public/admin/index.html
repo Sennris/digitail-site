@@ -16,9 +16,14 @@
             <button class="btn-rugged" id="save-all-btn" onclick="saveAllToServer()">
                 💾 Save to site
             </button>
-            <button class="btn-rugged" onclick="fetch('/api/auth/logout',{method:'POST'}).then(()=>location.href='/admin/login.html')">
+            <!-- Cloudflare owns the session now, so signing out means
+                 ending the ACCESS session, not clearing a cookie of
+                 ours. This path is handled by Cloudflare at the edge on
+                 any hostname the application protects; it never reaches
+                 the Worker. -->
+            <a class="btn-rugged" href="/cdn-cgi/access/logout">
                 Sign out
-            </button>
+            </a>
             <a href="/" class="btn-rugged">
                 ← Back to Site
             </a>

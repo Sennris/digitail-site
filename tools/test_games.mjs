@@ -12,7 +12,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import worker from '../src/index.js';
-import { createSession } from '../src/auth.js';
+import { accessKit } from './_access_test_kit.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = 'test-session-secret';
@@ -54,21 +54,24 @@ function freshDb() {
     return db;
 }
 
+// Signing in is a Cloudflare Access token now, not a cookie of ours.
+const kit = await accessKit();
+
 const env = (db) => ({
     DB: d1(db),
-    SESSION_SECRET: SECRET,
+    ...kit.vars,
     ASSETS: { fetch: async () => new Response('asset') },
 });
 
-const get = (path, cookie) => new Request(
+const get = (path, auth) => new Request(
     `https://www.digitailstudios.com${path}`,
-    cookie ? { headers: { Cookie: `dt_session=${cookie}` } } : {});
+    auth ? { headers: auth } : {});
 
-const put = (path, body, cookie) => new Request(
+const put = (path, body, auth) => new Request(
     `https://www.digitailstudios.com${path}`,
     {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Cookie: `dt_session=${cookie}` },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify(body),
     });
 
@@ -110,10 +113,8 @@ check('unpublished games are not returned at all',
 check('an unannounced title cannot be read from the public endpoint',
     !JSON.stringify(publicGames).includes('Untitled small project'));
 
-db.exec("INSERT OR IGNORE INTO admin_users (email, password_hash, salt) " +
-        "VALUES ('a@example.test', 'x', 'y')");
-const userId = db.prepare("SELECT id FROM admin_users WHERE email = 'a@example.test'").get().id;
-const cookie = await createSession(userId, 'a@example.test', SECRET);
+kit.addPeopleTable(db);
+const cookie = await kit.headers('cat@test.nz');
 
 res = await worker.fetch(get('/api/content/games', cookie), env(db));
 const adminGames = await res.json();

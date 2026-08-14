@@ -14,7 +14,7 @@
  */
 
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -115,7 +115,6 @@ const env = (db, over = {}) => ({
     DB: db,
     ACCESS_TEAM_DOMAIN: TEAM,
     ACCESS_AUD: AUD,
-    SESSION_SECRET: 'a-secret-for-the-old-login',
     ...over,
 });
 
@@ -221,27 +220,58 @@ await check('a missing people table falls back instead of locking her out', asyn
     return s === null || JSON.stringify(s);
 });
 
-await check('the password login still works while it is being retired', async () => {
-    ACCESS.clearKeyCache();
-    const secret = 'a-secret-for-the-old-login';
-    const cookie = await AUTH.createSession(7, 'legacy@test.nz', secret);
-    const request = new Request('https://www.digitailstudios.com/admin/', {
-        headers: { Cookie: `${readFileSync(join(ROOT, 'src/auth.js'), 'utf8').match(/COOKIE_NAME\s*=\s*'([^']+)'/)[1]}=${cookie}` },
-    });
-    const s = await AUTH.requireAuth(request, env(makeDb()));
-    return (s && s.email === 'legacy@test.nz' && !s.viaAccess) || JSON.stringify(s);
+await check('there is no second way in left', () => {
+    // Named one by one. A single "does the file mention passwords"
+    // check would be answered by the comment at the top of auth.js
+    // explaining that they were removed.
+    const gone = ['hashPassword', 'verifyPassword', 'createSession',
+                  'readSession', 'sessionCookie', 'clearCookie'];
+    const still = gone.filter((name) => typeof AUTH[name] === 'function');
+    return still.length === 0 || `auth.js still exports ${still.join(', ')}`;
 });
 
-await check('Access is checked BEFORE the password cookie, not after', () => {
-    // Comments STRIPPED first. The comment above the Access call names
-    // readSession while explaining what gets deleted later, and an
-    // unstripped check reads that prose and reports the wrong order.
-    // Third time this exact shape has bitten on this project.
-    const src = readFileSync(join(ROOT, 'src/auth.js'), 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-    const body = src.slice(src.indexOf('export async function requireAuth'));
-    return body.indexOf('accessSession') < body.indexOf('readSession')
-        || 'the password path would win over a real Access identity';
+await check('a session cookie is not accepted by anything', async () => {
+    ACCESS.clearKeyCache();
+    // The shape the old login used. It must now be worth exactly as
+    // much as any other made-up string.
+    const request = new Request('https://www.digitailstudios.com/admin/', {
+        headers: { Cookie: 'dt_session=whatever-the-old-one-looked-like' },
+    });
+    const s = await AUTH.requireAuth(request, env(makeDb()));
+    return s === null || `a cookie got in: ${JSON.stringify(s)}`;
+});
+
+await check('a refusal says WHICH thing is wrong', async () => {
+    ACCESS.clearKeyCache();
+    // Three different problems that need three different actions from
+    // whoever reads the message, so they must not collapse into one.
+    const noToken = await AUTH.adminIdentity(
+        new Request('https://www.digitailstudios.com/admin/'), env(makeDb()));
+    const notOnTeam = await AUTH.adminIdentity(req(await token('stranger@test.nz')), env(makeDb()));
+    const notEditor = await AUTH.adminIdentity(req(await token('vol@test.nz')), env(makeDb()));
+    const reasons = [noToken.reason, notOnTeam.reason, notEditor.reason];
+    return (reasons.join(',') === 'no-token,not-on-team,not-an-editor')
+        || `reasons were ${reasons.join(', ')}`;
+});
+
+await check('a refusal is still a refusal, whatever it says', async () => {
+    ACCESS.clearKeyCache();
+    const results = await Promise.all([
+        AUTH.adminIdentity(new Request('https://www.digitailstudios.com/admin/'), env(makeDb())),
+        AUTH.adminIdentity(req(await token('stranger@test.nz')), env(makeDb())),
+        AUTH.adminIdentity(req(await token('vol@test.nz')), env(makeDb())),
+        AUTH.adminIdentity(req(await token('gone@test.nz')), env(makeDb())),
+    ]);
+    return results.every((r) => r.ok === false && !r.session)
+        || 'one of the refusals carried a session anyway';
+});
+
+await check('an unconfigured Worker refuses rather than opening the door', async () => {
+    ACCESS.clearKeyCache();
+    const bare = { DB: env(makeDb()).DB };
+    const r = await AUTH.adminIdentity(req(await token('cat@test.nz')), bare);
+    return (r.ok === false && r.reason === 'not-configured')
+        || `an admin with no Access settings returned ${JSON.stringify(r)}`;
 });
 
 
@@ -253,19 +283,28 @@ const index = readFileSync(join(ROOT, 'src/index.js'), 'utf8');
 const toml = readFileSync(join(ROOT, 'wrangler.toml'), 'utf8')
     .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
 
-await check('an Access login is never handed one of our session cookies', () => {
-    // Two places mint a cookie: keepalive, and serving an admin page.
-    // Both must skip it - a cookie with a null user id would outlive the
-    // Access session it was standing in for.
-    const keepalive = index.slice(index.indexOf("action === 'keepalive'"), index.indexOf("action === 'keepalive'") + 900);
-    const gate = index.slice(index.indexOf('Gate the admin panel'));
-    return (/session\.viaAccess/.test(keepalive) && /session\.viaAccess/.test(gate))
-        || 'a cookie could still be pinned onto an Access session';
+await check('no route mints a cookie any more', () => {
+    const stripped = index.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    return !/Set-Cookie/i.test(stripped)
+        || 'something still sets a cookie, which would outlive the Access session it stands for';
 });
 
-await check('the session endpoint reports which way somebody signed in', () => (
-    /viaAccess: !!session\.viaAccess/.test(index) || 'the admin cannot tell the two apart'
-));
+await check('the retired auth routes are gone from the router', () => {
+    const stripped = index.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const left = ['login', 'logout', 'setup', 'users', 'keepalive']
+        .filter((a) => stripped.includes(`action === '${a}'`));
+    return left.length === 0 || `still routed: ${left.join(', ')}`;
+});
+
+await check('the admin gate no longer waves anything through', () => {
+    const stripped = index.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const gate = stripped.slice(stripped.indexOf("startsWith('/admin')"));
+    // The old gate exempted /admin/login and /admin/setup so the login
+    // page could render. Both pages are deleted; an exemption left
+    // behind would be a hole with no door in front of it.
+    return !/admin\/login|admin\/setup/.test(gate)
+        || 'a path under /admin is still exempt from the check';
+});
 
 await check('the Access config is present and matches the hub', () => (
     (/ACCESS_TEAM_DOMAIN\s*=\s*"autumn-recipe-b82c\.cloudflareaccess\.com"/.test(toml)
@@ -273,10 +312,28 @@ await check('the Access config is present and matches the hub', () => (
         || 'the website and the hub would disagree about who is signed in'
 ));
 
-await check('the login page skips itself for an Access login', () => {
-    const login = readFileSync(join(ROOT, 'public/admin/login.html'), 'utf8');
-    return (/d\.viaAccess/.test(login) && /location\.replace\('\/admin\/'\)/.test(login))
-        || 'somebody signed in via Access would still be shown a password form';
+await check('the password pages are actually deleted, not just unlinked', () => {
+    const left = ['public/admin/login.html', 'public/admin/setup.html']
+        .filter((f) => existsSync(join(ROOT, f)));
+    return left.length === 0 || `${left.join(', ')} still on disk`;
+});
+
+await check('nothing in the admin still points at them', () => {
+    const files = readdirSync(join(ROOT, 'public/admin'));
+    const guilty = files.filter((f) => {
+        if (!/\.(js|html)$/.test(f)) return false;
+        const body = readFileSync(join(ROOT, 'public/admin', f), 'utf8')
+            .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+            .replace(/<!--[\s\S]*?-->/g, '');
+        return /admin\/(login|setup)\.html/.test(body);
+    });
+    return guilty.length === 0 || `${guilty.join(', ')} would send somebody to a dead page`;
+});
+
+await check('Sign out ends the Access session, not a cookie of ours', () => {
+    const adminHtml = readFileSync(join(ROOT, 'public/admin/index.html'), 'utf8');
+    return /\/cdn-cgi\/access\/logout/.test(adminHtml)
+        || 'Sign out would clear nothing and leave the person signed in';
 });
 
 // This setting is invisible, silently load-bearing, and the thing the

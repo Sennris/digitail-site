@@ -384,43 +384,17 @@
         });
     }
 
-    /* ================= 3. admin accounts ================= */
+    /* ================= 3. who can edit this site ================= */
 
-    async function loadUsers() {
-        const box = document.getElementById('admin-users-list');
-        if (!box) return;
-        try {
-            const res = await fetch('/api/auth/users');
-            if (!res.ok) throw new Error('Could not load accounts');
-            const users = await res.json();
-            box.innerHTML = users.map((u) => `
-                <div style="display:flex; gap:0.75rem; align-items:center; padding:0.55rem 0;
-                            border-top:2px dashed rgba(185,204,204,0.25);">
-                    <span style="flex:1; font-family:monospace; font-size:0.88rem;">
-                        ${u.email}${u.isYou ? ' <strong style="color:#5DCCCA;">(you)</strong>' : ''}
-                    </span>
-                    ${u.isYou ? '' : `<button type="button" class="btn-rugged"
-                        data-remove-user="${u.id}" data-email="${u.email}"
-                        style="font-size:0.72rem; padding:0.25rem 0.6rem; background:#E74C3C;">
-                        Remove</button>`}
-                </div>`).join('');
-
-            box.querySelectorAll('[data-remove-user]').forEach((btn) => {
-                btn.addEventListener('click', async () => {
-                    if (!confirm(`Remove admin access for ${btn.dataset.email}?`)) return;
-                    const res = await fetch('/api/auth/users/' + btn.dataset.removeUser,
-                                            { method: 'DELETE' });
-                    const out = await res.json();
-                    showAlert(res.ok ? `Removed ${out.removed}` : `❌ ${out.error}`,
-                              res.ok ? 'success' : 'error');
-                    loadUsers();
-                });
-            });
-        } catch (e) {
-            box.innerHTML = `<p style="font-family:monospace; opacity:0.7;">${e.message}</p>`;
-        }
-    }
-
+    // This used to be a live list of password accounts with Add and
+    // Remove buttons, which meant ANYBODY who could sign in could delete
+    // anybody else - including Cat's own account. It is gone with the
+    // password login. Who may publish is now one flag on one screen in
+    // the hub, and the website only ever reads it.
+    //
+    // Left as a plain explanation on purpose. A read-only copy of the
+    // list would be a second place to look that can disagree with the
+    // first, which is the exact problem this replaced.
     function mountUsers() {
         const tab = document.getElementById('homepage-tab')
                  || document.querySelector('[id$="-tab"]');
@@ -432,48 +406,27 @@
             `border:${PANEL_BORDER}; border-radius:6px; padding:1.25rem; margin-bottom:1.5rem;`
             + 'background:rgba(93,204,202,0.06);';
         panel.innerHTML = `
-            <h3 style="font-family:var(--font-display); margin:0 0 0.35rem;">Admin accounts</h3>
-            <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.75; margin:0 0 1rem;">
-                Anyone here can edit and publish site content. Added straight
-                away, no "Save to site" needed.
+            <h3 style="font-family:var(--font-display); margin:0 0 0.35rem;">Who can edit this site</h3>
+            <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.8; margin:0 0 0.75rem;">
+                Signing in is handled by the studio hub, so there are no passwords
+                here any more and nothing to reset.
             </p>
-
-            <div id="admin-users-list"></div>
-
-            <div style="margin-top:1.25rem; padding-top:1rem;
-                        border-top:2px dashed rgba(185,204,204,0.25);">
-                <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:0.6rem;">
-                    <input type="email" id="new-admin-email" placeholder="email"
-                           autocomplete="off" style="font-family:monospace;">
-                    <input type="password" id="new-admin-password"
-                           placeholder="password (10+ characters)"
-                           autocomplete="new-password" style="font-family:monospace;">
-                    <button type="button" class="btn-rugged" id="add-admin-btn"
-                            style="font-size:0.78rem;">Add</button>
-                </div>
-            </div>`;
+            <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.8; margin:0 0 0.75rem;">
+                Two things have to be true for somebody to get in, and they are set
+                in two different places:
+            </p>
+            <ol style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.8;
+                       margin:0 0 0.75rem; padding-left:1.2rem; line-height:1.7;">
+                <li>They are on the Cloudflare Access list, which lets them reach this page.</li>
+                <li>Their hub profile has <strong>can edit site</strong> switched on,
+                    which is what this panel checks.</li>
+            </ol>
+            <p style="font-family:var(--font-mono); font-size:0.78rem; opacity:0.8; margin:0;">
+                <a href="https://hub.digitailstudios.com/" style="color:#5DCCCA;">Open the hub</a>
+                and go to People to change either one. The address has to match
+                exactly in both places.
+            </p>`;
         tab.insertBefore(panel, tab.firstChild);
-
-        document.getElementById('add-admin-btn').addEventListener('click', async () => {
-            const email = document.getElementById('new-admin-email').value.trim();
-            const password = document.getElementById('new-admin-password').value;
-            const res = await fetch('/api/auth/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-            const out = await res.json();
-            if (res.ok) {
-                showAlert(`✅ ${out.email} can now sign in`, 'success');
-                document.getElementById('new-admin-email').value = '';
-                document.getElementById('new-admin-password').value = '';
-                loadUsers();
-            } else {
-                showAlert(`❌ ${out.error}`, 'error');
-            }
-        });
-
-        loadUsers();
     }
 
     /* ================= keep the devlog form in sync ================= */
