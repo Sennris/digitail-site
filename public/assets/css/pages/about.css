@@ -359,10 +359,10 @@ footer {
     background: linear-gradient(
         115deg,
         transparent 30%,
-        rgba(255, 255, 255, 0.30) 40%,
-        rgba(255, 255, 255, 0.70) 48%,
-        rgba(93, 204, 202, 0.45) 55%,
-        rgba(255, 255, 255, 0.22) 62%,
+        rgba(255, 255, 255, 0.14) 40%,
+        rgba(255, 255, 255, 0.34) 48%,
+        rgba(93, 204, 202, 0.22) 55%,
+        rgba(255, 255, 255, 0.10) 62%,
         transparent 72%
     );
     background-size: 280% 280%;
@@ -375,9 +375,37 @@ footer {
     z-index: 4;
 }
 
+/* ⚠️ THE SWEEP MUST END TRANSPARENT.
+   It used to hold opacity: 1 for as long as the pointer stayed on the
+   card, and the bright band is over half a card wide - so hovering did
+   not shine across the card, it covered it. Name, role, photo and the
+   Read Bio button all disappeared behind a sheet of white. That is what
+   the team reported as "all details disappear when hovering".
+
+   A one-shot animation instead of a transition: the light travels
+   across, fades out at the end, and leaves the card readable however
+   long the pointer sits there. Re-runs on the next hover because the
+   animation is attached and detached with :hover. */
+@keyframes foil-sweep {
+    0%   { opacity: 0; background-position: 135% 0; }
+    18%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; background-position: -55% 0; }
+}
+
 .player-card:hover::after {
-    opacity: 1;
-    background-position: -55% 0;
+    animation: foil-sweep 1.5s cubic-bezier(0.25, 0.6, 0.3, 1) forwards;
+}
+
+/* Nobody who has asked for less movement gets a light show. */
+.pref-reduce-noise .player-card::after,
+.pref-reduce-noise .player-card:hover::after {
+    animation: none;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .player-card:hover::after { animation: none; opacity: 0; }
 }
 
 .card-front { padding: 1.9rem 1.4rem 1.5rem; }
@@ -429,6 +457,26 @@ footer {
 }
 
 .player-card:hover .player-avatar { border-color: var(--long-black); }
+
+/* THE PHOTO IS NOT CROPPED.
+   object-fit: cover fills the box by cutting off whatever does not fit,
+   which on a standing character render means the head. The team reported
+   exactly that. contain shows the whole picture and lets the striped
+   backing show around it, which is what that backing is for.
+
+   This lives here rather than in about.js because it used to be an
+   inline style, and an inline style cannot be overridden from a
+   stylesheet - the fix was unreachable from the file you would look in. */
+.player-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+    /* Clear of the role badge that straddles the bottom edge. */
+    padding: 0.4rem 0.4rem 1.1rem;
+    box-sizing: border-box;
+}
 
 /* Role sits on a badge that straddles the photo edge */
 .card-front p {
@@ -638,7 +686,17 @@ footer {
     overflow: hidden;
     box-shadow: var(--shadow-md);
 }
-.modal-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Same again inside the bio, reported separately as "image is also cut
+   off inside". The square frame stays; the picture sits inside it whole
+   instead of being trimmed to fit. */
+.modal-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
 
 /* The bio panel is gone now that bios open in a modal. */
 .card-back { display: none !important; }

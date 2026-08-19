@@ -3,6 +3,20 @@
    Shared behaviour is being consolidated into site.js one
    page at a time - see README. */
 
+/* The photo URL is typed by a person in the admin, so it is escaped
+   before it goes anywhere near an attribute. A stray quote in a filename
+   would otherwise close the src early and put the rest inside the tag.
+   Declared at the top of the file rather than beside its use: this is a
+   classic script, and a function nested inside a block is only hoisted
+   within that block. */
+function escapeAttr(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 // 1. Language Toggle Logic
         const langToggleBtn = document.getElementById('lang-toggle-btn');
         const body = document.body;
@@ -47,7 +61,21 @@
                     const card = document.createElement('div');
                     card.className = 'card fox-card fade-in-section';
                     
-                    const imageHTML = fox.image ? fox.image : `<span class="en">[ Photo Placeholder ]</span><span class="mi">[ Pikitia Placeholder ]</span>`;
+                    // The admin's photo field stores a URL - the media picker
+                    // puts "/media/2026/08/....webp" in it. This line used to
+                    // drop that value straight into the card as text, so the
+                    // photo never appeared: the browser was handed an address
+                    // where it expected a picture. Every other page on the
+                    // site builds an <img> from the same kind of value; foxes
+                    // was the one that did not. Reported by the team 14 Aug 2026.
+                    //
+                    // A value that already starts with "<" is markup somebody
+                    // typed in before the picker existed, so it is left alone.
+                    const imageHTML = fox.image
+                        ? (String(fox.image).trim().startsWith('<')
+                            ? fox.image
+                            : `<img src="${escapeAttr(fox.image)}" alt="${escapeAttr(fox.nameEn || 'Fox')}">`)
+                        : `<span class="en">[ Photo Placeholder ]</span><span class="mi">[ Pikitia Placeholder ]</span>`;
 
                     card.innerHTML = `
                         <div class="fox-photo-wrap">

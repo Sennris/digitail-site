@@ -33,8 +33,12 @@
                     card.className = 'player-card';
                     const cardNo = String(index + 1).padStart(2, '0');
                     
+                    // The sizing used to be an inline style, which beats any
+                    // stylesheet - so "the photo is cut off" could not be
+                    // fixed in about.css at all. It lives in .player-avatar
+                    // img now, where it can be changed like everything else.
                     const avatarHTML = member.avatar 
-                        ? '<img src="' + member.avatar + '" alt="' + member.nameEn + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">'
+                        ? '<img src="' + member.avatar + '" alt="' + member.nameEn + '">'
                         : '<span class="en">[ photo soon ]</span><span class="mi">[ pikitia ā muri ]</span>';
                     
                     card.innerHTML = `
