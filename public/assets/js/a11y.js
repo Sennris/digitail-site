@@ -166,13 +166,27 @@
                 if (!title.id) title.id = 'modal-title-' + Math.random().toString(36).slice(2, 7);
                 modal.setAttribute('aria-labelledby', title.id);
             }
+            // aria-labelledby pointing at an empty heading is the same as no
+            // name at all, and the heading is empty until content loads. A
+            // plain aria-label is the floor; the heading wins when it fills.
+            if (!modal.hasAttribute('aria-label')) {
+                modal.setAttribute('aria-label', 'Details');
+            }
 
             let lastFocused = null;
 
             // Watch for the modal being shown so focus can move into it
             new MutationObserver(() => {
-                const visible = getComputedStyle(modal).display !== 'none'
-                    && !modal.hasAttribute('hidden');
+                // Read the class first. Closed overlays now carry
+                // visibility:hidden on a 0.3s delay so the fade can finish,
+                // which means getComputedStyle still says "visible" for a
+                // moment after closing. The class flips immediately.
+                const cs = getComputedStyle(modal);
+                const visible = modal.classList.contains('active')
+                    || (!modal.className.includes('modal-overlay')
+                        && cs.display !== 'none'
+                        && cs.visibility !== 'hidden'
+                        && !modal.hasAttribute('hidden'));
                 if (visible && !modal.dataset.open) {
                     modal.dataset.open = '1';
                     lastFocused = document.activeElement;

@@ -15,6 +15,20 @@
     function sync() {
         const mi = document.body.classList.contains('lang-mi');
         document.documentElement.setAttribute('lang', mi ? 'mi' : 'en');
+        syncOptions(mi);
+    }
+
+    /**
+     * <option> is the one place the .en / .mi span trick cannot work.
+     * display:none on an option is ignored by Safari and by some Android
+     * browsers, so both languages showed up in the list. These options
+     * carry their two labels as data attributes instead and swap text.
+     */
+    function syncOptions(mi) {
+        document.querySelectorAll('option[data-en][data-mi]').forEach((opt) => {
+            const text = mi ? opt.dataset.mi : opt.dataset.en;
+            if (text && opt.textContent !== text) opt.textContent = text;
+        });
     }
 
     new MutationObserver(sync).observe(document.body, {

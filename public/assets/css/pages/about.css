@@ -101,7 +101,7 @@ body.lang-mi .en {
 
 .team-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
     gap: 2rem;
     /* Photos are different shapes now, so cards are different heights.
        Without this every card in a row stretches to the tallest one and
@@ -277,7 +277,7 @@ footer {
    ========================================================================== */
 
 .team-grid {
-    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
     gap: 2.5rem 2rem;
 }
 
@@ -607,12 +607,19 @@ footer {
     padding: 2rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    /* visibility, not just opacity. An opacity:0 overlay is still read by
+       screen readers and still collects Tab stops, so a keyboard user was
+       landing inside a dialog they could not see. The 0.3s delay lets the
+       fade finish before it is taken away. */
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
 
 .modal-overlay.active {
     opacity: 1;
     pointer-events: all;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0s;
 }
 
 .modal-content {

@@ -275,9 +275,12 @@
             </p>
             
             <form class="newsletter-form" id="newsletter-form" action="/api/subscribe" method="POST">
-                <input type="text" name="name" id="name" placeholder="Preferred Name / Ingoa">
-                <input type="email" name="email" id="email" placeholder="Email Address / Wāhitau Īmēra" required>
-                <input type="email" id="confirm-email" placeholder="Confirm Email / Whakaū Īmēra" required>
+                <label class="visually-hidden" for="name">Preferred name / Ingoa</label>
+                <input type="text" name="name" id="name" autocomplete="name" placeholder="Preferred Name / Ingoa">
+                <label class="visually-hidden" for="email">Email address / Wāhitau Īmēra</label>
+                <input type="email" name="email" id="email" autocomplete="email" placeholder="Email Address / Wāhitau Īmēra" required>
+                <label class="visually-hidden" for="confirm-email">Confirm email address / Whakaū Īmēra</label>
+                <input type="email" id="confirm-email" autocomplete="email" placeholder="Confirm Email / Whakaū Īmēra" required>
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAEG1e3La0sGXIWkv" data-action="turnstile-spin-v2"></div>
                 <button type="submit" class="submit-btn">
                     <span class="en" id="hs-news-button-en">Join the Pack</span>
@@ -294,7 +297,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Digi Tail Studios. <button type="button" class="secret-paw" id="paw-1" aria-label="Hidden paw. Find all three."><span aria-hidden="true">🐾</span></button> 
+        <p>&copy; 2026 Digi Tail Studios. <button type="button" class="secret-paw" id="paw-1" aria-label="Hidden paw. Find all three."></button> 
             <span class="en">Stay wild.</span>
             <span class="mi">Kia mohoao tonu.</span>
             <span class="en"> · <a href="/privacy.html" class="footer-privacy">Privacy</a> · <a href="https://hub.digitailstudios.com/" class="footer-privacy" rel="nofollow">Studio login</a></span><span class="mi"> · <a href="/privacy.html" class="footer-privacy">Tūmataiti</a> · <a href="https://hub.digitailstudios.com/" class="footer-privacy" rel="nofollow">Takiuru</a></span>

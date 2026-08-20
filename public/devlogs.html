@@ -54,7 +54,7 @@
 
     <div id="devlog-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content">
-            <button class="modal-close-btn">&times;</button>
+            <button type="button" class="modal-close-btn" aria-label="Close">&times;</button>
             <div class="modal-header">
                 <span class="modal-date"></span>
                 <h2 class="modal-title">
@@ -106,12 +106,10 @@
             </div>
             
             <div class="sort-group">
-                <span class="en">Sort By:</span><span class="mi">Raupapa:</span>
+                <label for="sort-select"><span class="en">Sort By:</span><span class="mi">Raupapa:</span></label>
                 <select id="sort-select" class="rugged-select">
-                    <option value="newest" class="en">Newest First</option>
-                    <option value="newest" class="mi">Pito Hōu Tuatahi</option>
-                    <option value="oldest" class="en">Oldest First</option>
-                    <option value="oldest" class="mi">Pito Tawhito Tuatahi</option>
+                    <option value="newest" data-en="Newest First" data-mi="Pito Hōu Tuatahi">Newest First</option>
+                    <option value="oldest" data-en="Oldest First" data-mi="Pito Tawhito Tuatahi">Oldest First</option>
                 </select>
             </div>
         </div>

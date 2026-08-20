@@ -106,13 +106,19 @@ select.rugged-select {
     font-weight: bold;
     border-radius: 4px;
     cursor: pointer;
-    outline: none;
     box-shadow: 3px 3px 0px #1D0D12;
+}
+
+/* This used to be outline:none with nothing put back, so tabbing to the
+   dropdown changed nothing on screen. */
+select.rugged-select:focus-visible {
+    outline: 3px solid var(--frozen-juniper);
+    outline-offset: 3px;
 }
 
 .devlog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
     gap: 2rem;
     transition: all 0.3s ease;
 }
@@ -203,12 +209,19 @@ select.rugged-select {
     padding: 2rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    /* visibility, not just opacity. An opacity:0 overlay is still read by
+       screen readers and still collects Tab stops, so a keyboard user was
+       landing inside a dialog they could not see. The 0.3s delay lets the
+       fade finish before it is taken away. */
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
 
 .modal-overlay.active {
     opacity: 1;
     pointer-events: all;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0s;
 }
 
 .modal-content {

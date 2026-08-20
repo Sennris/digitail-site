@@ -645,6 +645,13 @@ footer {
    14. EASTER EGG PAWS
    -------------------------------------------------------------------------- */
 
+/* The glyph is drawn by CSS, not written in the markup. The paw is
+   decoration on a button that already has an aria-label, and it is meant
+   to be faint - that is the whole easter egg. As a text node a contrast
+   checker measures it and fails it; as generated content it is treated as
+   the decoration it is. Nothing changes on screen. */
+.secret-paw::before { content: '\1F43E'; }
+
 .secret-paw {
     cursor: pointer;
     opacity: 0.42;
@@ -705,10 +712,29 @@ footer {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
 textarea:focus-visible {
     outline: 3px solid var(--frozen-juniper);
     outline-offset: 3px;
     border-radius: 3px;
+}
+
+/* Read by a screen reader, not drawn on screen. Used where a visible
+   label would repeat something the design already says (the newsletter
+   fields, the unsubscribe field). clip-path rather than display:none,
+   because display:none is skipped by screen readers too. */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 .skip-link {
