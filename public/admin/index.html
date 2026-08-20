@@ -13,8 +13,12 @@
     <div class="top-bar">
         <h1>🦊 Content Manager</h1>
         <div style="display: flex; gap: 1rem;">
+            <!-- Still here, because the settings panels (homepage, press
+                 kit, ticker, mascots) have no Save of their own - this is
+                 theirs. The item forms publish on their own button now,
+                 so this is no longer a second step you have to remember. -->
             <button class="btn-rugged" id="save-all-btn" onclick="saveAllToServer()">
-                💾 Save to site
+                💾 Publish everything
             </button>
             <!-- Cloudflare owns the session now, so signing out means
                  ending the ACCESS session, not clearing a cookie of
@@ -157,8 +161,16 @@
                             <button type="button" class="btn-rugged" id="game-add">+ Add a game</button>
                         </div>
                     </div>
-                    <div class="card">
-                        <h2>Games page</h2>
+                    <!-- Folded away by default. It was sitting between the
+                         games list and the editor, taking the room a game's
+                         own details wanted - and it is four fields you touch
+                         once a year, not once a session. A native <details>,
+                         so it needs no script and cannot get stuck open. -->
+                    <details class="card card--foldable">
+                        <summary>
+                            <h2>Games page</h2>
+                            <span class="fold-hint" aria-hidden="true"></span>
+                        </summary>
                         <p class="helper-text">The heading and intro at the top of games.html.</p>
                         <div class="form-group">
                             <label>Heading (English)</label>
@@ -177,7 +189,7 @@
                             <textarea rows="3" id="gp-intro-mi" data-gp-field="introMi"></textarea>
                         </div>
                         <span class="save-hint">Leave a field blank to keep the wording already on the page.</span>
-                    </div>
+                    </details>
                 </div>
                 <div class="main-content" id="games-editor">
                     <!-- Filled by admin-games.js -->

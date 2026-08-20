@@ -381,7 +381,7 @@
         if (piDelete !== null && piDelete !== undefined) {
             const i = Number(piDelete);
             const name = items()[i].titleEn || 'this entry';
-            if (!confirm(`Remove ${name}? It goes for good once you press Save to site.`)) return;
+            if (!confirm(`Remove ${name}? It goes for good once you press Publish everything.`)) return;
             items().splice(i, 1);
             renderLists(true);
             return;
@@ -391,7 +391,7 @@
         if (paDelete !== null && paDelete !== undefined) {
             const i = Number(paDelete);
             const name = assets()[i].labelEn || 'this file';
-            if (!confirm(`Remove ${name}? It goes for good once you press Save to site.`)) return;
+            if (!confirm(`Remove ${name}? It goes for good once you press Publish everything.`)) return;
             assets().splice(i, 1);
             renderLists(true);
         }

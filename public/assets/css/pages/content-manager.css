@@ -21,15 +21,31 @@ body {
     line-height: 1.6;
 }
 
+/* THE BAR FOLLOWS YOU DOWN THE PAGE.
+   Publish, sign out and back-to-site all lived at the very top, so
+   finishing an edit at the bottom of a long form meant scrolling all the
+   way back up to press one button. Reported by the team 14 Aug 2026.
+
+   A solid background, not the translucent one it had: sticky means page
+   content now passes UNDERNEATH it, and 10% white over moving text is
+   unreadable. */
 .top-bar {
-    background-color: rgba(185, 204, 204, 0.1);
+    background-color: #2A171D;
     padding: 1.5rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
     border-bottom: 3px solid var(--frozen-juniper);
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 100;
+}
+
+/* On a short screen a two-line sticky bar eats the form under it. */
+@media (max-height: 620px) {
+    .top-bar { position: relative; }
 }
 
 .top-bar h1 {
@@ -221,6 +237,22 @@ body {
     resize: vertical;
 }
 
+/* ⚠️ STYLING A <select> DOES NOT STYLE ITS <option> CHILDREN.
+   The closed control took the colours above, but the menu that drops
+   down is drawn by the operating system and inherited only the light
+   text - pale letters on the OS's white sheet. Reported as "better
+   contrast colour needed". Both halves need saying out loud; this is the
+   same fix the hub needed in August. */
+.form-group select {
+    background-color: rgba(29, 13, 18, 0.55);
+}
+
+.form-group select option,
+.form-group select optgroup {
+    background-color: var(--long-black);
+    color: var(--extra-foam);
+}
+
 .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
     outline: none;
     border-color: var(--frozen-juniper);
@@ -341,9 +373,15 @@ body {
     border-color: var(--frozen-juniper);
 }
 
+/* Lifted off --arctic-willow, which is the muted tone and was being read
+   as "greyed out" rather than "explanatory" - the team reported it as
+   hard to read. --extra-foam is the body colour, held slightly back with
+   opacity so it still reads as a note rather than as content. Both are
+   on-brand; neither is a new colour. */
 .helper-text {
     font-size: 0.85rem;
-    color: var(--arctic-willow);
+    color: var(--extra-foam);
+    opacity: 0.82;
     font-style: italic;
     margin-top: 0.25rem;
 }
@@ -440,9 +478,13 @@ body .admin-main .card label {
     color: var(--extra-foam);
 }
 
+/* The card colour pin has to move with it, or it puts the muted tone
+   straight back on every helper line inside a card - which is most of
+   them. This is the pin that makes the rule above reachable at all. */
 body .admin-main .card .helper-text,
 body .admin-main .card small {
-    color: var(--arctic-willow);
+    color: var(--extra-foam);
+    opacity: 0.82;
 }
 
 #subs-table,
@@ -802,3 +844,36 @@ body .admin-main .card label.switch-plate.is-on .switch-lamp {
          1px  0   0 var(--long-black),
          3px  3px 0 var(--long-black);
 }
+
+
+/* --------------------------------------------------------------------------
+   FOLD-AWAY CARDS
+   For settings that are real but rare. The Games page heading was sitting
+   between the games list and the editor taking room the game's own details
+   wanted - four fields you touch once a year, in the best seat in the house.
+   A native <details>: no script, keyboard-operable on its own, and it cannot
+   get stuck in a state a toggle of ours forgot to clear.
+   -------------------------------------------------------------------------- */
+
+.card--foldable > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card--foldable > summary::-webkit-details-marker { display: none; }
+
+.card--foldable > summary h2 { margin: 0; }
+
+.card--foldable > summary .fold-hint {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--frozen-juniper);
+}
+
+.card--foldable[open] > summary { margin-bottom: 1rem; }
+.card--foldable[open] > summary .fold-hint::after { content: 'close \2013'; }
+.card--foldable:not([open]) > summary .fold-hint::after { content: 'open +'; }

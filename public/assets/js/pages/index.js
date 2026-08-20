@@ -288,7 +288,18 @@
             const img = document.createElement('img');
             img.src = m.image;
             img.alt = m.name || 'Studio mascot';
-            el.replaceChildren(img);
+
+            // The name, on a little tag. Built as an element with
+            // textContent for the same reason the alt attribute is set
+            // rather than concatenated: it is hand-typed in the admin.
+            const parts = [img];
+            if (m.name) {
+                const tag = document.createElement('span');
+                tag.className = 'hero-mascot__name';
+                tag.textContent = m.name;
+                parts.push(tag);
+            }
+            el.replaceChildren(...parts);
             MASCOT_SIZES.forEach((s) => el.classList.remove('mascot-' + s));
             el.classList.add('mascot-' + (MASCOT_SIZES.indexOf(m.size) >= 0 ? m.size : 'medium'));
             el.style.display = 'block';

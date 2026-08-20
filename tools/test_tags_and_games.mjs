@@ -266,8 +266,12 @@ check('everything already tagged says so too', () => {
 });
 
 check('a successful run tells her to publish', () => {
+    // Asserts that it POINTS AT the publish button, not that it repeats
+    // one exact label. The button was renamed on 14 Aug when the item
+    // forms started publishing on their own press, and pinning the old
+    // wording made a correct rename read as a regression.
     const r = runSeeder([G('Paper Crown')], []);
-    return r.alerts.some((a) => /Save to site/.test(a.msg));
+    return r.alerts.some((a) => /publish/i.test(a.msg));
 });
 
 check('ids do not collide with existing tags', () => {

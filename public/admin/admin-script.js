@@ -413,6 +413,8 @@ function initializeForms() {
             <div class="form-group">
                 <label>Date Posted</label>
                 <input type="date" id="social-date" required>
+                <div class="helper-text">Filled in with today’s date when you start a new post.
+                Only change it if the post actually went out on a different day.</div>
             </div>
             <div class="form-group">
                 <label>Post URL</label>
@@ -553,7 +555,7 @@ function initializeForms() {
 
                 <div class="button-group">
                     <button type="submit" class="btn-rugged">💾 Save Homepage Settings</button>
-                    <span class="save-hint">Saved as a draft. Press \ud83d\udcbe Save to site at the top of the page to publish it.</span>
+                    <span class="save-hint">Saving here publishes it to the live site straight away.</span>
                 </div>
             </form>
         `;
@@ -606,7 +608,7 @@ function initializeForms() {
             </div>
             <div class="button-group">
                 <button type="submit" class="btn-rugged">💾 Save Game Info</button>
-                    <span class="save-hint">Saved as a draft. Press \ud83d\udcbe Save to site at the top of the page to publish it.</span>
+                    <span class="save-hint">Saving here publishes it to the live site straight away.</span>
             </div>
         </form>
     `;
@@ -886,6 +888,32 @@ function renderTags(type) {
 }
 
 // Save Item
+/* ONE PRESS, NOT TWO.
+   Every form used to write into the working copy and then tell you to go
+   and press "Save to site" at the top of the page. Two presses for one
+   edit, and the second one was off screen by the time you had finished
+   typing - which is how an edit got left unpublished. Reported by the
+   team 14 Aug 2026, alongside the request for a header that follows you
+   down the page.
+
+   The forms with a Save button of their own now publish on that press.
+   The bar at the top is still there - it is the only save the settings
+   panels have, and it is sticky now so it is always in reach - but it is
+   no longer a step you have to remember. */
+function publishNow(message) {
+    if (typeof window.saveAllToServer !== 'function') {
+        // No adapter loaded means no server to publish to. Say so rather
+        // than claiming a save that did not happen.
+        showAlert('Saved here, but publishing is unavailable right now.', 'error');
+        return;
+    }
+    Promise.resolve(window.saveAllToServer())
+        .then(function () { if (message) showAlert(message, 'success'); })
+        .catch(function (e) {
+            showAlert('Saved here, but publishing failed: ' + (e && e.message ? e.message : e), 'error');
+        });
+}
+
 function saveItem(event, type) {
     event.preventDefault();
     
@@ -976,6 +1004,7 @@ function saveItem(event, type) {
     renderList(type);
     updateStats(type);
     cancelEdit(type);
+    publishNow('✅ Saved and published.');
 }
 
 // Save Game Info
@@ -1003,7 +1032,7 @@ function collectGameInfo() {
 function saveGameInfo(event) {
     if (event) event.preventDefault();
     collectGameInfo();
-    showAlert('✅ Game info updated. Press 💾 Save to site to publish it.', 'success');
+    publishNow('✅ Game info saved and published.');
 }
 
 // Save Homepage Info
@@ -1051,7 +1080,7 @@ function collectHomepageInfo() {
 function saveHomepageInfo(event) {
     if (event) event.preventDefault();
     collectHomepageInfo();
-    showAlert('✅ Homepage settings updated. Press 💾 Save to site to publish them.', 'success');
+    publishNow('✅ Homepage settings saved and published.');
 }
 
 // Delete Item
@@ -1067,7 +1096,7 @@ function deleteItem(type) {
         renderList(type);
         updateStats(type);
         cancelEdit(type);
-        showAlert('🗑️ Item deleted', 'success');
+        publishNow('🗑️ Deleted and published.');
     }
 }
 

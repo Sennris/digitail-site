@@ -110,10 +110,14 @@ mutate "no games at all fails silently" \
     public/admin/admin-extras.js \
     "                showAlert('No games with a title yet. Name one in the Games tab first.', 'error');
                 return;" "                return;"
+# Anchored on the WORD, not on the button's full label. The label was
+# renamed on 14 Aug and this anchor carried the old one, so it reported
+# "anchor not found" - a stale anchor reads exactly like a passing test
+# that has quietly stopped covering anything.
 mutate "a successful run stops telling her to publish" \
     public/admin/admin-extras.js \
-    "                'Press 💾 Save to site to publish.', 'success');" \
-    "                'Done.', 'success');"
+    "Publish everything in the bar at the top.', 'success');" \
+    "Done.', 'success');"
 mutate "a missing games list throws" \
     public/admin/admin-extras.js \
     "const games = Array.isArray(data.games) ? data.games : [];" \

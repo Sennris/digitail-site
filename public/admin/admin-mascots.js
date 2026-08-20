@@ -341,7 +341,7 @@
             </div>
 
             <div class="button-group">
-                <span class="save-hint">Press 💾 Save to site at the top of the page to publish.</span>
+                <span class="save-hint">Press 💾 Publish everything in the bar at the top - it follows you down the page.</span>
             </div>
         `;
     }
@@ -454,11 +454,11 @@
             const i = list.findIndex((m) => m.id === Number(deleteId));
             if (i < 0) return;
             const name = list[i].name || 'this mascot';
-            if (!confirm(`Delete ${name}? This cannot be undone once you press Save to site.`)) return;
+            if (!confirm(`Delete ${name}? This cannot be undone once you press Publish everything.`)) return;
             list.splice(i, 1);
             if (selectedId === Number(deleteId)) selectedId = list.length ? list[0].id : null;
             renderAll(true);
-            alertUser('Mascot removed. Press 💾 Save to site to publish it.', 'success');
+            alertUser('Mascot removed. Press 💾 Publish everything at the top.', 'success');
             return;
         }
 

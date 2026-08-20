@@ -61,30 +61,82 @@
             setupObserver();
         }
 
+        // Two filters, kept apart. Picking a platform never clears the
+        // tag and picking a tag never clears the platform - they narrow
+        // together. The page had platform buttons only; the tag printed
+        // on every card was the one thing you could see but not filter by.
+        let currentTag = 'all';
+
+        function applyFilters() {
+            const shown = allPosts.filter(function (p) {
+                const platformOk = currentFilter === 'all' || p.platform === currentFilter;
+                const tagOk = currentTag === 'all'
+                    || (Array.isArray(p.tags) && p.tags.indexOf(currentTag) !== -1);
+                return platformOk && tagOk;
+            });
+            renderPosts(shown);
+        }
+
+        // Marking the active button from the value rather than from
+        // event.target: the old version relied on the global `event`,
+        // which is undefined when the function is called from anywhere
+        // other than a click handler.
+        function markActive(containerId, value) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.querySelectorAll('.filter-btn').forEach(function (btn) {
+                btn.classList.toggle('active', btn.dataset.value === value);
+            });
+        }
+
         function filterPosts(platform) {
             currentFilter = platform;
-            
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (platform === 'all') {
-                renderPosts(allPosts);
-            } else {
-                renderPosts(allPosts.filter(p => p.platform === platform));
-            }
+            markActive('platform-filters', platform);
+            applyFilters();
+        }
+
+        function filterByTag(tag) {
+            currentTag = tag;
+            markActive('tag-filters', tag);
+            applyFilters();
+        }
+
+        function addFilterButton(container, label, value, onClick, active) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'filter-btn' + (active ? ' active' : '');
+            btn.dataset.value = value;
+            btn.textContent = label;
+            btn.onclick = onClick;
+            container.appendChild(btn);
+            return btn;
         }
 
         function buildFilters(posts) {
             const platforms = [...new Set(posts.map(p => p.platform).filter(Boolean))];
             const filterContainer = document.getElementById('platform-filters');
-            
+
+            // The All button is in the markup, so it needs the same value
+            // stamp as the ones built here or it can never be re-marked.
+            const allBtn = filterContainer.querySelector('.filter-btn');
+            if (allBtn) allBtn.dataset.value = 'all';
+
             platforms.forEach(platform => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                btn.onclick = function() { filterPosts(platform); };
-                btn.textContent = platform;
-                filterContainer.appendChild(btn);
+                addFilterButton(filterContainer, platform, platform,
+                    function () { filterPosts(platform); }, false);
+            });
+
+            const tags = [...new Set(posts.flatMap(p => (Array.isArray(p.tags) ? p.tags : []))
+                .filter(Boolean))].sort();
+            const tagContainer = document.getElementById('tag-filters');
+            if (!tagContainer || !tags.length) return;
+
+            tagContainer.hidden = false;
+            addFilterButton(tagContainer, 'All tags', 'all',
+                function () { filterByTag('all'); }, true);
+            tags.forEach(tag => {
+                addFilterButton(tagContainer, tag, tag,
+                    function () { filterByTag(tag); }, false);
             });
         }
 

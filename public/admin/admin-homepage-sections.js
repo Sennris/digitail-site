@@ -137,7 +137,7 @@
                 <p class="helper-text">The headings and paragraphs down the homepage. Leave any field blank to keep the wording that is on the page now, so you can change one line without touching the rest.</p>
                 <p class="helper-text">Press Enter for a line break. Wrap a word in *asterisks* to emphasise it.</p>
                 ${FIELDS.map(fieldHTML).join('')}
-                <span class="save-hint">Changes are kept as a draft. Press 💾 Save to site at the top of the page to publish them.</span>
+                <span class="save-hint">Changes are kept as a draft. Press 💾 Publish everything in the bar at the top - it follows you down the page.</span>
             </div>`;
     }
 

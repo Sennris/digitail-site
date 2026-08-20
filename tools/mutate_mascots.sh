@@ -152,13 +152,17 @@ mutate "switched-off mascots are shown anyway" \
 
 echo
 echo "The render:"
+# The anchor used to swallow the whole four-line block including
+# el.replaceChildren(img) - and on 14 Aug a name tag was added between
+# them, so it stopped matching. Anchored on the two lines that matter to
+# THIS check instead: the ones that decide whether the mascot is built as
+# elements or pasted in as markup.
 mutate "the name is pasted into markup again" \
     public/assets/js/pages/index.js \
-    "const img = document.createElement('img');
-            img.src = m.image;
-            img.alt = m.name || 'Studio mascot';
-            el.replaceChildren(img);" \
-    "el.innerHTML = '<img src=\"' + m.image + '\" alt=\"' + (m.name || 'Studio mascot') + '\">';"
+    "            const img = document.createElement('img');
+            img.src = m.image;" \
+    "            const img = { };
+            el.innerHTML = '<img src=\"' + m.image + '\">';"
 
 mutate "a nameless mascot gets an empty alt" \
     public/assets/js/pages/index.js \

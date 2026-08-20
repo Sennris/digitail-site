@@ -281,7 +281,7 @@ console.log('\nTicker edits reach the stored settings:');
     // ticker-editor.js for a function it does not expose.
     const fire = [];
     ['ticker-enabled', 'ticker-items', 'ticker-speed',
-     'ticker-speed-label', 'ticker-preview'].forEach((id) => {
+     'ticker-speed-label', 'ticker-preview', 'ticker-preview-track'].forEach((id) => {
         const el = makeEl();
         el.addEventListener = function (type, fn) {
             if (type === 'input') fire.push(fn);

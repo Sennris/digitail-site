@@ -233,7 +233,7 @@
             </div>
 
             <p style="font-family:var(--font-mono); font-size:0.75rem; opacity:0.6; margin:1.25rem 0 0;">
-                Changes here are saved with everything else when you hit "Save to site".
+                Changes here are saved with everything else when you hit "Publish everything".
             </p>`;
 
         panel.querySelectorAll('[data-add-tag]').forEach((btn) => {
@@ -305,7 +305,7 @@
             refreshPickers();
             showAlert(
                 `Added ${added} game tag${added === 1 ? '' : 's'}. ` +
-                'Press 💾 Save to site to publish.', 'success');
+                'Press 💾 Publish everything in the bar at the top.', 'success');
         });
 
         panel.querySelectorAll('[data-tag-delete]').forEach((btn) => {

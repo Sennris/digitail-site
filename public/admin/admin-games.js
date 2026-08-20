@@ -386,7 +386,7 @@
             </div>
 
             <div class="button-group">
-                <span class="save-hint">Changes are kept as a draft. Press 💾 Save to site at the top of the page to publish them.</span>
+                <span class="save-hint">Changes are kept as a draft. Press 💾 Publish everything in the bar at the top - it follows you down the page.</span>
             </div>
         </div>`;
     }
@@ -512,13 +512,13 @@
             const i = list.findIndex((g) => g.id === Number(deleteId));
             if (i < 0) return;
             const name = list[i].titleEn || 'this game';
-            if (!confirm(`Delete ${name}? This cannot be undone once you press Save to site.`)) return;
+            if (!confirm(`Delete ${name}? This cannot be undone once you press Publish everything.`)) return;
             const wasFeatured = list[i].featured;
             list.splice(i, 1);
             if (wasFeatured && list.length) list[0].featured = true;
             if (selectedId === Number(deleteId)) selectedId = list.length ? list[0].id : null;
             renderAll(true);
-            alertUser('Game removed. Press 💾 Save to site to publish it.', 'success');
+            alertUser('Game removed. Press 💾 Publish everything at the top.', 'success');
             return;
         }
 

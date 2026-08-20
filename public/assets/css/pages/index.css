@@ -82,15 +82,26 @@ body.lang-mi .en {
     margin-top: 0;
 }
 
+/* THE MASCOT SITS BESIDE THE WORDMARK, NOT AT THE FAR EDGE.
+   .hero-text used to be flex: 1, so it swallowed all the space left over
+   and the title centred itself inside THAT rather than inside the page -
+   which read as the mascot shoving the name off-centre. Both reports
+   about the mascot ("it pushes the title" and "I want it sitting next to
+   the studio like they are sitting next to it") are the same line.
+
+   The text block is now only as wide as its own words, and the pair is
+   centred together. align-items: flex-end puts the fox on the same
+   ground line as the tagline instead of floating beside it. */
 .hero-inner {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    gap: 2rem;
+    gap: 1.25rem;
+    flex-wrap: wrap;
 }
 
 .hero-text {
-    flex: 1;
+    flex: 0 1 auto;
 }
 
 .hero-mascot {
@@ -99,6 +110,29 @@ body.lang-mi .en {
     height: 180px;
     padding: 0.9rem;
     display: none;
+    /* Room underneath for the name, so a long one cannot shove the
+       fox upwards off the line it is standing on. */
+    position: relative;
+}
+
+/* Who the mascot actually is. It used to appear with nothing to say
+   what it was, which is the other half of that report. Only drawn when
+   the mascot has a name - an unnamed one shows exactly as before. */
+.hero-mascot__name {
+    position: absolute;
+    left: 50%;
+    bottom: -0.35rem;
+    transform: translateX(-50%) rotate(-2deg);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--long-black);
+    background: var(--frozen-juniper);
+    border: 2px solid var(--long-black);
+    padding: 0.1rem 0.5rem;
+    box-shadow: 2px 2px 0 var(--long-black);
 }
 
 /* Named sizes rather than a pixel value typed into the admin, so each one

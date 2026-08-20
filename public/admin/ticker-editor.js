@@ -3,7 +3,7 @@
  *
  * Injects a panel into the homepage tab for editing the scrolling strip
  * on the front page. Writes into data.homepage.ticker, so the existing
- * "Save to site" button saves it with everything else.
+ * "Publish everything" button saves it with the rest.
  */
 
 (function () {
@@ -63,7 +63,9 @@
                 <div id="ticker-preview" style="overflow:hidden; white-space:nowrap;
                      background:#5DCCCA; color:#1D0D12; padding:0.4rem 0; border-radius:3px;
                      font-family:var(--font-mono); font-weight:800; font-size:0.8rem;
-                     text-transform:uppercase; letter-spacing:0.08em;"></div>
+                     text-transform:uppercase; letter-spacing:0.08em;"><span
+                     id="ticker-preview-track" style="display:inline-block;
+                     animation:ticker-scroll 32s linear infinite;"></span></div>
             </div>`;
         return el;
     }
@@ -89,8 +91,27 @@
         t.items = items;
 
         document.getElementById('ticker-speed-label').textContent = t.speed;
-        document.getElementById('ticker-preview').textContent =
-            items.length ? items.map((i) => '   ' + i + '   ').join('•') : '(nothing to show)';
+
+        // THE PREVIEW NOW ACTUALLY MOVES.
+        // It used to be one static line of text, so it showed the WORDS
+        // but not the thing you are actually setting - whether the speed
+        // is readable. Reported as "preview ticker doesn't work".
+        //
+        // Same mechanism as the real one on the homepage: the track is
+        // written twice and slid left by exactly half its width, so the
+        // loop is seamless. It reuses the live @keyframes ticker-scroll
+        // from core.css rather than declaring a second copy that could
+        // quietly drift away from it.
+        const track = document.getElementById('ticker-preview-track');
+        if (!items.length) {
+            track.textContent = '(nothing to show)';
+            track.style.animation = 'none';
+            return;
+        }
+
+        const line = items.map((i) => '   ' + i + '   ').join('•');
+        track.textContent = line + '•' + line + '•';
+        track.style.animation = 'ticker-scroll ' + (t.speed || 32) + 's linear infinite';
     }
 
     function fill() {
