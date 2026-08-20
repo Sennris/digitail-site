@@ -71,7 +71,7 @@
         ['basedInEn',     'Based in',                          'text',     'Ōtautahi Christchurch, Aotearoa New Zealand'],
         ['teamSizeEn',    'Team size',                         'text',     ''],
         ['websiteUrl',    'Website',                           'text',     'https://www.digitailstudios.com'],
-        ['contactEmail',  'Press contact email',               'text',     'press@digitailstudios.com'],
+        ['contactEmail',  'Press contact email (use the Google Group)', 'text', 'press@digitailstudios.com'],
         ['contactNoteEn', 'Note beside the contact (English)', 'textarea', 'We answer everything, usually within a couple of days.'],
         ['contactNoteMi', 'Note beside the contact (Te Reo Māori)', 'textarea', ''],
         ['descriptionEn', 'About the studio (English)',        'textarea', ''],
@@ -84,15 +84,28 @@
         ['creditsMi',     'Credits (Te Reo Māori)',            'textarea', ''],
     ];
 
+    // Notes that only make sense beside one particular field.
+    const FIELD_NOTES = {
+        contactEmail:
+            'Put the studio Google Group address here, not a personal one. The press '
+            + 'page turns it into a link that opens the reader\u2019s email app with '
+            + 'the subject already filled in, so the message lands in the Group where '
+            + 'the whole team can see it and anyone can reply.',
+    };
+
     function kitFieldHTML([name, label, type, placeholder]) {
         const v = esc(kit()[name] || '');
         const ph = esc(placeholder);
+        const note = FIELD_NOTES[name]
+            ? `<div class="helper-text">${esc(FIELD_NOTES[name])}</div>`
+            : '';
         return `
             <div class="form-group">
                 <label>${esc(label)}</label>
                 ${type === 'textarea'
                     ? `<textarea rows="3" data-pk-field="${name}" placeholder="${ph}">${v}</textarea>`
                     : `<input type="text" data-pk-field="${name}" value="${v}" placeholder="${ph}">`}
+                ${note}
             </div>`;
     }
 

@@ -103,6 +103,10 @@ body.lang-mi .en {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
+    /* Photos are different shapes now, so cards are different heights.
+       Without this every card in a row stretches to the tallest one and
+       the short ones get a band of empty colour under the button. */
+    align-items: start;
 }
 
 .player-card {
@@ -145,9 +149,15 @@ body.lang-mi .en {
     transition: opacity 0.2s ease;
 }
 
+/* ⚠️ TWO RULES, ONE SELECTOR. The trading-card restyle further down
+   this file also sets .player-avatar, and it wins because it comes
+   later. This one is the older base. The fixed HEIGHT has been taken out
+   of it rather than left to be overridden: a reader opening this file
+   sees the first rule, and a height sitting here would come back into
+   force the moment the later rule was reordered or trimmed. Height is
+   set in exactly one place now, and it is not a fixed one. */
 .player-avatar {
     width: 100%;
-    height: 240px;
     background-color: #1D0D12;
     border: 3px dashed #5DCCCA;
     border-radius: 4px;
@@ -428,8 +438,13 @@ footer {
     transform: rotate(-8deg);
 }
 
+/* ⚠️ THE FRAME FOLLOWS THE PHOTO. Same pattern as the devlogs cards:
+   a MIN-height as a floor, height auto, and the picture at its own
+   proportions. A fixed height with contain left a short photo marooned
+   in a too-big border, which is what she reported after the first fix. */
 .player-avatar {
-    height: 210px;
+    min-height: 210px;
+    height: auto;
     border: var(--border-width) solid var(--long-black);
     background-color: rgba(29, 13, 18, 0.08);
     background-image: repeating-linear-gradient(
@@ -469,21 +484,27 @@ footer {
    stylesheet - the fix was unreachable from the file you would look in. */
 .player-avatar img {
     width: 100%;
-    height: 100%;
+    height: auto;
     object-fit: contain;
     border-radius: 4px;
     display: block;
-    /* Clear of the role badge that straddles the bottom edge. */
-    padding: 0.4rem 0.4rem 1.1rem;
+    padding: 0.4rem;
     box-sizing: border-box;
 }
 
-/* Role sits on a badge that straddles the photo edge */
+/* Role sits on a badge that straddles the photo edge.
+   ⚠️ NOT position: absolute with top: 218px any more. That offset was
+   measured against a photo that was always 210px tall - the moment the
+   frame started following the picture, the badge stayed put and the
+   photo moved out from under it. It now sits in normal flow directly
+   after the photo and is pulled back up over the edge, so it straddles
+   whatever height the picture turns out to be. */
 .card-front p {
-    position: absolute;
-    top: 218px;
-    left: 50%;
-    transform: translateX(-50%) rotate(-2deg);
+    position: relative;
+    z-index: 5;
+    width: fit-content;
+    margin: -1.05rem auto 0;
+    transform: rotate(-2deg);
     background: var(--long-black);
     color: var(--frozen-juniper);
     font-family: var(--font-mono);
@@ -495,7 +516,6 @@ footer {
     border-radius: 999px;
     box-shadow: 3px 3px 0 rgba(0,0,0,0.45);
     white-space: nowrap;
-    margin: 0;
 }
 
 .card-front h3 {
@@ -679,7 +699,7 @@ footer {
 .modal-avatar {
     width: 100%;
     max-width: 260px;
-    aspect-ratio: 1;
+    min-height: 200px;
     margin: 0 auto 1.5rem;
     border: var(--border-width) solid var(--long-black);
     border-radius: 6px;
@@ -691,7 +711,7 @@ footer {
    instead of being trimmed to fit. */
 .modal-avatar img {
     width: 100%;
-    height: 100%;
+    height: auto;
     object-fit: contain;
     display: block;
     padding: 0.5rem;

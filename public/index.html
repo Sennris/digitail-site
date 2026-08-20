@@ -241,7 +241,10 @@
                         <span class="en" id="hs-social-pre-en">Latest Social Post</span>
                         <span class="mi">Tuhinga Pāpāho Hou</span>
                     </span>
-                    <div class="image-placeholder" id="home-social-image" style="height: 180px;">
+                    <!-- No inline height. An inline style beats the stylesheet, so this
+                         one pinned the frame at 180px and kept the picture squashed
+                         inside it no matter what index.css said. -->
+                    <div class="image-placeholder" id="home-social-image">
                         <span class="en">[ Social Post Image ]</span>
                         <span class="mi">[ Pikitia Pāpāho ]</span>
                     </div>
@@ -294,7 +297,7 @@
         <p>&copy; 2026 Digi Tail Studios. <button type="button" class="secret-paw" id="paw-1" aria-label="Hidden paw. Find all three."><span aria-hidden="true">🐾</span></button> 
             <span class="en">Stay wild.</span>
             <span class="mi">Kia mohoao tonu.</span>
-            <span class="en"> · <a href="/privacy.html" class="footer-privacy">Privacy</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Studio login</a></span><span class="mi"> · <a href="/privacy.html" class="footer-privacy">Tūmataiti</a> · <a href="/admin/" class="footer-privacy" rel="nofollow">Takiuru</a></span>
+            <span class="en"> · <a href="/privacy.html" class="footer-privacy">Privacy</a> · <a href="https://hub.digitailstudios.com/" class="footer-privacy" rel="nofollow">Studio login</a></span><span class="mi"> · <a href="/privacy.html" class="footer-privacy">Tūmataiti</a> · <a href="https://hub.digitailstudios.com/" class="footer-privacy" rel="nofollow">Takiuru</a></span>
         </p>
     </footer>
 

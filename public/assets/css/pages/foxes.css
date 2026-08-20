@@ -88,9 +88,19 @@ body.lang-mi .en {
     flex-direction: column;
 }
 
+/* ⚠️ THE FRAME FOLLOWS THE PICTURE, NOT THE OTHER WAY ROUND.
+   A fixed height plus object-fit: cover trims whatever does not fit -
+   that is what cut the heads off. Swapping cover for contain fixed the
+   trimming but kept the fixed height, so a short picture sat in the
+   middle of a too-big border, which she reported straight back.
+
+   The devlogs cards already had this right and are the pattern being
+   copied here: a MIN-height as a floor, height auto, and the image at
+   its own proportions. The border ends up wherever the picture ends. */
 .image-placeholder {
     width: 100%;
-    height: 250px;
+    min-height: 200px;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -100,8 +110,9 @@ body.lang-mi .en {
 
 .image-placeholder img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    display: block;
+    object-fit: contain;
     border-radius: 2px;
 }
 
@@ -255,8 +266,13 @@ body.lang-mi .en {
     line-height: 1.8;
 }
 
+/* The fox photo inside the popup, same rule as the card behind it.
+   This one still said 350px, so opening a fox went straight back to a
+   squashed picture in a too-tall box - the exact thing the card was just
+   fixed for. devlogs.css has the matching pair; this now matches it. */
 .modal-body .image-placeholder {
-    height: 350px;
+    min-height: 250px;
+    height: auto;
     margin-bottom: 2rem;
 }
 

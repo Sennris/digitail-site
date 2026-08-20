@@ -105,22 +105,26 @@ div.game-plank__inner {
     box-shadow: var(--shadow-sm);
 }
 
+/* ⚠️ THE 16/10 IS FOR THE EMPTY BOX ONLY.
+   It used to sit on the frame itself, with overflow: hidden and
+   object-fit: cover on the art - so any key art that was not 16/10 got
+   trimmed to fit. The placeholder still needs a shape to hold when
+   there is no art at all; real art brings its own. */
 .game-plank__art {
-    aspect-ratio: 16 / 10;
     border: var(--border-width) solid var(--long-black);
     border-radius: 2px;
-    overflow: hidden;
     background: var(--long-black);
 }
 
 .game-plank__art img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     display: block;
 }
 
 .game-plank__art.is-empty {
+    aspect-ratio: 16 / 10;
     display: grid;
     place-items: center;
     font-family: var(--font-mono);

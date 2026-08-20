@@ -358,11 +358,34 @@ function studioKit(kit, items, assets, games) {
 
     if (kit.contactEmail) {
         const s = section('Get in touch', 'Whakapā mai');
+
+        // A MAILTO, DELIBERATELY, NOT A MESSAGE BOX.
+        // She asked for a form whose messages land in the studio's Google
+        // Group. A form can collect a message, but this Worker has no way
+        // to SEND one: Cloudflare Email Routing would take over the
+        // domain's MX records and break every studio address, and any
+        // other sender means a third-party account, an API key and DNS
+        // changes on the live domain. A mailto puts the message in the
+        // same inbox with none of that, and the reply comes from a real
+        // person's address rather than a robot.
         const a = document.createElement('a');
         a.className = 'press-contact';
-        a.href = 'mailto:' + kit.contactEmail;
+        const address = looksLikeEmail(kit.contactEmail);
+        // The subject is prefilled so press mail is sortable in the
+        // Group without anybody having to remember a convention.
+        a.href = address
+            ? 'mailto:' + address + '?subject=' + encodeURIComponent('Press enquiry - Digi Tail Studios')
+            : 'mailto:' + kit.contactEmail;
         a.textContent = kit.contactEmail;
         s.appendChild(a);
+
+        const hint = document.createElement('p');
+        hint.className = 'press-contact__hint';
+        hint.appendChild(pair('span', null,
+            'Opens your email app. We read everything and usually reply within a couple of days.',
+            'Ka huaki i tāu taupānga īmera. Ka pānui mātou i ngā mea katoa.'));
+        s.appendChild(hint);
+
         const note = prose(kit.contactNoteEn, kit.contactNoteMi, false);
         if (note) s.appendChild(note);
         frag.appendChild(s);
