@@ -288,6 +288,50 @@ check('this suite does not pretend to check the other repo', () => {
 });
 
 
+/* ---------- the role badge on the team cards ---------- */
+
+console.log('\nThe role badge');
+
+const aboutCss = stripCss(read('public/assets/css/pages/about.css'));
+const aboutJs = read('public/assets/js/pages/about.js');
+
+check('the badge is drawn between the photo and the name', () => {
+    // The markup is photo, name, badge. Without a reorder the badge's
+    // negative margin lands it on top of the name instead of on the
+    // bottom edge of the photo.
+    const rule = (aboutCss.match(/\.card-front > p\s*\{[^}]*\}/) || [''])[0];
+    const avatar = (aboutCss.match(/\.card-front > \.player-avatar\s*\{[^}]*\}/) || [''])[0];
+    const name = (aboutCss.match(/\.card-front > h3\s*\{[^}]*\}/) || [''])[0];
+    const num = (r) => Number((r.match(/order:\s*(-?[0-9]+)/) || [, NaN])[1]);
+    const [a, b, c] = [num(avatar), num(rule), num(name)];
+    if ([a, b, c].some(Number.isNaN)) return 'one of the three has no order set';
+    return (a < b && b < c) || `order came out photo ${a}, badge ${b}, name ${c}`;
+});
+
+check('the button is still last', () => {
+    const btn = (aboutCss.match(/\.card-front > \.flip-hint\s*\{[^}]*\}/) || [''])[0];
+    const name = (aboutCss.match(/\.card-front > h3\s*\{[^}]*\}/) || [''])[0];
+    const num = (r) => Number((r.match(/order:\s*(-?[0-9]+)/) || [, NaN])[1]);
+    return num(btn) > num(name) || 'Read bio moved above the name';
+});
+
+check('the badge leaves room under itself for the name', () => {
+    const rule = (aboutCss.match(/\.card-front p\s*\{[\s\S]*?\}/g) || [])
+        .find((r) => /z-index/.test(r)) || '';
+    const margin = (rule.match(/margin:\s*(-?[0-9.]+rem)\s+auto\s+(-?[0-9.]+rem)/) || [])[2];
+    return (margin && parseFloat(margin) > 0)
+        || `bottom margin is ${margin || 'missing'}, so the name sits under the badge`;
+});
+
+check('the name is not reordered in the markup as well', () => {
+    // Doing it twice - in CSS and in about.js - would put it back.
+    const at = aboutJs.indexOf('card-front');
+    const block = aboutJs.slice(at, at + 700);
+    return block.indexOf('<h3>') < block.indexOf('<p>')
+        || 'the markup order changed too, which cancels the CSS reorder out';
+});
+
+
 console.log(`\n${'='.repeat(46)}`);
 console.log(`  PASSED: ${pass}    FAILED: ${fail}`);
 console.log('='.repeat(46));

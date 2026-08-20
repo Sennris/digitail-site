@@ -499,11 +499,26 @@ footer {
    photo moved out from under it. It now sits in normal flow directly
    after the photo and is pulled back up over the edge, so it straddles
    whatever height the picture turns out to be. */
+/* THE BADGE SITS ON THE PHOTO'S EDGE, NOT ON THE NAME.
+   In the markup the name comes first and the role badge second, so
+   pulling the badge up with a negative margin dragged it over the NAME
+   underneath rather than onto the bottom of the photo, where the old
+   fixed-position version used to sit. Reported 20 Aug 2026.
+
+   .card-front is already a flex column, so the two only need swapping
+   visually - the reading order in the markup stays name-then-role, and
+   the button stays last in both. */
+.card-front > .player-avatar { order: 1; }
+.card-front > p              { order: 2; }
+.card-front > h3             { order: 3; }
+.card-front > .flip-hint     { order: 4; }
+
 .card-front p {
     position: relative;
     z-index: 5;
     width: fit-content;
-    margin: -1.05rem auto 0;
+    /* Up onto the photo's edge, then clear space before the name. */
+    margin: -1.05rem auto 0.5rem;
     transform: rotate(-2deg);
     background: var(--long-black);
     color: var(--frozen-juniper);
@@ -521,7 +536,8 @@ footer {
 .card-front h3 {
     font-size: 2.1rem;
     letter-spacing: -0.02em;
-    margin-top: 0.4rem;
+    /* The badge above it owns the spacing now. */
+    margin-top: 0;
 }
 
 /* Now a real button. It was 0.66rem at 55% opacity, which came out at

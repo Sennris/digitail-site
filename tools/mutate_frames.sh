@@ -208,12 +208,15 @@ mutate "the min-height floor is removed" \
 
 echo
 echo "The badge and the grid"
+# The margin gained a bottom value on 20 Aug and this anchor still
+# carried the old three-value shape, so it stopped matching and went to
+# SKIP. Anchored on the two properties that define the fix instead of on
+# a margin whose numbers are expected to be tuned.
 mutate "the badge is pinned to a fixed offset again" \
     "public/assets/css/pages/about.css" \
     "    position: relative;
     z-index: 5;
-    width: fit-content;
-    margin: -1.05rem auto 0;" \
+    width: fit-content;" \
     "    position: absolute;
     top: 218px;
     left: 50%;"
@@ -257,6 +260,33 @@ mutate "the admin stops naming the Google Group" \
     "public/admin/admin-press.js" \
     "'Put the studio Google Group address here, not a personal one. The press '" \
     "'Put an address here. The press '"
+
+echo
+echo "The role badge"
+mutate "the reorder is dropped, so the badge lands on the name" \
+    "public/assets/css/pages/about.css" \
+    ".card-front > p              { order: 2; }" \
+    ".card-front > p              { order: 9; }"
+
+mutate "the photo is ordered after the badge" \
+    "public/assets/css/pages/about.css" \
+    ".card-front > .player-avatar { order: 1; }" \
+    ".card-front > .player-avatar { order: 3; }"
+
+mutate "Read bio jumps above the name" \
+    "public/assets/css/pages/about.css" \
+    ".card-front > .flip-hint     { order: 4; }" \
+    ".card-front > .flip-hint     { order: 0; }"
+
+mutate "the badge stops leaving room beneath it" \
+    "public/assets/css/pages/about.css" \
+    "    margin: -1.05rem auto 0.5rem;" \
+    "    margin: -1.05rem auto 0;"
+
+mutate "the markup is reordered as well, cancelling the CSS out" \
+    "public/assets/js/pages/about.js" \
+    "                            <h3>" \
+    "                            <p></p><h3>"
 
 echo
 echo "=============================================="
