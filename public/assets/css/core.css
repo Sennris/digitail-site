@@ -1047,7 +1047,12 @@ textarea:focus-visible {
 }
 
 .display-prefs__title {
+    /* Was an <h2>. It is a <p> now, because this panel is built inside the
+       nav and any heading here lands ahead of the page's own <h1>. A <p>
+       does not carry the bold an <h2> had by default and this rule never
+       set one, so it is set here. Nothing moves on screen. */
     font-family: var(--font-display);
+    font-weight: 700;
     font-size: 1.15rem;
     text-transform: uppercase;
     margin: 0 0 0.85rem;

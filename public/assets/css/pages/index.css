@@ -175,8 +175,17 @@ body.lang-mi .en {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 1.5rem 2rem;
-    background: linear-gradient(transparent, rgba(29, 13, 18, 0.85));
+    /* The veil has to be dark BEFORE the text starts, or contrast depends
+       on whichever photo was uploaded that week - and a pale photo puts the
+       link at about 1.4:1. The stop is an absolute length, not a percentage,
+       so the fade always finishes inside the top padding no matter how tall
+       the box grows with a long announcement. Worst case (a pure white
+       photo) is now 8.1:1 for the link and 11.2:1 for the text. */
+    padding: 4rem 2rem 1.5rem;
+    background: linear-gradient(to bottom,
+        transparent 0,
+        rgba(29, 13, 18, 0.92) 3.5rem,
+        rgba(29, 13, 18, 0.97) 100%);
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 1.1rem;
@@ -187,6 +196,17 @@ body.lang-mi .en {
     color: #5DCCCA;
     text-decoration: underline;
     text-underline-offset: 3px;
+}
+
+/* Shorter run-up on a phone, where the banner image itself is short. */
+@media (max-width: 768px) {
+    .announcement-banner .announce-overlay {
+        padding: 3rem 1.25rem 1rem;
+        background: linear-gradient(to bottom,
+            transparent 0,
+            rgba(29, 13, 18, 0.92) 2.5rem,
+            rgba(29, 13, 18, 0.97) 100%);
+    }
 }
 
 .announcement-banner.text-only {

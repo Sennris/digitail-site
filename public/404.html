@@ -84,6 +84,12 @@
             justify-content: center;
         }
 
+        /* The glyph is generated content, not a text node. These are pure
+           background texture at 14% - a contrast checker measures a text
+           node and fails it, and a screen reader reads "paw prints" six
+           times over. Neither is what these are for. Identical on screen. */
+        .lost__paw::before { content: '\1F43E'; }
+
         .lost__paw {
             position: absolute;
             font-size: 1.6rem;
@@ -123,12 +129,12 @@
     </nav>
 
     <main class="lost" id="main">
-        <span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);">🐾</span>
-        <span class="lost__paw" style="top:26%; left:19%; transform:rotate(12deg);">🐾</span>
-        <span class="lost__paw" style="top:41%; left:13%; transform:rotate(-8deg);">🐾</span>
-        <span class="lost__paw" style="top:20%; right:14%; transform:rotate(24deg);">🐾</span>
-        <span class="lost__paw" style="top:38%; right:9%; transform:rotate(-14deg);">🐾</span>
-        <span class="lost__paw" style="bottom:16%; right:18%; transform:rotate(8deg);">🐾</span>
+        <span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);"></span>
+        <span class="lost__paw" style="top:26%; left:19%; transform:rotate(12deg);"></span>
+        <span class="lost__paw" style="top:41%; left:13%; transform:rotate(-8deg);"></span>
+        <span class="lost__paw" style="top:20%; right:14%; transform:rotate(24deg);"></span>
+        <span class="lost__paw" style="top:38%; right:9%; transform:rotate(-14deg);"></span>
+        <span class="lost__paw" style="bottom:16%; right:18%; transform:rotate(8deg);"></span>
 
         <p class="lost__code">404</p>
         <span class="lost__fox" aria-hidden="true">🦊</span>

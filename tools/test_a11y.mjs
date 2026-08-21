@@ -104,6 +104,36 @@ group('skeleton', () => {
     });
 });
 
+console.log('\n=== A2. The heading outline starts at h1 ===\n');
+
+group('heading outline', () => {
+    // Two halves of one rule, because the first heading on the rendered page
+    // is not always the first heading in the file.
+    PAGES.forEach((p) => {
+        const first = (stripHtml(read(p)).match(/<h[1-6][\s>]/) || [''])[0];
+        check(`${p}: the first heading in the file is the h1`,
+            first.startsWith('<h1'),
+            first ? `starts with ${first.trim()}` : 'no headings at all');
+    });
+
+    // a11y.js builds the Display Options panel INTO THE NAV, which sits
+    // above every page's <h1>. A heading in there makes the whole document
+    // start its outline at level 2, on all thirteen pages at once, and no
+    // scan of the static files can see it. The panel is named by
+    // role="group" + aria-label, so it needs no heading.
+    const a11y = stripJs(readFileSync(join(PUB, 'assets/js/a11y.js'), 'utf8'));
+    check('a11y.js: builds no heading element',
+        !/<h[1-6][ >]/.test(a11y),
+        'anything it injects lands before the page h1');
+
+    // A dialog before <main> puts its (empty) title ahead of the h1.
+    ['about.html', 'devlogs.html', 'foxes.html'].forEach((p) => {
+        const html = read(p);
+        check(`${p}: the dialog sits after the main content`,
+            html.indexOf('modal-overlay') > html.indexOf('<main'));
+    });
+});
+
 console.log('\n=== B. Modals are hidden from screen readers when closed ===\n');
 
 group('modals', () => {
@@ -263,6 +293,16 @@ group('paws', () => {
         });
     });
     check('all three paws are still on the site', paws === 3, `found ${paws}`);
+
+    // 404 scatters six paw prints as background texture at 14% opacity.
+    // Same reasoning, different class: a checker measures a text node.
+    const lost = read('404.html');
+    check('404.html: the scattered paw prints are generated content',
+        /\.lost__paw::before\s*\{[^}]*content:/.test(lost));
+    const withText = [...lost.matchAll(/<span class="lost__paw"[^>]*>([\s\S]*?)<\/span>/g)]
+        .filter((m) => m[1].trim() !== '');
+    check('404.html: no paw print holds text of its own',
+        withText.length === 0, `${withText.length} still do`);
 });
 
 console.log('\n=== H. No regressions in the language spans ===\n');
@@ -277,6 +317,41 @@ group('lang spans', () => {
     const lang = stripJs(readFileSync(join(PUB, 'assets/js/lang-attr.js'), 'utf8'));
     check('lang-attr.js: still syncs the html lang attribute',
         /documentElement\.setAttribute\('lang'/.test(lang));
+});
+
+console.log('\n=== I. Things only a rendered page shows ===\n');
+
+group('rendered state', () => {
+    // The Display Options panel is injected into the nav, which is above the
+    // <h1>. A heading there makes the first heading on the document an h2,
+    // and every page inherits it because a11y.js runs everywhere.
+    const a11y = stripJs(readFileSync(join(PUB, 'assets/js/a11y.js'), 'utf8'));
+    check('a11y.js: builds no heading element',
+        !/<h[1-6][\s>]/.test(a11y),
+        'a11y.js runs on all 13 pages and mounts into the nav, above the h1');
+    check('a11y.js: the display panel is still named',
+        /aria-label', 'Display options'/.test(a11y));
+
+    // The announcement overlay lays text over an uploaded photo. The veil
+    // has to be dark before the text starts or contrast is whatever the
+    // photo happens to be.
+    const index = stripCss(readFileSync(join(PUB, 'assets/css/pages/index.css'), 'utf8'));
+    const overlays = [...index.matchAll(/\.announce-overlay\s*\{([^}]*)\}/g)].map((m) => m[1]);
+    check('index.css: the announcement overlay is styled in both viewports',
+        overlays.length === 2, `found ${overlays.length} rules`);
+    overlays.forEach((body, i) => {
+        const where = i === 0 ? 'desktop' : 'mobile';
+        const padTop = (body.match(/padding:\s*([\d.]+)rem/) || [])[1];
+        const stops = [...body.matchAll(/rgba\(29,\s*13,\s*18,\s*([\d.]+)\)\s*([\d.]+)rem/g)];
+        const opaque = stops.filter((s) => Number(s[1]) >= 0.9);
+        check(`index.css (${where}): the veil reaches 0.9 opacity at a fixed length`,
+            opaque.length > 0,
+            'a percentage stop slides as the box grows with a longer announcement');
+        const stopAt = opaque.length ? Number(opaque[0][2]) : Infinity;
+        check(`index.css (${where}): the fade finishes before the text starts`,
+            padTop !== undefined && Number(padTop) >= stopAt,
+            `padding-top ${padTop}rem vs veil opaque at ${stopAt}rem`);
+    });
 });
 
 console.log('\n' + '='.repeat(58));

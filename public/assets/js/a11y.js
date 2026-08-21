@@ -100,9 +100,14 @@
         panel.setAttribute('role', 'group');
         panel.setAttribute('aria-label', 'Display options');
 
-        panel.innerHTML = '<h2 class="display-prefs__title">'
+        // Deliberately NOT a heading. This panel is built into the nav, so
+        // any heading here lands before the page's <h1> and makes the first
+        // heading on the document an h2. The panel is already named by its
+        // role="group" + aria-label, so the heading was carrying no weight
+        // it could not carry as plain text. Same class, so nothing moves.
+        panel.innerHTML = '<p class="display-prefs__title">'
             + '<span class="en">Display options</span>'
-            + '<span class="mi">Kōwhiringa whakaaturanga</span></h2>'
+            + '<span class="mi">Kōwhiringa whakaaturanga</span></p>'
             + PREFS.map((p) => `
                 <label class="display-prefs__row">
                     <input type="checkbox" data-pref="${p.id}">

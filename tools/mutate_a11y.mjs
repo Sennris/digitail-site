@@ -58,7 +58,16 @@ const MUTATIONS = [
     ['public/assets/js/a11y.js', "modal.classList.contains('active')", 'false', 'modal close is never detected'],
     ['public/assets/js/a11y.js', "modal.setAttribute('aria-label', 'Details');", '', 'dialogs lose their fallback name'],
     ['public/assets/js/lang-attr.js', 'option[data-en][data-mi]', 'option[data-nothing]', 'option text stops swapping'],
+    ['public/devlogs.html', '    <main id="main"', '    <div id="x-modal" class="modal-overlay"></div>\n    <main id="main"', 'a dialog jumps back above the main content'],
+    ['public/index.html', '<h1 id="hero-title">', '<h2 id="hero-title">', 'the page h1 is demoted'],
     ['public/assets/css/pages/devlogs.css', 'transition: opacity 0.3s ease, visibility 0s linear 0.3s;', 'transition: opacity 0.3s ease;', 'fade-out is taken away before it finishes'],
+    ['public/404.html', ".lost__paw::before { content: '\\1F43E'; }", '', '404 paw prints go back to being text'],
+    ['public/404.html', '<span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);"></span>', '<span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);">\u{1F43E}</span>', 'one 404 paw print keeps its own text'],
+    ['public/assets/js/a11y.js', "'<p class=\"display-prefs__title\">'", "'<h2 class=\"display-prefs__title\">'", 'Display Options title goes back to a heading above the h1'],
+    ['public/assets/js/a11y.js', "panel.setAttribute('aria-label', 'Display options');", '', 'display panel loses its name'],
+    ['public/assets/css/pages/index.css', 'rgba(29, 13, 18, 0.92) 3.5rem', 'rgba(29, 13, 18, 0.55) 3.5rem', 'desktop announcement veil goes see-through again'],
+    ['public/assets/css/pages/index.css', 'padding: 4rem 2rem 1.5rem;', 'padding: 2rem 2rem 1.5rem;', 'announcement text moves up into the see-through part of the fade'],
+    ['public/assets/css/pages/index.css', 'rgba(29, 13, 18, 0.92) 2.5rem', 'rgba(29, 13, 18, 0.92) 92%', 'mobile veil stop becomes a percentage that slides'],
 ];
 
 function flat(rel) {
