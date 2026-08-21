@@ -3,6 +3,27 @@
    Shared behaviour is being consolidated into site.js one
    page at a time - see README. */
 
+/**
+ * The first sentence of a bio, for the card's text box.
+ *
+ * ⚠️ TOP LEVEL, not nested in a block. This is a classic script, so a
+ * function declared inside an if or a callback only hoists within that
+ * block - the same trap the fox photo fix hit in foxes.js.
+ *
+ * No lookbehind in the regex on purpose. Safari below 16.4 throws a
+ * SyntaxError on lookbehind AT PARSE TIME, which would take out the whole
+ * file rather than just this line.
+ */
+function firstLine(text) {
+    const clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return '';
+    // At least 20 characters before the full stop, or "Dr." and "e.g."
+    // end the sentence and the box shows two words.
+    const sentence = clean.match(/^.{20,150}?[.!?](?=\s|$)/);
+    if (sentence) return sentence[0];
+    return clean.length > 120 ? clean.slice(0, 117).trimEnd() + '\u2026' : clean;
+}
+
 // Language Toggle Logic
         const langToggleBtn = document.getElementById('lang-toggle-btn');
         const body = document.body;
@@ -41,18 +62,28 @@
                         ? '<img src="' + member.avatar + '" alt="' + member.nameEn + '">'
                         : '<span class="en">[ photo soon ]</span><span class="mi">[ pikitia ā muri ]</span>';
                     
+                    // Built in the order it is meant to READ, which is now
+                    // also the order it appears: name plate, art, type line,
+                    // text box, button. about.css used to shuffle these with
+                    // order: properties, which made the page disagree with
+                    // what a screen reader announces.
+                    const flavourBox = (member.bioEn || member.bioMi)
+                        ? '<div class="card-flavour"></div>'
+                        : '';
+
                     card.innerHTML = `
                         <div class="player-number">#${cardNo}</div>
                         <div class="card-front">
-                            <div class="player-avatar">${avatarHTML}</div>
                             <h3>
                                 <span class="en">${member.nameEn}</span>
                                 <span class="mi">${member.nameMi || member.nameEn}</span>
                             </h3>
+                            <div class="player-avatar">${avatarHTML}</div>
                             <p>
                                 <span class="en">${member.roleEn}</span>
                                 <span class="mi">${member.roleMi || member.roleEn}</span>
                             </p>
+                            ${flavourBox}
                             <button type="button" class="flip-hint"
                                     aria-haspopup="dialog">
                                 <span class="en">read bio</span>
@@ -72,6 +103,14 @@
                             </div>
                         </div>
                     `;
+                    // One line off the front of the bio for the text box.
+                    // Written with textContent, not into the template, so a
+                    // stray < in somebody's bio cannot become markup.
+                    const flavourEl = card.querySelector('.card-flavour');
+                    if (flavourEl) {
+                        flavourEl.textContent = firstLine(member.bioEn || member.bioMi || '');
+                    }
+
                     const bioBtn = card.querySelector('.flip-hint');
                     if (bioBtn) {
                         bioBtn.addEventListener('click', (e) => {

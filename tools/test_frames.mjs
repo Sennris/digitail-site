@@ -295,32 +295,39 @@ console.log('\nThe role badge');
 const aboutCss = stripCss(read('public/assets/css/pages/about.css'));
 const aboutJs = read('public/assets/js/pages/about.js');
 
-check('the badge is drawn between the photo and the name', () => {
-    // The markup is photo, name, badge. Without a reorder the badge's
-    // negative margin lands it on top of the name instead of on the
-    // bottom edge of the photo.
-    const rule = (aboutCss.match(/\.card-front > p\s*\{[^}]*\}/) || [''])[0];
-    const avatar = (aboutCss.match(/\.card-front > \.player-avatar\s*\{[^}]*\}/) || [''])[0];
-    const name = (aboutCss.match(/\.card-front > h3\s*\{[^}]*\}/) || [''])[0];
-    const num = (r) => Number((r.match(/order:\s*(-?[0-9]+)/) || [, NaN])[1]);
-    const [a, b, c] = [num(avatar), num(rule), num(name)];
-    if ([a, b, c].some(Number.isNaN)) return 'one of the three has no order set';
-    return (a < b && b < c) || `order came out photo ${a}, badge ${b}, name ${c}`;
+/* ⚠️ ALL THREE REWRITTEN 21 Aug 2026.
+   What was reported was "the role badge lands on top of the name". These
+   checks pinned the FIX rather than the complaint: CSS `order:` values on
+   four children, and an exact `margin: -Xrem auto Yrem` shorthand. The
+   cards were rebuilt as trading cards, the markup is now emitted in the
+   order it appears so nothing needs reordering, and no element is pulled
+   over its neighbour at all - which is a stronger guarantee than the one
+   these tests were written to protect, and every one of them failed on it.
+   They now assert the complaint: nothing overlaps, and the button is last. */
+
+const roleLine = (aboutCss.match(/\.card-front p\s*\{[\s\S]*?\}/g) || []).pop() || '';
+const namePlate = (aboutCss.match(/\.card-front h3\s*\{[\s\S]*?\}/g) || []).pop() || '';
+
+check('the role line is not pulled on top of its neighbour', () => {
+    if (!roleLine) return 'no rule for the role line at all';
+    return !/margin:[^;]*(^|[\s:])-[0-9]/.test(roleLine)
+        || 'a negative margin drags the role line over whatever is next to it';
+});
+
+check('the name is not pulled on top of its neighbour either', () => {
+    if (!namePlate) return 'no rule for the name at all';
+    return !/margin:[^;]*(^|[\s:])-[0-9]/.test(namePlate)
+        || 'a negative margin drags the name over whatever is next to it';
 });
 
 check('the button is still last', () => {
-    const btn = (aboutCss.match(/\.card-front > \.flip-hint\s*\{[^}]*\}/) || [''])[0];
-    const name = (aboutCss.match(/\.card-front > h3\s*\{[^}]*\}/) || [''])[0];
-    const num = (r) => Number((r.match(/order:\s*(-?[0-9]+)/) || [, NaN])[1]);
-    return num(btn) > num(name) || 'Read bio moved above the name';
-});
-
-check('the badge leaves room under itself for the name', () => {
-    const rule = (aboutCss.match(/\.card-front p\s*\{[\s\S]*?\}/g) || [])
-        .find((r) => /z-index/.test(r)) || '';
-    const margin = (rule.match(/margin:\s*(-?[0-9.]+rem)\s+auto\s+(-?[0-9.]+rem)/) || [])[2];
-    return (margin && parseFloat(margin) > 0)
-        || `bottom margin is ${margin || 'missing'}, so the name sits under the badge`;
+    // Read the template, not CSS order values - the markup IS the order now.
+    const at = aboutJs.indexOf('card.innerHTML');
+    const tpl = at > -1 ? aboutJs.slice(at, aboutJs.indexOf('`;', at)) : '';
+    if (!tpl) return 'could not find the card template';
+    const btn = tpl.indexOf('flip-hint');
+    return (btn > tpl.indexOf('<h3>') && btn > tpl.indexOf('<p>') && btn > tpl.indexOf('player-avatar'))
+        || 'Read bio is no longer the last thing on the card';
 });
 
 check('the name is not reordered in the markup as well', () => {

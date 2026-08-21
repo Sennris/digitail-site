@@ -737,6 +737,71 @@ textarea:focus-visible {
     border: 0;
 }
 
+/* ==========================================================================
+   THE FOX TAIL POINTER
+   ==========================================================================
+   The tip of the tail is the hotspot, at 3,3, so it aims where an arrow
+   aims. The tail's tip turns teal over anything you can actually use.
+
+   ⚠️ WHY :is() AND WHY body IN FRONT.
+   Nine page stylesheets between them declare `cursor: pointer` 29 times,
+   on classes like .card and .flip-hint, and they all load AFTER this
+   file. A plain `a, button { ... }` here is (0,0,1) and loses to every
+   one of them, so the tail would vanish on exactly the things you click.
+   `:is()` takes the specificity of its most specific argument, so this
+   rule lands at (0,2,1) and wins without editing 29 declarations in
+   nine files. If a new clickable class needs the tail, add it to the
+   list here - do not go back to raising specificity page by page.
+
+   ⚠️ ALWAYS A REAL KEYWORD AFTER THE COMMA. If the image 404s the whole
+   declaration is dropped, so `, pointer` is what stops a broken path
+   leaving buttons with no pointer at all.
+
+   ⚠️ TEXT FIELDS KEEP THE I-BEAM. It tells you where the caret lands.
+
+   ⚠️ A custom pointer OVERRIDES the size and colour someone set in their
+   operating system, which matters to anyone who made their pointer
+   bigger on purpose. So "Reduce visual noise" in Display options turns
+   it off - and that toggle already defaults ON when the system asks for
+   more contrast, so nobody who needs the real pointer has to go looking.
+   ========================================================================== */
+
+body {
+    cursor: url('/assets/img/cursor-tail.png') 3 3, auto;
+}
+
+body :is(
+    a, button, summary, label, select,
+    [role="button"], [tabindex]:not([tabindex="-1"]),
+    .card, .player-card, .feature-section, .banner, .flip-hint
+) {
+    cursor: url('/assets/img/cursor-tail-active.png') 3 3, pointer;
+}
+
+body :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),
+    textarea
+) {
+    cursor: text;
+}
+
+body :is(button:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+}
+
+/* The opt-out. One class higher than everything above it. */
+.pref-reduce-noise body {
+    cursor: auto;
+}
+
+.pref-reduce-noise body :is(
+    a, button, summary, label, select,
+    [role="button"], [tabindex]:not([tabindex="-1"]),
+    .card, .player-card, .feature-section, .banner, .flip-hint
+) {
+    cursor: pointer;
+}
+
 .skip-link {
     position: absolute;
     left: -9999px;

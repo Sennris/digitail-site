@@ -60,6 +60,20 @@ const MUTATIONS = [
     ['public/assets/js/lang-attr.js', 'option[data-en][data-mi]', 'option[data-nothing]', 'option text stops swapping'],
     ['public/devlogs.html', '    <main id="main"', '    <div id="x-modal" class="modal-overlay"></div>\n    <main id="main"', 'a dialog jumps back above the main content'],
     ['public/index.html', '<h1 id="hero-title">', '<h2 id="hero-title">', 'the page h1 is demoted'],
+
+    // fox tail pointer
+    ['public/assets/css/core.css', "url('/assets/img/cursor-tail-active.png') 3 3, pointer;", "url('/assets/img/cursor-tail-active.png') 3 3;", 'custom cursor loses its keyword fallback'],
+    ['public/assets/css/core.css', '.pref-reduce-noise body {\n    cursor: auto;\n}', '', 'the pointer opt-out disappears'],
+    ['public/assets/css/core.css', '    textarea\n) {\n    cursor: text;', '    textarea\n) {\n    cursor: crosshair;', 'text fields lose the I-beam'],
+    ['public/assets/css/core.css', ") {\n    cursor: url('/assets/img/cursor-tail-active.png') 3 3, pointer;", ") {\n    cursor: pointer;", 'pointer rule drops below the page stylesheets'],
+
+    // team cards
+    ['public/assets/css/pages/about.css', '.player-avatar img {\n    width: 100%;\n    height: auto;\n    display: block;', '.player-avatar img {\n    width: 100%;\n    height: auto;\n    padding: 0.4rem;\n    display: block;', 'the border comes back around every photo'],
+    ['public/assets/css/pages/about.css', '.card-front { padding: 1.15rem; align-items: stretch; }', '.card-front > h3 { order: 3; }', 'the visual order stops matching the markup'],
+    ['public/assets/css/pages/about.css', "background-image: url(\"data:image/svg+xml,", "content: '\\1F43E'; background-image: url(\"data:image/svg+xml,", 'the set symbol becomes a text glyph'],
+    ['public/assets/js/pages/about.js', 'function firstLine(text) {', 'const firstLine = function (text) {', 'firstLine stops being a hoisted declaration'],
+    ['public/assets/js/pages/about.js', '/^.{20,150}?[.!?](?=\\s|$)/', '/^.{20,150}?[.!?](?<=\\w.)/', 'firstLine picks up a lookbehind'],
+
     ['public/assets/css/pages/devlogs.css', 'transition: opacity 0.3s ease, visibility 0s linear 0.3s;', 'transition: opacity 0.3s ease;', 'fade-out is taken away before it finishes'],
     ['public/404.html', ".lost__paw::before { content: '\\1F43E'; }", '', '404 paw prints go back to being text'],
     ['public/404.html', '<span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);"></span>', '<span class="lost__paw" style="top:14%; left:11%; transform:rotate(-20deg);">\u{1F43E}</span>', 'one 404 paw print keeps its own text'],

@@ -16,7 +16,7 @@
  * Mutation-tested with tools/mutate_a11y.sh.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -70,7 +70,12 @@ function stripHtml(src) {
  *  to an expected closing string. A mutation that changes the closing text
  *  should fail one check, not crash the suite. */
 function ruleBody(css, selector) {
-    const at = css.indexOf(selector + ' {');
+    // lastIndexOf, not indexOf. about.css carries the same selector twice on
+    // purpose (a base rule and a restyle further down) and the LATER one is
+    // what the browser applies, so the earlier one is the wrong thing to
+    // assert against. Reading the first rule is how a check passes while the
+    // rule it is meant to be about does the opposite.
+    const at = css.lastIndexOf(selector + ' {');
     if (at === -1) return null;
     let depth = 0;
     for (let i = css.indexOf('{', at); i < css.length; i++) {
@@ -352,6 +357,82 @@ group('rendered state', () => {
             padTop !== undefined && Number(padTop) >= stopAt,
             `padding-top ${padTop}rem vs veil opaque at ${stopAt}rem`);
     });
+});
+
+console.log('\n=== I. The fox tail pointer ===\n');
+
+group('pointer', () => {
+    const core = stripCss(readFileSync(join(PUB, 'assets/css/core.css'), 'utf8'));
+
+    ['cursor-tail.png', 'cursor-tail-active.png',
+     'cursor-tail-2x.png', 'cursor-tail-active-2x.png'].forEach((f) => {
+        check(`assets/img/${f} exists`, existsSync(join(PUB, 'assets/img', f)));
+    });
+
+    // Every custom cursor declaration needs a real keyword after the last
+    // comma. Without one, a 404 on the image drops the WHOLE declaration
+    // and the element ends up with no pointer style at all.
+    const decls = [...core.matchAll(/cursor:\s*url\([^)]*\)[^;]*;/g)].map((m) => m[0]);
+    check('every custom cursor names an image the site ships',
+        decls.length > 0 && decls.every((d) => /cursor-tail(-active)?\.png/.test(d)),
+        decls.join(' | '));
+    check('every custom cursor falls back to a keyword',
+        decls.length > 0 && decls.every((d) => /,\s*(auto|pointer|default)\s*;/.test(d)),
+        'a 404 on the image drops the whole declaration');
+
+    check('the pointer beats the page stylesheets on specificity',
+        /body :is\([\s\S]*?\)\s*\{[^}]*cursor:\s*url/.test(core),
+        'nine page stylesheets declare cursor: pointer and all load later');
+
+    check('typing fields keep the I-beam',
+        /body :is\([\s\S]*?textarea[\s\S]*?\)\s*\{\s*cursor:\s*text/.test(core));
+
+    // A custom pointer overrides the size someone set in their OS.
+    check('there is an opt-out under Reduce visual noise',
+        /\.pref-reduce-noise body\s*\{\s*cursor:\s*auto/.test(core),
+        'anyone who enlarged their system pointer needs a way back');
+    check('the opt-out also restores the hand on clickable things',
+        /\.pref-reduce-noise body :is\([\s\S]*?\)\s*\{\s*cursor:\s*pointer/.test(core));
+});
+
+console.log('\n=== J. Team cards ===\n');
+
+group('team cards', () => {
+    const css = stripCss(readFileSync(join(PUB, 'assets/css/pages/about.css'), 'utf8'));
+    const js = stripJs(readFileSync(join(PUB, 'assets/js/pages/about.js'), 'utf8'));
+
+    // She reported a thin band of the backing showing all round every photo.
+    const img = ruleBody(css, '.player-avatar img');
+    check('about.css: the photo runs flush inside its frame',
+        !!img && !/padding:/.test(img),
+        'padding here draws the backing around every picture');
+
+    // Built in the order it is read, so nothing has to be shuffled back.
+    // Read positions INSIDE the template only. card-flavour is also named in
+    // a variable above it, and searching the whole file finds that first.
+    const tplStart = js.indexOf('card.innerHTML');
+    const tpl = tplStart > -1 ? js.slice(tplStart, js.indexOf('`;', tplStart)) : '';
+    const order = ['<h3>', 'class="player-avatar"', '<p>', 'flavourBox', 'flip-hint']
+        .map((t) => tpl.indexOf(t));
+    check('about.js: the card is built in the order it appears',
+        tpl.length > 0 && order.every((v, i) => v > -1 && (i === 0 || v > order[i - 1])),
+        order.join(', '));
+    check('about.css: nothing reorders the card children visually',
+        !/\.card-front\s*>\s*\S+\s*\{\s*order:/.test(css),
+        'visual order that disagrees with the markup is what order: does');
+
+    // The set symbol is drawn, not typed. A glyph is a text node: a
+    // contrast checker measures it and a screen reader reads it out.
+    const type = ruleBody(css, '.card-front p');
+    check('about.css: the type line set symbol is an image, not a glyph',
+        !!type && /background-image:\s*url\(/.test(type) && !/content:/.test(type));
+
+    check('about.js: firstLine is declared at the top level',
+        /^function firstLine\(/m.test(js),
+        'a function nested in a block only hoists inside that block');
+    check('about.js: firstLine avoids lookbehind',
+        !/\(\?<[=!]/.test(js),
+        'Safari below 16.4 throws on lookbehind at PARSE time, killing the file');
 });
 
 console.log('\n' + '='.repeat(58));

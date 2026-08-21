@@ -153,10 +153,17 @@ const aboutCss = stripCss(read('public/assets/css/pages/about.css'));
 const aboutJs = read('public/assets/js/pages/about.js');
 
 check('the card photo is not cropped', () => {
+    // ⚠️ REWRITTEN 21 Aug 2026. This used to require `object-fit: contain`,
+    // which is one way of not cropping, not the thing itself. Once the
+    // frame started taking the picture's own shape there was nothing left
+    // for object-fit to do and it was removed - so a correct change read
+    // as a regression. Asserting the INTENT instead: no crop, no stretch.
     const rule = topRule(aboutCss, '.player-avatar img');
     if (!rule) return 'nothing sizes the card photo at all';
-    return /object-fit:\s*contain/.test(rule)
-        || `still ${(rule.match(/object-fit:[^;]*/) || ['nothing'])[0]}`;
+    if (/object-fit:\s*cover/.test(rule)) return 'object-fit: cover cuts the head off';
+    if (/height:\s*[0-9]/.test(rule)) return 'a fixed height on the picture squashes or crops it';
+    if (!/height:\s*auto/.test(rule)) return 'nothing tells the picture to keep its proportions';
+    return true;
 });
 
 check('the bio photo is not cropped either', () => {
