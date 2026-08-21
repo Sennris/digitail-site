@@ -1,4 +1,18 @@
 /* index.html - page script */
+
+/* Turns a stored value into something safe to put inside an attribute.
+   A media URL is a plain string in the database, and a quote in it would
+   otherwise close the src early and put the rest inside the tag.
+   Declared at the TOP of the file rather than beside its use: this is a
+   classic script, and a function nested inside a block only hoists within
+   that block. Same helper, same reasoning, as foxes.js. */
+function escapeAttr(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 /* Extracted verbatim from the old inline <script> block.
    Shared behaviour is being consolidated into site.js one
    page at a time - see README. */
@@ -342,7 +356,7 @@
                         const hasText = data.announcement.text && data.announcement.text.trim();
                         
                         if (hasImage) {
-                            let html = '<img src="' + data.announcement.image + '" alt="Announcement">';
+                            let html = '<img src="' + escapeAttr(data.announcement.image) + '" alt="Announcement">';
                             if (hasText) {
                                 const textContent = data.announcement.link 
                                     ? '<a href="' + data.announcement.link + '">' + data.announcement.text + '</a>'
@@ -527,7 +541,7 @@
                     
                     if (newest.thumbnail) {
                         document.getElementById('home-social-image').innerHTML = 
-                            '<img src="' + newest.thumbnail + '" alt="' + (newest.title || 'Latest social post') + '" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">';
+                            '<img src="' + escapeAttr(newest.thumbnail) + '" alt="' + escapeAttr(newest.title || 'Latest social post') + '" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">';
                     }
                 }
             })
@@ -544,8 +558,21 @@
                     
                     // Inject the newest fox data into the homepage card
                     const foxImageContainer = document.getElementById('home-fox-image');
-                    if(newestFox.image) {
-                        foxImageContainer.innerHTML = newestFox.image;
+                    if (newestFox.image) {
+                        // ⚠️ THIS USED TO BE `innerHTML = newestFox.image`.
+                        // The stored value is a URL, not markup, so the
+                        // homepage printed "/media/2026/08/....webp" as TEXT
+                        // inside the dashed placeholder and no picture ever
+                        // appeared. Exactly the same bug as the foxes page
+                        // had, in a file that never got the same fix.
+                        //
+                        // A value that already starts with < is hand-written
+                        // markup from before the media picker existed, so it
+                        // is left alone.
+                        foxImageContainer.innerHTML = String(newestFox.image).trim().startsWith('<')
+                            ? newestFox.image
+                            : '<img src="' + escapeAttr(newestFox.image) + '" alt="'
+                                + escapeAttr(newestFox.nameEn || 'Adopted fox') + '">';
                     }
                     
                     document.getElementById('home-fox-title-en').innerText = "Meet " + newestFox.nameEn + " (Class of " + newestFox.year + ")";

@@ -1,4 +1,14 @@
 /* social.html - page script */
+
+/* Attribute-safe, top level, same as foxes.js and index.js. A stored
+   media URL is a plain string; a quote in it would close the src early. */
+function escapeAttr(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 /* Extracted verbatim from the old inline <script> block.
    Shared behaviour is being consolidated into site.js one
    page at a time - see README. */
@@ -34,7 +44,7 @@
 
             grid.innerHTML = posts.map(post => {
                 const thumbHTML = post.thumbnail 
-                    ? '<img src="' + post.thumbnail + '" alt="' + (post.title || '') + '">'
+                    ? '<img src="' + escapeAttr(post.thumbnail) + '" alt="' + escapeAttr(post.title || '') + '">'
                     : '<span>[ No Image ]</span>';
                 
                 const tagsHTML = (post.tags && post.tags.length > 0) 

@@ -1,4 +1,14 @@
 /* about.html - page script */
+
+/* Attribute-safe, top level, same as foxes.js and index.js. A stored
+   media URL is a plain string; a quote in it would close the src early. */
+function escapeAttr(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 /* Extracted verbatim from the old inline <script> block.
    Shared behaviour is being consolidated into site.js one
    page at a time - see README. */
@@ -59,7 +69,7 @@ function firstLine(text) {
                     // fixed in about.css at all. It lives in .player-avatar
                     // img now, where it can be changed like everything else.
                     const avatarHTML = member.avatar 
-                        ? '<img src="' + member.avatar + '" alt="' + member.nameEn + '">'
+                        ? '<img src="' + escapeAttr(member.avatar) + '" alt="' + escapeAttr(member.nameEn) + '">'
                         : '<span class="en">[ photo soon ]</span><span class="mi">[ pikitia ā muri ]</span>';
                     
                     // Built in the order it is meant to READ, which is now
@@ -188,7 +198,7 @@ function openTeamModal(member) {
                    + '<span class="mi">' + (member.roleMi || member.roleEn || '') + '</span>';
 
     const avatar = member.avatar
-        ? '<div class="modal-avatar"><img src="' + member.avatar + '" alt="' + (member.nameEn || '') + '"></div>'
+        ? '<div class="modal-avatar"><img src="' + escapeAttr(member.avatar) + '" alt="' + escapeAttr(member.nameEn || '') + '"></div>'
         : '';
 
     teamModal.querySelector('#team-modal-body').innerHTML =

@@ -125,6 +125,76 @@ check('a quote in the filename cannot break out of the tag', () => {
     return !/onerror="alert/.test(html) || `escaped badly: ${html}`;
 });
 
+/* ⚠️ THE SAME BUG WAS ON THE HOMEPAGE THE WHOLE TIME.
+   Everything above tests foxes.js. index.js renders the newest fox into
+   the "Studio Mascot, Made Real" card and had the identical line -
+   innerHTML = fox.image - so the homepage printed the URL as text while
+   the foxes page showed the picture. Reported 21 Aug 2026.
+
+   These run the HOMEPAGE branch, not the foxes one. A check that only
+   exercised foxes.js is what let this survive a fix that was supposed to
+   be about exactly this. */
+
+const indexJs = read('public/assets/js/pages/index.js');
+
+function homeFoxImage(fox) {
+    const branch = indexJs.slice(
+        indexJs.indexOf('foxImageContainer.innerHTML ='),
+        indexJs.indexOf(";", indexJs.indexOf("'Adopted fox'")),
+    ).replace('foxImageContainer.innerHTML =', '');
+    const src = `${extract(indexJs, 'function escapeAttr')}\n`
+        + `var newestFox = ${JSON.stringify(fox)};\n`
+        + `var out = ${branch};`;
+    const sandbox = {};
+    vm.createContext(sandbox);
+    vm.runInContext(src, sandbox);
+    return sandbox.out;
+}
+
+check('the homepage fox becomes an actual image tag', () => {
+    const html = homeFoxImage({ image: '/media/2026/08/artie-and-cooper.webp', nameEn: 'Artie and Cooper' });
+    return (/<img\s/.test(html) && html.includes('src="/media/2026/08/artie-and-cooper.webp"'))
+        || `came out as ${html}`;
+});
+
+check('the homepage does not print the URL as text', () => {
+    const html = homeFoxImage({ image: '/media/2026/08/artie-and-cooper.webp', nameEn: 'Artie' });
+    return html.trim() !== '/media/2026/08/artie-and-cooper.webp'
+        || 'the raw URL is still being printed on the homepage';
+});
+
+check('the homepage fox gets a name in the alt text', () => {
+    const html = homeFoxImage({ image: '/media/x.webp', nameEn: 'Artie' });
+    return html.includes('alt="Artie"') || `alt was wrong: ${html}`;
+});
+
+check('a nameless homepage fox still gets alt text', () => {
+    const html = homeFoxImage({ image: '/media/x.webp', nameEn: '' });
+    return /alt="[^"]+"/.test(html) || `empty alt: ${html}`;
+});
+
+check('a quote in the homepage filename cannot break out of the tag', () => {
+    const html = homeFoxImage({ image: '/media/a" onerror="alert(1)', nameEn: 'Artie' });
+    return !/onerror="alert/.test(html) || `escaped badly: ${html}`;
+});
+
+check('hand-written markup from before the picker is left alone', () => {
+    const html = homeFoxImage({ image: '<img src="/legacy/old.webp" alt="typed by hand">', nameEn: 'Artie' });
+    return html.includes('typed by hand') || `it was mangled: ${html}`;
+});
+
+check('every page that builds a src escapes it', () => {
+    // foxes.js was fixed alone last time and the same line survived in
+    // three other files. Checked as a set so the next one cannot.
+    const bad = [];
+    ['index', 'about', 'social', 'foxes'].forEach((page) => {
+        const js = read(`public/assets/js/pages/${page}.js`);
+        const raw = js.match(/<img src="' \+ (?!escapeAttr)[a-zA-Z]/g);
+        if (raw) bad.push(`${page}.js`);
+    });
+    return bad.length === 0 || `${bad.join(', ')} still drop a stored value straight into a src`;
+});
+
 check('no photo still shows the placeholder, in both languages', () => {
     const html = foxImage({ image: '', nameEn: 'Kiri' });
     return html.includes('Photo Placeholder') && html.includes('Pikitia Placeholder')
