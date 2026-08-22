@@ -137,48 +137,12 @@ function firstLine(text) {
                 teamGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column:1/-1;"><span class="en">Team data could not be loaded.</span><span class="mi">Kāore i taea te uta i ngā kōrero rōpū.</span></p>';
             });
 
-                // EASTER EGG 1: The Dev Console Secret
-        console.log(
-            "%c🦊 You found the fox den!\n\nIf you're reading this, you must be a nerd.\nWe like nerds. Come chat with us in Discord!", 
-            "display: block; background: #1D0D12; color: #5DCCCA; font-size: 16px; font-weight: bold; padding: 20px; border-radius: 6px; line-height: 1.5; font-family: monospace;"
-        );
-
-        // EASTER EGG 2: The Fox Hunt Engine
-        document.addEventListener('DOMContentLoaded', () => {
-            const paws = document.querySelectorAll('.secret-paw');
-            
-            paws.forEach(paw => {
-                let foundPaws = JSON.parse(localStorage.getItem('skulkPaws')) || [];
-                if (foundPaws.includes(paw.id)) {
-                    paw.classList.add('found'); 
-                }
-
-                paw.addEventListener('click', () => {
-                    let currentFound = JSON.parse(localStorage.getItem('skulkPaws')) || [];
-                    
-                    if (!currentFound.includes(paw.id)) {
-                        currentFound.push(paw.id);
-                        localStorage.setItem('skulkPaws', JSON.stringify(currentFound));
-                        paw.classList.add('found');
-                        
-                        if (currentFound.length === 3) {
-                            alert(document.body.classList.contains('lang-en') ? 
-                                "🦊 You found all 3 hidden paws! Welcome to the deep den..." : 
-                                "🦊 Kua kitea ngā tapuwae e 3! Nau mai ki te rua hōhonu...");
-                            window.location.href = "/foxes.html#deep-den";
-                        } else {
-                            alert(document.body.classList.contains('lang-en') ? 
-                                `🐾 Paw found! (${currentFound.length}/3) Keep hunting...` : 
-                                `🐾 Kua kitea te tapuwae! (${currentFound.length}/3) Rapua tonutia...`);
-                        }
-                    } else {
-                        alert(document.body.classList.contains('lang-en') ? 
-                            "You already found this one! Check the other pages." : 
-                            "Kua kitea kē tēnei! Tirohia ētahi atu whārangi.");
-                    }
-                });
-            });
-        });
+        /* The console secret and the fox hunt used to be copy-pasted
+           here and into three other page scripts. Four copies of one
+           feature is four things to keep in step, and they had already
+           drifted - this file ran the hunt on a page with no paw in it.
+           Both now live in assets/js/eggs.js, loaded on every page.
+           Moved, not copied. */
 
 
 /* ------------------------------------------------------------------

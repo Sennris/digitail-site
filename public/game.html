@@ -111,7 +111,15 @@
     <script src="/assets/js/pages/game.js"></script>
     <script src="/assets/js/lang-attr.js"></script>
     <script src="/assets/js/a11y.js"></script>
+
+    <!-- Stage two of the hunt. Hidden until all three paws are
+         found - eggs.js is what reveals it. In the markup rather
+         than added by script, so somebody reading the source can
+         find it the hard way, which is the point. -->
+    <button type="button" class="skulk-rune" id="rune-4" data-letter="L" hidden
+            aria-label="A hidden rune. Find all five."></button>
     <script src="/assets/js/konami.js"></script>
+    <script src="/assets/js/eggs.js"></script>
     <script src="/assets/js/card-click.js"></script>
     <!-- Cloudflare Web Analytics. Cookieless: it does not set a cookie, does
          not fingerprint the visitor and does not follow anyone across sites,
