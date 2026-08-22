@@ -70,8 +70,12 @@
         <section class="fox-grid stagger" id="fox-grid">
         </section>
 
-        <!-- The two toys sit in the deep den on purpose: it is the section
-     the paw hunt unlocks, so finding it is what they are a reward for.
+        <!-- ⚠️ THESE ARE NOT GATED. An earlier version of this comment claimed
+     they were a reward for the paw hunt; they are not, and gating a toy
+     behind a puzzle just means fewer people play with it. They sit
+     NEXT TO the deep den because that is where the hunt sends you, so
+     anyone finishing the hunt lands on them - but anyone scrolling finds
+     them too, which is the point of a toy.
      Both are progressively enhanced - foxquiz.js unhides its section
      only once it has real foxes to name, and the globe draws nothing
      until snowglobe.js runs. With scripts off, neither is in the way. -->
@@ -79,6 +83,7 @@
     <h2 class="statement">
         <span class="en">Things to <em>play with</em></span>
         <span class="mi">Ngā mea <em>hei takaro</em></span>
+        <button type="button" class="skulk-rune" id="rune-5" data-letter="K" hidden aria-label="A hidden rune. Find all five."></button>
     </h2>
 
     <div class="den-toy">
@@ -156,12 +161,6 @@
     <script src="/assets/js/lang-attr.js"></script>
     <script src="/assets/js/a11y.js"></script>
 
-    <!-- Stage two of the hunt. Hidden until all three paws are
-         found - eggs.js is what reveals it. In the markup rather
-         than added by script, so somebody reading the source can
-         find it the hard way, which is the point. -->
-    <button type="button" class="skulk-rune" id="rune-5" data-letter="K" hidden
-            aria-label="A hidden rune. Find all five."></button>
     <script src="/assets/js/snowglobe.js"></script>
     <script src="/assets/js/foxquiz.js"></script>
     <script src="/assets/js/konami.js"></script>

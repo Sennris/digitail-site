@@ -33,17 +33,20 @@ const MUTATIONS = [
       to: '            old = [];' },
 
     // --- the rune chain ---
+    // Re-anchored 22 Aug 2026: the runes moved out of the script block at
+    // the bottom of the body and into the headings they belong in, so
+    // they are now on one line at the heading's indentation.
     { name: 'a rune goes missing',
       file: 'public/game.html',
-      from: '    <button type="button" class="skulk-rune" id="rune-4" data-letter="L" hidden\n            aria-label="A hidden rune. Find all five."></button>\n', to: '' },
+      from: '<button type="button" class="skulk-rune" id="rune-4" data-letter="L" hidden aria-label="A hidden rune. Find all five."></button>\n', to: '' },
     { name: 'a rune loses its label',
       file: 'public/about.html',
-      from: '    <button type="button" class="skulk-rune" id="rune-2" data-letter="K" hidden\n            aria-label="A hidden rune. Find all five."></button>',
-      to: '    <button type="button" class="skulk-rune" id="rune-2" data-letter="K" hidden></button>' },
+      from: '<button type="button" class="skulk-rune" id="rune-2" data-letter="K" hidden aria-label="A hidden rune. Find all five."></button>',
+      to: '<button type="button" class="skulk-rune" id="rune-2" data-letter="K" hidden></button>' },
     { name: 'a rune is visible before the paws are found',
       file: 'public/index.html',
-      from: '    <button type="button" class="skulk-rune" id="rune-1" data-letter="S" hidden',
-      to: '    <button type="button" class="skulk-rune" id="rune-1" data-letter="S"' },
+      from: '<button type="button" class="skulk-rune" id="rune-1" data-letter="S" hidden',
+      to: '<button type="button" class="skulk-rune" id="rune-1" data-letter="S"' },
     { name: 'the letters stop spelling the answer',
       file: 'public/devlogs.html', from: 'data-letter="U"', to: 'data-letter="Z"' },
     { name: 'stage two opens to somebody who found nothing',
