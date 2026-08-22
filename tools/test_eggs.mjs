@@ -308,6 +308,150 @@ check('it does not move for somebody who asked for stillness', (() => {
 check('activity resets the wait', /'mousemove', 'keydown'/.test(eggs)
     || 'the fox appears while somebody is using the page');
 
+check('the art is a separate file from the engine', (() => {
+    /* Art is data, the player is code. The studio can redraw the fox
+       without going near eggs.js, and eggs.js can change without anyone
+       risking the art. */
+    const art = source('foxart.js');
+    return /window\.FOX_FRAMES/.test(art) && !/addEventListener|setInterval/.test(art)
+        || 'foxart.js has logic in it, or the frames are not there';
+})());
+
+check('the art loads before the engine that reads it', (() => {
+    // eggs.js reads window.FOX_FRAMES at the moment a fox appears, but
+    // a page that loads them the other way round is still a page where
+    // one file quietly depends on another's order.
+    const bad = pages.filter((f) => {
+        const html = readFileSync(join(PUB, f), 'utf8');
+        return html.indexOf('foxart.js') > html.indexOf('eggs.js');
+    });
+    return !bad.length || `wrong script order on: ${bad.join(', ')}`;
+})());
+
+/* ⚠️ THE ART IS LOADED AND INSPECTED, NOT PATTERN-MATCHED AS TEXT.
+   The first version of these checks split foxart.js on its `/* N *``/`
+   comments and measured the escapes in between. The harness caught the
+   flaw: a frame injected BEFORE the first comment marker was invisible
+   to the split, so a mis-sized frame sailed straight through. Loading
+   the file gives the same array the browser gets, and there is nothing
+   left to disagree about. */
+function loadFoxArt() {
+    global.window = global.window || {};
+    delete require.cache[require.resolve(join(JS, 'foxart.js'))];
+    require(join(JS, 'foxart.js'));
+    return global.window.FOX_FRAMES;
+}
+
+const foxFrames = loadFoxArt();
+
+check('the art file defines frames', Array.isArray(foxFrames) && foxFrames.length >= 4
+    || `FOX_FRAMES is ${foxFrames ? foxFrames.length + ' frames' : 'not an array'}`);
+
+check('every frame is exactly the same size', (() => {
+    /* ⚠️ FRAMES OF DIFFERENT SIZES MAKE THE FOX JUMP as it plays, and it
+       is the easiest thing to get wrong when redrawing one. */
+    const widths = new Set();
+    const heights = new Set();
+    foxFrames.forEach((f) => {
+        const rows = f.split('\n');
+        heights.add(rows.length);
+        rows.forEach((r) => widths.add(r.length));
+    });
+    return (widths.size === 1 && heights.size === 1)
+        || `widths ${[...widths]}, heights ${[...heights]}`;
+})());
+
+check('every character is a real Braille block', (() => {
+    // A stray space or tab collapses differently from U+2800 and tears a
+    // hole in the picture.
+    const bad = [];
+    foxFrames.forEach((f, i) => {
+        [...f.replace(/\n/g, '')].forEach((c) => {
+            const n = c.codePointAt(0);
+            if (n < 0x2800 || n > 0x28ff) bad.push(`frame ${i}: U+${n.toString(16)}`);
+        });
+    });
+    return !bad.length || bad.slice(0, 3).join(', ');
+})());
+
+check('the shipped art really is a picture, not filler', (() => {
+    /* ⚠️ THIS DECODES THE BRAILLE AND COUNTS THE DOTS. Every other check
+       would pass on a frame of 968 identical characters.
+
+       Distinctness is measured WITHIN a frame. An earlier version
+       compared rows across the whole file and failed on correct art:
+       most of the fox - ears, head, cheeks - is identical in all eight
+       frames because only the mouth moves. Rows repeating BETWEEN frames
+       is what an animation looks like; rows repeating INSIDE one frame
+       is what stripes look like. */
+    let lit = 0;
+    let total = 0;
+    foxFrames.forEach((f) => {
+        [...f.replace(/\n/g, '')].forEach((c) => {
+            const n = c.codePointAt(0) - 0x2800;
+            for (let b = 0; b < 8; b += 1) if (n >> b & 1) lit += 1;
+            total += 8;
+        });
+    });
+    /* ⚠️ THE BAND IS WIDE ON PURPOSE, and the first version was not.
+       It was set at 20-80% while the art was a filled silhouette, and it
+       then failed the studio's own frames at 18% - because LINE ART is
+       sparse and a silhouette is dense, and both are perfectly good
+       drawings. What this check is actually for is catching a blank
+       canvas or a solid block of filler, so the band only has to exclude
+       those. Calibrating a test to one drawing makes it fail the next. */
+    const ink = lit / total;
+    if (ink < 0.05 || ink > 0.9) return `canvas is ${Math.round(ink * 100)}% ink`;
+
+    const worst = Math.min(...foxFrames.map((f) => {
+        const rows = f.split('\n');
+        return new Set(rows).size / rows.length;
+    }));
+    return worst > 0.7
+        || `a frame is only ${Math.round(worst * 100)}% distinct rows - a pattern, not a drawing`;
+})());
+
+check('the frames actually differ from one another', (() => {
+    const shapes = new Set(foxFrames);
+    return shapes.size >= 4 || `${shapes.size} distinct frames - the fox would barely move`;
+})());
+
+check('a missing art file falls back to the emoji', (() => {
+    /* The GUARD line specifically. foxFrames() has two `return null;`
+       statements, so a bare search for one was answered by the other -
+       breaking the first changed nothing the test could see. */
+    const at = eggs.indexOf('function foxFrames');
+    const body = eggs.slice(at, at + 500);
+    return /if \(!frames \|\| !frames\.length\) return null;/.test(body)
+        && /\\ud83e\\udd8a/.test(eggs)
+        || 'no art means an empty box slides in from the side';
+})());
+
+check('the frame timer is cleared when the fox leaves', (() => {
+    const at = eggs.indexOf('function foxVisit');
+    const body = eggs.slice(at, at + 2200);
+    return /clearInterval\(playing\)/.test(body)
+        || 'every visit leaves an interval running against a removed node';
+})());
+
+check('reduced motion still draws the fox, just still', (() => {
+    const at = eggs.indexOf('function foxVisit');
+    const body = eggs.slice(at, at + 2200);
+    return /fox\.textContent = frames\[0\];/.test(body) && /if \(!stillnessWanted\(\)\)/.test(body)
+        || 'reduced motion either animates anyway or shows nothing';
+})());
+
+check('the braille styling keeps the picture together', (() => {
+    /* line-height 1, letter-spacing 0 and a monospace font. Lose any one
+       and the art shears into stripes. */
+    const css = readFileSync(join(PUB, 'assets', 'css', 'core.css'), 'utf8');
+    const rule = /\.idle-fox-art\s*\{([^}]*)\}/.exec(css);
+    if (!rule) return 'no .idle-fox-art rule';
+    const need = [/line-height:\s*1\b/, /letter-spacing:\s*0/, /monospace/, /white-space:\s*pre/];
+    const missing = need.filter((re) => !re.test(rule[1]));
+    return !missing.length || `${missing.length} of the four braille rules are missing`;
+})());
+
 check('it is hidden from screen readers', (() => {
     const at = eggs.indexOf('function foxVisit');
     return /aria-hidden/.test(eggs.slice(at, at + 500))

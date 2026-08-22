@@ -1383,6 +1383,30 @@ body :is(button:disabled, [aria-disabled="true"]) {
 }
 .idle-fox.peeking { transform: translateX(18%); }
 
+/* ⚠️ BRAILLE ART FALLS APART UNLESS ALL THREE OF THESE HOLD.
+   line-height must be exactly 1 or horizontal gaps open between the
+   rows and the picture shears into stripes. letter-spacing must be 0 or
+   vertical gaps do the same. And the font has to be monospace, or every
+   row is a different width and the fox melts.
+   The size is clamped rather than fixed: 44 characters is about 260px
+   on a desktop and would run off the side of a phone. */
+.idle-fox-art {
+    margin: 0; padding: 0; white-space: pre;
+    font-family: "Cascadia Mono", "DejaVu Sans Mono", "Menlo", "Consolas", monospace;
+    /* 64 characters wide now, not 44 - the studio's own frames carry
+       more detail, so the type has to come down to keep the fox about the
+       same size on screen. */
+    font-size: clamp(4px, 1.25vw, 7.5px);
+    line-height: 1; letter-spacing: 0;
+    color: var(--frozen-juniper);
+    /* Somewhere between the fox and the page, so it reads as a creature
+       at the glass rather than a solid block pasted on top. */
+    opacity: 0.92;
+}
+.idle-fox-art.crowned { color: var(--flat-white); }
+/* Further in than the emoji: at this size only a sliver would show. */
+.idle-fox-art.peeking { transform: translateX(6%); }
+
 /* ---- seasonal notes ----
    A quiet strip along the bottom, dismissable, once per season per
    browser. */

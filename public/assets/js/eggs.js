@@ -288,17 +288,61 @@
      * only ongoing reward for solving it and costs nothing to give.
      */
     var IDLE_MS = 60000;
+    var FRAME_MS = 150;
     var idleTimer = null;
+
+    /**
+     * ⚠️ THE ART IS A SEPARATE FILE AND THIS COPES WITHOUT IT.
+     * foxart.js defines window.FOX_FRAMES. If it fails to load, or a
+     * browser cannot draw Braille, the fox falls back to the emoji it
+     * used before rather than leaving an empty box sliding in from the
+     * side. An easter egg is never worth a visible failure.
+     */
+    function foxFrames() {
+        var frames = window.FOX_FRAMES;
+        if (!frames || !frames.length) return null;
+        // Frames of different sizes make the fox jump about as it plays.
+        var width = frames[0].length;
+        for (var i = 1; i < frames.length; i += 1) {
+            if (frames[i].length !== width) return null;
+        }
+        return frames;
+    }
 
     function foxVisit() {
         if (document.querySelector('.idle-fox')) return;
         if (document.hidden) return;
 
-        var fox = document.createElement('div');
-        fox.className = 'idle-fox';
-        // Decoration. A screen reader has nothing to say about this.
+        var frames = foxFrames();
+
+        var fox = document.createElement(frames ? 'pre' : 'div');
+        fox.className = 'idle-fox' + (frames ? ' idle-fox-art' : '');
+        if (read().crowned) fox.classList.add('crowned');
+
+        /* ⚠️ aria-hidden IS NOT OPTIONAL HERE.
+           Each frame is 968 Braille characters. Without this a screen
+           reader reads out a thousand "braille pattern dots" per frame,
+           over and over, for as long as the fox is on screen. The emoji
+           version was merely pointless to announce; this one would be
+           unusable. */
         fox.setAttribute('aria-hidden', 'true');
-        fox.textContent = read().crowned ? '\ud83d\udc51\ud83e\udd8a' : '\ud83e\udd8a';
+
+        var playing = null;
+        if (frames) {
+            fox.textContent = frames[0];
+            /* Somebody who asked for less movement gets the fox, and gets
+               it drawn - they just get the resting frame and no lick. */
+            if (!stillnessWanted()) {
+                var at = 0;
+                playing = window.setInterval(function () {
+                    at = (at + 1) % frames.length;
+                    fox.textContent = frames[at];
+                }, FRAME_MS);
+            }
+        } else {
+            fox.textContent = read().crowned ? '\ud83d\udc51\ud83e\udd8a' : '\ud83e\udd8a';
+        }
+
         document.body.appendChild(fox);
 
         // Force a reflow so the transition runs from the off-screen
@@ -309,9 +353,13 @@
         window.setTimeout(function () {
             fox.classList.remove('peeking');
             window.setTimeout(function () {
+                // The timer is cleared before the element goes, so a
+                // visit can never leave one running against a node that
+                // is no longer on the page.
+                if (playing) window.clearInterval(playing);
                 if (fox.parentNode) fox.parentNode.removeChild(fox);
             }, 1200);
-        }, 4000);
+        }, 4400);
     }
 
     function resetIdle() {
