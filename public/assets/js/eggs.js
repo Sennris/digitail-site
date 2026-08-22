@@ -309,57 +309,82 @@
         return frames;
     }
 
+    /* ⚠️ A SHORT DEAF PERIOD AFTER IT APPEARS.
+       The fox is dismissed by any movement, and a trackpad twitch or a
+       momentum-scroll still settling would otherwise kill it a few
+       milliseconds after it arrives - so it would flash and vanish and
+       read as a glitch rather than a joke. */
+    var SETTLE_MS = 700;
+    var showing = null;
+
+    function dismissFox() {
+        if (!showing) return;
+        if (Date.now() - showing.at < SETTLE_MS) return;
+
+        var fox = showing;
+        showing = null;
+
+        // The timer stops before the element goes, so a visit can never
+        // leave one running against a node that is no longer on the page.
+        if (fox.timer) window.clearInterval(fox.timer);
+        fox.node.classList.remove('peeking');
+        window.setTimeout(function () {
+            if (fox.node.parentNode) fox.node.parentNode.removeChild(fox.node);
+        }, 700);
+    }
+
     function foxVisit() {
-        if (document.querySelector('.idle-fox')) return;
+        if (showing || document.querySelector('.idle-fox')) return;
         if (document.hidden) return;
 
         var frames = foxFrames();
 
-        var fox = document.createElement(frames ? 'pre' : 'div');
-        fox.className = 'idle-fox' + (frames ? ' idle-fox-art' : '');
-        if (read().crowned) fox.classList.add('crowned');
+        /* Two elements, not one: the wrapper does the fading and the
+           filling of the screen, and the <pre> inside it does the art.
+           Keeping them apart means the aspect correction on the art
+           cannot fight the fade on the wrapper. */
+        var wrap = document.createElement('div');
+        wrap.className = 'idle-fox';
+        if (read().crowned) wrap.classList.add('crowned');
 
         /* ⚠️ aria-hidden IS NOT OPTIONAL HERE.
-           Each frame is 968 Braille characters. Without this a screen
-           reader reads out a thousand "braille pattern dots" per frame,
-           over and over, for as long as the fox is on screen. The emoji
-           version was merely pointless to announce; this one would be
-           unusable. */
-        fox.setAttribute('aria-hidden', 'true');
+           Each frame is over two thousand Braille characters. Without
+           this a screen reader reads out every one of them, per frame,
+           for as long as the fox is on screen - and it now stays until
+           somebody moves. The emoji version was merely pointless to
+           announce; this would make the page unusable. */
+        wrap.setAttribute('aria-hidden', 'true');
 
-        var playing = null;
+        var art = document.createElement(frames ? 'pre' : 'div');
+        art.className = frames ? 'idle-fox-art' : 'idle-fox-emoji';
+
+        var timer = null;
         if (frames) {
-            fox.textContent = frames[0];
-            /* Somebody who asked for less movement gets the fox, and gets
-               it drawn - they just get the resting frame and no lick. */
+            art.textContent = frames[0];
+            /* ⚠️ IT LOOPS, rather than playing once and leaving. The fox
+               stays until the person comes back and moves - which is the
+               whole gag: you look up and it is still licking. Somebody
+               who asked for less movement gets the fox and gets it
+               drawn; they just get the resting frame and no lick. */
             if (!stillnessWanted()) {
                 var at = 0;
-                playing = window.setInterval(function () {
+                timer = window.setInterval(function () {
                     at = (at + 1) % frames.length;
-                    fox.textContent = frames[at];
+                    art.textContent = frames[at];
                 }, FRAME_MS);
             }
         } else {
-            fox.textContent = read().crowned ? '\ud83d\udc51\ud83e\udd8a' : '\ud83e\udd8a';
+            art.textContent = read().crowned ? '\ud83d\udc51\ud83e\udd8a' : '\ud83e\udd8a';
         }
 
-        document.body.appendChild(fox);
+        wrap.appendChild(art);
+        document.body.appendChild(wrap);
+        showing = { node: wrap, timer: timer, at: Date.now() };
 
-        // Force a reflow so the transition runs from the off-screen
-        // position rather than starting mid-slide.
-        void fox.offsetWidth;
-        fox.classList.add('peeking');
-
-        window.setTimeout(function () {
-            fox.classList.remove('peeking');
-            window.setTimeout(function () {
-                // The timer is cleared before the element goes, so a
-                // visit can never leave one running against a node that
-                // is no longer on the page.
-                if (playing) window.clearInterval(playing);
-                if (fox.parentNode) fox.parentNode.removeChild(fox);
-            }, 1200);
-        }, 4400);
+        // Force a reflow so the fade runs from transparent rather than
+        // starting halfway through.
+        void wrap.offsetWidth;
+        wrap.classList.add('peeking');
     }
 
     function resetIdle() {
@@ -368,14 +393,34 @@
         var wait = read().crowned ? IDLE_MS / 2 : IDLE_MS;
         idleTimer = window.setTimeout(function () {
             foxVisit();
-            resetIdle();
+            // No second call here: the fox now stays until somebody
+            // moves, and the movement that dismisses it is what starts
+            // the wait again.
         }, wait);
     }
 
     function startIdleFox() {
         ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (name) {
-            document.addEventListener(name, resetIdle, { passive: true });
+            document.addEventListener(name, function () {
+                // Coming back dismisses the fox AND restarts the wait.
+                dismissFox();
+                resetIdle();
+            }, { passive: true });
         });
+
+        /* ⚠️ A LOOPING FULL-SCREEN ANIMATION MUST NOT RUN IN A TAB NOBODY
+           IS LOOKING AT. The fox now stays until somebody moves, and
+           somebody who wandered off with the tab in the background would
+           otherwise leave it drawing frames until the laptop got warm.
+           Dismissed outright rather than paused, so there is no
+           half-alive state to reason about; the idle timer simply starts
+           the wait again. */
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) return;
+            if (showing) showing.at = 0;   // skip the settle guard
+            dismissFox();
+        });
+
         resetIdle();
     }
 

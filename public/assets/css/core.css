@@ -1375,37 +1375,54 @@ body :is(button:disabled, [aria-disabled="true"]) {
 /* ---- the idle fox ----
    Slides in from the right edge, waits, slides out. Nothing about it is
    interactive, so it never takes focus and never sits over a link. */
+/* ---- the idle fox ----
+   Fills the screen and stays until somebody moves. Two elements: the
+   wrapper fades and centres, the <pre> inside carries the art. */
 .idle-fox {
-    position: fixed; right: 0; bottom: 8vh; z-index: 50;
-    font-size: 2.5rem; line-height: 1;
-    transform: translateX(120%); transition: transform 1.1s ease;
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.7s ease;
+    /* ⚠️ NOT NEGOTIABLE. This thing covers the entire viewport, so every
+       click, tap, scroll and text selection has to pass straight through
+       it. Without this the fox is a full-screen wall. */
     pointer-events: none;
 }
-.idle-fox.peeking { transform: translateX(18%); }
+.idle-fox.peeking { opacity: 1; }
 
-/* ⚠️ BRAILLE ART FALLS APART UNLESS ALL THREE OF THESE HOLD.
-   line-height must be exactly 1 or horizontal gaps open between the
-   rows and the picture shears into stripes. letter-spacing must be 0 or
-   vertical gaps do the same. And the font has to be monospace, or every
-   row is a different width and the fox melts.
-   The size is clamped rather than fixed: 44 characters is about 260px
-   on a desktop and would run off the side of a phone. */
+/* ⚠️ BRAILLE ART FALLS APART UNLESS ALL FOUR OF THESE HOLD.
+   line-height must be exactly 1 or gaps open between the rows and the
+   picture shears into stripes. letter-spacing must be 0 or the same
+   happens vertically. The font has to be monospace or every row is a
+   different width. white-space: pre keeps the runs of blank Braille. */
 .idle-fox-art {
     margin: 0; padding: 0; white-space: pre;
     font-family: "Cascadia Mono", "DejaVu Sans Mono", "Menlo", "Consolas", monospace;
-    /* 64 characters wide now, not 44 - the studio's own frames carry
-       more detail, so the type has to come down to keep the fox about the
-       same size on screen. */
-    font-size: clamp(4px, 1.25vw, 7.5px);
     line-height: 1; letter-spacing: 0;
+
+    /* Sized to fill whichever way round the window is. 64 characters at
+       roughly 0.6em each is ~38.4em wide; 32 lines at line-height 1 is
+       32em tall. min() of the two keeps the whole fox on screen in both
+       portrait and landscape. */
+    font-size: min(2.4vw, 2.6vh);
+
+    /* ⚠️ THE ART IS SQUARE BUT THE CHARACTER CELL IS NOT.
+       A Braille cell is 2 dots wide and 4 tall, so square dots would
+       need a 0.5 character aspect - real monospace fonts are about 0.6.
+       That stretches the fox 20% wide. Squeezing the rendered block back
+       is cheaper than fighting the font, and scaling the <pre> rather
+       than the wrapper keeps it clear of the fade. */
+    transform: scaleX(0.84);
+
+    /* Bright enough to read on the dark page, sheer enough that the site
+       is still visible through it - it should look like a fox at the
+       glass, not a screen takeover. Turn this up if it reads too faint. */
     color: var(--frozen-juniper);
-    /* Somewhere between the fox and the page, so it reads as a creature
-       at the glass rather than a solid block pasted on top. */
-    opacity: 0.92;
+    opacity: 0.6;
 }
-.idle-fox-art.crowned { color: var(--flat-white); }
-/* Further in than the emoji: at this size only a sliver would show. */
-.idle-fox-art.peeking { transform: translateX(6%); }
+.idle-fox.crowned .idle-fox-art { color: var(--flat-white); opacity: 0.7; }
+
+/* The emoji fallback, for when the art file has not loaded. */
+.idle-fox-emoji { font-size: 18vh; line-height: 1; }
 
 /* ---- seasonal notes ----
    A quiet strip along the bottom, dismissable, once per season per

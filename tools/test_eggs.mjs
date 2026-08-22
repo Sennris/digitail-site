@@ -42,6 +42,11 @@ function check(label, ok) {
     }
 }
 
+function cssNoComments() {
+    return readFileSync(join(PUB, 'assets', 'css', 'core.css'), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
 function source(name) {
     const p = join(JS, name);
     return existsSync(p) ? readFileSync(p, 'utf8') : '';
@@ -428,23 +433,75 @@ check('a missing art file falls back to the emoji', (() => {
 })());
 
 check('the frame timer is cleared when the fox leaves', (() => {
-    const at = eggs.indexOf('function foxVisit');
-    const body = eggs.slice(at, at + 2200);
-    return /clearInterval\(playing\)/.test(body)
+    // Teardown moved into dismissFox when the fox stopped leaving on a
+    // timer of its own and started waiting to be dismissed.
+    const at = eggs.indexOf('function dismissFox');
+    const body = eggs.slice(at, at + 800);
+    return /clearInterval\(fox\.timer\)/.test(body)
         || 'every visit leaves an interval running against a removed node';
+})());
+
+check('the fox stays until it is dismissed, not on a timer', (() => {
+    /* ⚠️ THE POINT OF THE WHOLE THING. It used to slide in, play once
+       and leave after 4.4 seconds. It now loops and waits for the person
+       to come back - so nothing inside foxVisit may schedule its own
+       removal. */
+    const at = eggs.indexOf('function foxVisit');
+    const body = eggs.slice(at, at + 2400);
+    return !/removeChild/.test(body)
+        || 'foxVisit still tears itself down, so the fox leaves on its own';
+})());
+
+check('any activity dismisses it', (() => {
+    /* Scoped to the activity listener. startIdleFox also calls
+       dismissFox() from its visibilitychange handler, so a search across
+       the whole function was answered by that one - deleting the call
+       that matters changed nothing the test could see. */
+    const at = eggs.indexOf("['mousemove'");
+    const body = eggs.slice(at, eggs.indexOf('visibilitychange', at));
+    return /dismissFox\(\);/.test(body)
+        || 'moving the mouse would not get rid of it';
+})());
+
+check('a twitch cannot kill it the instant it appears', (() => {
+    /* Momentum scroll and trackpad jitter fire immediately. Without a
+       settle window the fox flashes and vanishes, and reads as a glitch
+       rather than a joke. */
+    const at = eggs.indexOf('function dismissFox');
+    const body = eggs.slice(at, at + 400);
+    return /SETTLE_MS/.test(body) || 'no settle window before it can be dismissed';
+})());
+
+check('it does not animate in a tab nobody is looking at', (() => {
+    // It loops forever now, so a backgrounded tab would draw frames
+    // until the battery went.
+    const at = eggs.indexOf('function startIdleFox');
+    const body = eggs.slice(at, at + 900);
+    return /visibilitychange/.test(body) && /dismissFox\(\)/.test(body)
+        || 'a hidden tab keeps the fox animating';
+})());
+
+check('it covers the screen and lets everything through', (() => {
+    const css = cssNoComments();
+    const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);
+    if (!rule) return 'no .idle-fox rule';
+    return /inset:\s*0/.test(rule[1]) && /pointer-events:\s*none/.test(rule[1])
+        || 'a full-screen overlay that swallows clicks';
 })());
 
 check('reduced motion still draws the fox, just still', (() => {
     const at = eggs.indexOf('function foxVisit');
-    const body = eggs.slice(at, at + 2200);
-    return /fox\.textContent = frames\[0\];/.test(body) && /if \(!stillnessWanted\(\)\)/.test(body)
+    const body = eggs.slice(at, at + 2400);
+    return /art\.textContent = frames\[0\];/.test(body) && /if \(!stillnessWanted\(\)\)/.test(body)
         || 'reduced motion either animates anyway or shows nothing';
 })());
 
 check('the braille styling keeps the picture together', (() => {
-    /* line-height 1, letter-spacing 0 and a monospace font. Lose any one
-       and the art shears into stripes. */
-    const css = readFileSync(join(PUB, 'assets', 'css', 'core.css'), 'utf8');
+    /* ⚠️ COMMENTS STRIPPED FIRST. These rules carry long comments
+       explaining why they matter - and those comments use the very words
+       the check looks for, so setting `font-family: inherit` was
+       answered by the prose above it. Caught by the harness. */
+    const css = cssNoComments();
     const rule = /\.idle-fox-art\s*\{([^}]*)\}/.exec(css);
     if (!rule) return 'no .idle-fox-art rule';
     const need = [/line-height:\s*1\b/, /letter-spacing:\s*0/, /monospace/, /white-space:\s*pre/];
@@ -461,7 +518,7 @@ check('it is hidden from screen readers', (() => {
 check('it never takes a click', (() => {
     // Scoped to .idle-fox: the stylesheet uses pointer-events elsewhere,
     // and an unscoped search was answered by one of those.
-    const css = readFileSync(join(PUB, 'assets', 'css', 'core.css'), 'utf8');
+    const css = cssNoComments();
     const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);
     if (!rule) return 'no .idle-fox rule at all';
     return /pointer-events:\s*none/.test(rule[1]) || 'the fox could sit over a link';
