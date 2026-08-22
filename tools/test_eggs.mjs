@@ -129,6 +129,73 @@ check('runes start hidden in the markup', (() => {
     return !visible.length || `${visible.length} rune(s) visible before the paws are found`;
 })());
 
+check('no rune sits anywhere a script can hide', (() => {
+    /* ⚠️ THIS IS THE ONE THAT ACTUALLY BIT.
+       rune-4 was planted in the game page's CTA heading. game.js line
+       188 hides that whole section when a game has no CTA heading, body
+       or URL - so updating the game in the admin made the rune vanish,
+       and the puzzle became unfinishable with nothing on screen to say
+       why. Reported 22 Aug 2026.
+
+       A rune has to live in markup that NO script can hide or rebuild.
+       This walks the real tag structure of each page, collects the ids
+       of every element a rune sits inside, and fails if any of them is
+       an element a page script switches off. */
+    const VOID = ['br', 'img', 'input', 'meta', 'link', 'hr', 'source',
+                  'path', 'circle', 'rect', 'area', 'col', 'use'];
+
+    // Which ids do the page scripts hide?
+    const risky = new Set();
+    readdirSync(join(JS, 'pages')).forEach((f) => {
+        const src = code(readFileSync(join(JS, 'pages', f), 'utf8'));
+        const named = {};
+        for (const m of src.matchAll(/(?:const|let|var)\s+(\w+)\s*=\s*document\.getElementById\(\s*'([^']+)'/g)) {
+            named[m[1]] = m[2];
+        }
+        for (const m of src.matchAll(/(\w+)\.hidden\s*=\s*true/g)) {
+            if (named[m[1]]) risky.add(named[m[1]]);
+        }
+        for (const m of src.matchAll(/document\.getElementById\(\s*'([^']+)'\s*\)\.hidden\s*=\s*true/g)) {
+            risky.add(m[1]);
+        }
+    });
+
+    const bad = [];
+    pages.forEach((file) => {
+        const html = readFileSync(join(PUB, file), 'utf8');
+        const stack = [];
+        const tag = /<(\/?)([a-zA-Z][\w-]*)([^>]*)>/g;
+        let m;
+        while ((m = tag.exec(html)) !== null) {
+            const closing = m[1] === '/';
+            const name = m[2].toLowerCase();
+            const attrs = m[3];
+
+            if (closing) {
+                for (let i = stack.length - 1; i >= 0; i -= 1) {
+                    if (stack[i].name === name) { stack.length = i; break; }
+                }
+                continue;
+            }
+            if (VOID.indexOf(name) !== -1 || /\/\s*$/.test(attrs)) continue;
+
+            const id = (/\sid="([^"]+)"/.exec(attrs) || [])[1] || null;
+
+            if (/class="skulk-rune"/.test(attrs)) {
+                stack.forEach((a) => {
+                    if (a.id && risky.has(a.id)) {
+                        bad.push(`${file}: rune inside #${a.id}, which a script hides`);
+                    }
+                });
+                continue;
+            }
+            stack.push({ name: name, id: id });
+        }
+    });
+
+    return !bad.length || bad.join('; ');
+})());
+
 check('stage two does not open until stage one is done', /var open = huntDone\(\);/.test(eggs)
     || 'the runes appear to somebody who has found nothing');
 

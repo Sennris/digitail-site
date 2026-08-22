@@ -37,7 +37,7 @@ const MUTATIONS = [
     // the bottom of the body and into the headings they belong in, so
     // they are now on one line at the heading's indentation.
     { name: 'a rune goes missing',
-      file: 'public/game.html',
+      file: 'public/press.html',
       from: '<button type="button" class="skulk-rune" id="rune-4" data-letter="L" hidden aria-label="A hidden rune. Find all five."></button>\n', to: '' },
     { name: 'a rune loses its label',
       file: 'public/about.html',
@@ -49,6 +49,11 @@ const MUTATIONS = [
       to: '<button type="button" class="skulk-rune" id="rune-1" data-letter="S"' },
     { name: 'the letters stop spelling the answer',
       file: 'public/devlogs.html', from: 'data-letter="U"', to: 'data-letter="Z"' },
+    { name: 'a rune is planted somewhere a script can hide (the reported bug)',
+      file: 'public/game.html',
+      from: '                <span class="mi" id="game-cta-heading-mi">\u0100whinatia m\u0101tou ki te w\u0101wahi i te p\u016bnaha.</span>\n',
+      to: '                <span class="mi" id="game-cta-heading-mi">\u0100whinatia m\u0101tou ki te w\u0101wahi i te p\u016bnaha.</span>\n                <button type="button" class="skulk-rune" id="rune-6" data-letter="X" hidden aria-label="A hidden rune. Find all five."></button>\n' },
+
     { name: 'stage two opens to somebody who found nothing',
       file: 'public/assets/js/eggs.js',
       from: '        var open = huntDone();', to: '        var open = true;' },
