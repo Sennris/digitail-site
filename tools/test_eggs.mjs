@@ -481,6 +481,38 @@ check('it does not animate in a tab nobody is looking at', (() => {
         || 'a hidden tab keeps the fox animating';
 })());
 
+check('the fox has a backdrop to read against', (() => {
+    /* ⚠️ WITHOUT THIS THE ART FIGHTS THE PAGE TEXT UNDERNEATH IT and
+       both lose - reported from the press page on 22 Aug 2026, where the
+       fox and the headings smeared into each other. */
+    const css = cssNoComments();
+    const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);
+    if (!rule) return 'no .idle-fox rule';
+    return /background:/.test(rule[1])
+        || 'the overlay is transparent, so the fox sits on top of live text';
+})());
+
+check('the fox arrives on its own backdrop', (() => {
+    /* ⚠️ ADDED 22 Aug 2026 AFTER A PACKAGING SLIP.
+       The backdrop existed in the working copy but not in the zip that
+       was handed over, and nothing caught it because no test asked for
+       one. Without a backdrop the art sits over live page text and the
+       two fight each other. */
+    const css = cssNoComments();
+    const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);
+    if (!rule) return 'no .idle-fox rule';
+    return /background:/.test(rule[1])
+        || 'the fox is drawn straight over the page text';
+})());
+
+check('it stands on the bottom edge of the window', (() => {
+    // Centred, it floats. Bottom-anchored, it climbs up out of the page.
+    const css = cssNoComments();
+    const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);
+    return /align-items:\s*flex-end/.test(rule[1])
+        || 'the fox floats in the middle instead of coming up from the bottom';
+})());
+
 check('it covers the screen and lets everything through', (() => {
     const css = cssNoComments();
     const rule = /\.idle-fox\s*\{([^}]*)\}/.exec(css);

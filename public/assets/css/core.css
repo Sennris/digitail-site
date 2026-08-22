@@ -1380,11 +1380,30 @@ body :is(button:disabled, [aria-disabled="true"]) {
    wrapper fades and centres, the <pre> inside carries the art. */
 .idle-fox {
     position: fixed; inset: 0; z-index: 50;
-    display: flex; align-items: center; justify-content: center;
+    /* ⚠️ flex-end, NOT center. The art is cropped just under the fox's
+       front legs, so standing it on the bottom edge of the window makes
+       it read as a fox climbing up out of the bottom of the page rather
+       than one floating in the middle of it. Spare height goes above the
+       ears, where nobody minds it. */
+    display: flex; align-items: flex-end; justify-content: center;
     opacity: 0; transition: opacity 0.7s ease;
-    /* ⚠️ NOT NEGOTIABLE. This thing covers the entire viewport, so every
-       click, tap, scroll and text selection has to pass straight through
-       it. Without this the fox is a full-screen wall. */
+
+    /* ⚠️ THE BACKDROP IS WHAT MAKES THE FOX READABLE.
+       Without it the art sits over live page text and the two fight -
+       the fox reads as a smudge and the words underneath become
+       unreadable, which is what it looked like on the press page.
+       Filling with the site's own black means the page appears to fade
+       away and leave the fox behind, rather than the fox being pasted on
+       top of it.
+       To soften it instead, make this rgba(29, 13, 18, 0.85) - the fox
+       still reads and the page ghosts through. */
+    background: var(--long-black);
+
+    /* ⚠️ NOT NEGOTIABLE, AND MORE SO NOW IT IS OPAQUE. This covers the
+       entire viewport, so every click, tap, scroll and text selection
+       has to pass straight through. It is safe because ANY movement
+       dismisses the fox - the mouse moving towards a link removes it
+       long before the click lands. */
     pointer-events: none;
 }
 .idle-fox.peeking { opacity: 1; }
@@ -1400,10 +1419,12 @@ body :is(button:disabled, [aria-disabled="true"]) {
     line-height: 1; letter-spacing: 0;
 
     /* Sized to fill whichever way round the window is. 64 characters at
-       roughly 0.6em each is ~38.4em wide; 32 lines at line-height 1 is
-       32em tall. min() of the two keeps the whole fox on screen in both
-       portrait and landscape. */
-    font-size: min(2.4vw, 2.6vh);
+       roughly 0.6em each, squeezed to 0.84 below, is ~32em wide; 32 lines
+       at line-height 1 is 32em tall - so the art is near enough square
+       and one number does for both. min() keeps the whole fox on screen
+       in portrait and landscape alike.
+       Raised from 2.4 so the legs reach the bottom edge of the window. */
+    font-size: min(3.05vw, 3.05vh);
 
     /* ⚠️ THE ART IS SQUARE BUT THE CHARACTER CELL IS NOT.
        A Braille cell is 2 dots wide and 4 tall, so square dots would
@@ -1413,13 +1434,13 @@ body :is(button:disabled, [aria-disabled="true"]) {
        than the wrapper keeps it clear of the fade. */
     transform: scaleX(0.84);
 
-    /* Bright enough to read on the dark page, sheer enough that the site
-       is still visible through it - it should look like a fox at the
-       glass, not a screen takeover. Turn this up if it reads too faint. */
+    /* Full strength: it is on a black backdrop now, so there is nothing
+       behind it to compete with and no reason to hold it back. It was
+       60% while it floated over live page text. */
     color: var(--frozen-juniper);
-    opacity: 0.6;
+    opacity: 1;
 }
-.idle-fox.crowned .idle-fox-art { color: var(--flat-white); opacity: 0.7; }
+.idle-fox.crowned .idle-fox-art { color: var(--flat-white); }
 
 /* The emoji fallback, for when the art file has not loaded. */
 .idle-fox-emoji { font-size: 18vh; line-height: 1; }
